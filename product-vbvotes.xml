@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<product productid="vbvotes" active="1">
+	<title>vB Votes</title>
+	<description>User voting for useful content</description>
+	<version>0.1</version>
+	<url />
+	<versioncheckurl />
+	<apm_releasedate>0</apm_releasedate>
+	<apm_author />
+	<apm_relatedurl />
+	<apm_extrainfo />
+	<apm_extraedit />
+	<dependencies>
+	</dependencies>
+	<codes>
+	</codes>
+	<templates>
+	</templates>
+	<plugins>
+	</plugins>
+	<phrases>
+		<phrasetype name="vBulletin Settings" fieldname="vbsettings">
+			<phrase name="setting_vbv_delete_own_votes_desc" date="1262984341" username="Vitaly" version="0.1"><![CDATA[Allow user to delete his own votes.]]></phrase>
+			<phrase name="setting_vbv_delete_own_votes_title" date="1262984341" username="Vitaly" version="0.1"><![CDATA[Can delete own votes]]></phrase>
+			<phrase name="setting_vbv_grp_disable_desc" date="1262983113" username="Vitaly" version="0.1"><![CDATA[User groups to completely disable mod. Recommended for guests, to keep good SEO rank.]]></phrase>
+			<phrase name="setting_vbv_grp_disable_title" date="1262983113" username="Vitaly" version="0.1"><![CDATA[Disabled Groups]]></phrase>
+			<phrase name="setting_vbv_enable_neg_votes_desc" date="1262985014" username="Vitaly" version="0.1"><![CDATA[If disabled, only positive voting is allowed.]]></phrase>
+			<phrase name="setting_vbv_enable_neg_votes_title" date="1262985014" username="Vitaly" version="0.1"><![CDATA[Enable Negative Votes]]></phrase>
+			<phrase name="setting_vbv_grp_banned_desc" date="1262987050" username="Vitaly" version="0.1"><![CDATA[When user goes to this group, all his votes are cleared.]]></phrase>
+			<phrase name="setting_vbv_grp_banned_title" date="1262987050" username="Vitaly" version="0.1"><![CDATA[Banned user groups]]></phrase>
+			<phrase name="setting_vbv_ignored_forums_desc" date="1262985915" username="Vitaly" version="0.1"><![CDATA[Votes will be disabled for this forums. Place forum IDs, separated by ",". For example "1,2,3"]]></phrase>
+			<phrase name="setting_vbv_ignored_forums_title" date="1262985915" username="Vitaly" version="0.1"><![CDATA[Ignored forums]]></phrase>
+			<phrase name="setting_vbv_max_votes_daily_desc" date="1262982578" username="Vitaly" version="0.1"><![CDATA[How many votes user can give per day]]></phrase>
+			<phrase name="setting_vbv_max_votes_daily_title" date="1262982578" username="Vitaly" version="0.1"><![CDATA[Max votes per day]]></phrase>
+			<phrase name="setting_vbv_neg_votes_expire_days_desc" date="1262985223" username="Vitaly" version="0.1"><![CDATA[After X days all negative votes are completely cleared. Set 0 to keep forever.]]></phrase>
+			<phrase name="setting_vbv_neg_votes_expire_days_title" date="1262985223" username="Vitaly" version="0.1"><![CDATA[Negative votes expiration time (days)]]></phrase>
+			<phrase name="setting_vbv_grp_read_only_desc" date="1262987099" username="Vitaly" version="0.1"><![CDATA[This groups can view votes, but can't make new ones.]]></phrase>
+			<phrase name="setting_vbv_grp_read_only_title" date="1262987099" username="Vitaly" version="0.1"><![CDATA[Read Only Groups]]></phrase>
+			<phrase name="setting_vbv_top_voted_days_desc" date="1262985570" username="Vitaly" version="0.1"><![CDATA[Limit (in days) fot top voted search]]></phrase>
+			<phrase name="setting_vbv_top_voted_days_title" date="1262985570" username="Vitaly" version="0.1"><![CDATA["Top Voted" days limit]]></phrase>
+			<phrase name="setting_vbv_grp_unvoteable_desc" date="1262987067" username="Vitaly" version="0.1"><![CDATA[Users from this groups can't get votes.]]></phrase>
+			<phrase name="setting_vbv_grp_unvoteable_title" date="1262987067" username="Vitaly" version="0.1"><![CDATA[Unvoteable groups]]></phrase>
+			<phrase name="settinggroup_vb_votes" date="1262979865" username="Vitaly" version="0.1"><![CDATA[vb Votes]]></phrase>
+		</phrasetype>
+	</phrases>
+	<options>
+		<settinggroup name="vb_votes" displayorder="65535">
+			<setting varname="vbv_max_votes_daily" displayorder="10">
+				<datatype>number</datatype>
+				<defaultvalue>10</defaultvalue>
+			</setting>
+			<setting varname="vbv_grp_disable" displayorder="20">
+				<datatype>free</datatype>
+				<optioncode>usergroup:6</optioncode>
+				<defaultvalue>a:1:{i:0;i:1;}</defaultvalue>
+			</setting>
+			<setting varname="vbv_grp_read_only" displayorder="30">
+				<datatype>free</datatype>
+				<optioncode>usergroup:6</optioncode>
+				<defaultvalue>a:4:{i:0;i:4;i:1;i:1;i:2;i:3;i:3;i:8;}</defaultvalue>
+			</setting>
+			<setting varname="vbv_grp_unvoteable" displayorder="40">
+				<datatype>free</datatype>
+				<optioncode>usergroup:6</optioncode>
+				<defaultvalue>a:1:{i:0;i:8;}</defaultvalue>
+			</setting>
+			<setting varname="vbv_grp_banned" displayorder="50">
+				<datatype>free</datatype>
+				<optioncode>usergroup:6</optioncode>
+				<defaultvalue>a:1:{i:0;i:8;}</defaultvalue>
+			</setting>
+			<setting varname="vbv_delete_own_votes" displayorder="60">
+				<datatype>boolean</datatype>
+				<optioncode>yesno</optioncode>
+				<defaultvalue>1</defaultvalue>
+			</setting>
+			<setting varname="vbv_enable_neg_votes" displayorder="70">
+				<datatype>boolean</datatype>
+				<optioncode>yesno</optioncode>
+				<defaultvalue>1</defaultvalue>
+			</setting>
+			<setting varname="vbv_neg_votes_expire_days" displayorder="80">
+				<datatype>number</datatype>
+				<defaultvalue>30</defaultvalue>
+			</setting>
+			<setting varname="vbv_top_voted_days" displayorder="90">
+				<datatype>number</datatype>
+				<defaultvalue>7</defaultvalue>
+			</setting>
+			<setting varname="vbv_ignored_forums" displayorder="100">
+				<datatype>free</datatype>
+			</setting>
+		</settinggroup>
+	</options>
+	<helptopics>
+	</helptopics>
+	<cronentries>
+	</cronentries>
+	<faqentries>
+	</faqentries>
+	<templateedits>
+	</templateedits>
+</product>
