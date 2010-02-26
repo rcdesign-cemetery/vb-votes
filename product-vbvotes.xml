@@ -14,33 +14,548 @@
 	<dependencies>
 	</dependencies>
 	<codes>
+		<code version="0.1">
+			<installcode><![CDATA[$db->hide_errors();
+$vbulletin->db->query_write("
+CREATE TABLE IF NOT EXISTS `" . TABLE_PREFIX . "post_votes` (
+  `targetid` int(11) NOT NULL,
+  `targettype` enum('forum','sg') NOT NULL,
+  `vote` enum('1','-1') NOT NULL,
+  `userid` int(11) NOT NULL,
+  `postauthorid` int(11) NOT NULL,
+  `date` int(11) NOT NULL,
+  PRIMARY KEY (`targetid`,`targettype`,`vote`,`userid`),
+  UNIQUE KEY `user_set_votes` (`userid`,`targettype`,`targetid`),
+  KEY `authers_get_votes` (`postauthorid`,`vote`,`targettype`),
+  KEY `date` (`date`,`vote`,`targettype`)
+)");
+$db->show_errors();]]></installcode>
+			<uninstallcode><![CDATA[$db->hide_errors();
+$vbulletin->db->query_write("DROP TABLE IF EXISTS " . TABLE_PREFIX . "post_votes");
+$db->show_errors();]]></uninstallcode>
+		</code>
 	</codes>
 	<templates>
+		<template name="forum_voted_user_bit" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
+            <a href="member.php?$session[sessionurl]u=$voted_user[userid]" rel="nofollow">
+                $voted_user[username]
+            </a>&nbsp;
+        ]]></template>
+		<template name="forum_votes_search_postbit" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
+            <if condition="$post['positive_votes']">+$post[positive_votes]</if>
+            <if condition="$post['positive_votes'] AND $post['negative_votes']">/</if>
+            <if condition="$post['negative_votes']">-$post[negative_votes]</if>
+        ]]></template>
+		<template name="forum_vote_buttons" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
+            <a href="$post[vote_link]&amp;value=1" rel="nofollow" name="PostVote::Positive::$post[postid]" id="PostVote::Positive::$post[postid]" <if condition="$show[vote_button_hide]">style="display: none;"</if> >
+                <img src="$stylevar[imgdir_button]/positive_vote.gif" alt="$vbphrase[positive_vote]" border="0" />
+            </a>
+            <if condition="$show[negative]">
+            <a href="$post[vote_link]&amp;value=0" rel="nofollow" name="PostVote::Negative::$post[postid]" id="PostVote::Negative::$post[postid]"  <if condition="$show[vote_button_hide]">style="display: none;"</if> >
+                <img src="$stylevar[imgdir_button]/negative_vote.gif" alt="$vbphrase[negative_vote]" border="0" />
+            </a>
+            </if>
+        ]]></template>
+		<template name="forum_vote_js" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
+            <script type="text/javascript" src="clientscript/votes.js"></script>
+        ]]></template>
+		<template name="navbar_search_votes" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
+        <tr>
+            <td class="thead">$vbphrase[vbv_navbar_section]</td>
+        </tr>
+        <tr>
+            <td class="vbmenu_option"><a href="$navbar[votes_link]&amp;value=1"><phrase 1="$navbar[day_limit]">$vbphrase[vbv_positive_votes_search]</phrase></a></td>
+        </tr>
+        <if condition="$show[negative]">
+            <tr>
+                <td class="vbmenu_option"><a href="$navbar[votes_link]&amp;value=-1"><phrase 1="$navbar[day_limit]">$vbphrase[vbv_negative_votes_search]</phrase></a></td>
+            </tr>
+        </if>
+        
+        ]]></template>
+		<template name="voted_div" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
+            <div id="votes_result_$post[postid]">$voted_table</div>
+        ]]></template>
+		<template name="voted_memberinfo_block" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
+<fieldset class="statistics_group">
+	<legend>$vbphrase[vbv_votes_statistic]</legend>
+	<ul class="list_no_decoration">
+        <if condition="$userinfo['gived_positive_votes'] OR $userinfo['gived_negative_votes']">
+            <li><span class="shade">$vbphrase[vbv_gived_votes]:</span>
+                <if condition="$userinfo['gived_positive_votes']">
+                    <a href="$userinfo[gived_votes_search_url]&amp;value=1">+$userinfo[gived_positive_votes]</a>
+                </if>
+                <if condition="$userinfo['gived_positive_votes'] AND $userinfo['gived_negative_votes']"> / </if>
+                <if condition="$userinfo['gived_negative_votes']">
+                    <a href="$userinfo[gived_votes_search_url]&amp;value=-1">-$userinfo[gived_negative_votes]</a>
+                </if>
+            </li>
+        </if>
+        <if condition="$userinfo['recived_positive_votes'] OR $userinfo['recived_negative_votes']">
+            <li><span class="shade">$vbphrase[vbv_recived_votes]:</span>
+                <if condition="$userinfo['recived_positive_votes']">
+                    <a href="$userinfo[recived_votes_search_url]&amp;value=1">+$userinfo[recived_positive_votes]</a>
+                </if>
+                <if condition="$userinfo['recived_positive_votes'] AND $userinfo['recived_negative_votes']"> / </if>
+                <if condition="$userinfo['recived_negative_votes']">
+                    <a href="$userinfo[recived_votes_search_url]&amp;value=-1">-$userinfo[recived_negative_votes]</a>
+                </if>
+            </li>
+        </if>
+	</ul>
+</fieldset>]]></template>
+		<template name="voted_postbit" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
+<div style="padding:$stylevar[cellpadding]px 0px 0px 0px">
+	<table class="tborder" cellpadding="$stylevar[cellpadding]" cellspacing="$stylevar[cellspacing]" border="0" width="100%" align="center">
+		<tr>
+			<td class="alt2" width="175">
+                <strong>$votes[post_user_votes]</strong>
+			
+                <if condition="$votes[remove_all_votes_link]">
+					<br /><a href="$votes[remove_all_votes_link]&amp;targetid=$votes[target_id]" rel="nofollow" name="RemoveVote::All::$votes[vote_type]::$votes[target_id]" id="RemoveVote::All::$votes[vote_type]::$votes[target_id]" >$vbphrase[post_vote_remove_all_votes]</a>
+                </if>
+                <if condition="$votes[remove_vote_link]">
+					<br /><a href="$votes[remove_vote_link]&amp;targetid=$votes[target_id]" rel="nofollow" name="RemoveVote::$votes[vote_type]::$votes[target_id]" id="RemoveVote::All::$votes[vote_type]::$votes[target_id]" >$vbphrase[post_vote_remove_user_vote]</a>
+                </if>
+            </td>
+		<td class="alt1" colspan="3"><div>$votes[vote_list]</div></td></tr>
+	</table>
+</div>
+        ]]></template>
 	</templates>
 	<plugins>
+		<plugin active="1" executionorder="5">
+			<title>Cache templates</title>
+			<hookname>cache_templates</hookname>
+			<phpcode><![CDATA[$globaltemplates[] = 'navbar_search_votes';
+if (THIS_SCRIPT == 'member')
+{
+    $globaltemplates[] = 'voted_memberinfo_block';
+}
+if (THIS_SCRIPT == 'search')
+{
+    $globaltemplates[] =forum_votes_search_postbit;
+}
+if (THIS_SCRIPT == 'showthread' || THIS_SCRIPT == 'showpost' || THIS_SCRIPT == 'votepost')
+{
+    $globaltemplates[] = 'forum_vote_buttons';
+    $globaltemplates[] = 'forum_vote_js';
+    $globaltemplates[] = 'forum_voted_user_bit';
+    $globaltemplates[] = 'voted_div';
+    $globaltemplates[] = 'voted_postbit';
+}]]></phpcode>
+		</plugin>
+		<plugin active="1" executionorder="5">
+			<title>Clean old negative votes</title>
+			<hookname>cron_script_cleanup_daily</hookname>
+			<phpcode><![CDATA[if( intval( $vbulletin->options['vbv_neg_votes_expire_days'] ) > 0 )
+{
+    $date_limit = TIMENOW - 24 * 60 * 60 * $vbulletin->options['vbv_neg_votes_expire_days'];
+
+
+    // Delete old votes
+    $sql = 'DELETE FROM
+                `' . TABLE_PREFIX . 'post_votes`
+            WHERE
+                `vote` = "-1" AND
+                `date` < ' . $date_limit;
+    $vbulletin->db->query_write($sql);
+}]]></phpcode>
+		</plugin>
+		<plugin active="1" executionorder="20">
+			<title>Add items to search menu</title>
+			<hookname>global_setup_complete</hookname>
+			<phpcode><![CDATA[require_once(DIR . '/includes/functions_votes.php');
+if ($vbulletin->options['vbv_enable_neg_votes'])
+{
+    $show['negative'] = true;
+}
+$navbar[day_limit] = $vbulletin->options['vbv_top_voted_days'];
+$navbar[votes_link] = create_vote_url(array('do'=>'search', 'top'=>'1'));
+eval('$template_hook[navbar_search_menu] .= " ' . fetch_template('navbar_search_votes') . '";');]]></phpcode>
+		</plugin>
+		<plugin active="1" executionorder="5">
+			<title>Clear votes if post(s) moved into unvoted forum</title>
+			<hookname>inlinemod_domoveposts</hookname>
+			<phpcode><![CDATA[$unvoted_forums = explode(',', $vbulletin->options['vbv_ignored_forums']);
+if (in_array($destforuminfo['forumid'], $unvoted_forums))
+{
+    require_once(DIR . '/includes/functions_votes.php');
+    delete_votes_by_target_id_list($post_id_list, 'forum');
+}
+        ]]></phpcode>
+		</plugin>
+		<plugin active="1" executionorder="5">
+			<title>Clear votes if thread(s) moved into unvoted forum(inline)</title>
+			<hookname>inlinemod_domovethread</hookname>
+			<phpcode><![CDATA[$unvoted_forums = explode(',', $vbulletin->options['vbv_ignored_forums']);
+if (in_array($destforuminfo['forumid'], $unvoted_forums))
+{
+    $sql = 'SELECT `postid`
+            FROM ' . TABLE_PREFIX . 'post AS post
+            WHERE `threadid` IN (' . implode($threadids). ')';
+	$posts = $db->query_read($sql);
+    $post_id_list = array();
+	while ($post = $db->fetch_array($posts))
+	{
+		$post_id_list[] = $post['postid'];
+	}
+    if (!empty($post_id_list))
+    {
+        require_once(DIR . '/includes/functions_votes.php');
+        delete_votes_by_target_id_list($post_id_list, 'forum');
+    }
+}]]></phpcode>
+		</plugin>
+		<plugin active="1" executionorder="5">
+			<title>Dysplay votes statistic in member profile</title>
+			<hookname>member_profileblock_fetch_unwrapped</hookname>
+			<phpcode><![CDATA[if ('vB_ProfileBlock_Statistics' == get_class($this))
+{
+    global $db;
+    
+    // recived voted
+    $sql = 'SELECT
+            `vote` , count( vote ) AS count
+        FROM
+            ' . TABLE_PREFIX . 'post_votes
+        WHERE
+            `postauthorid` = ' . $userinfo['userid'] . '
+        GROUP BY
+            `vote`';
+    $db_resource = $db->query_read($sql);
+    if ($db_resource)
+    {
+        $userinfo['recived_votes_search_url'] = create_vote_url(array('do'=>'search', 'authorid'=>$userinfo['userid']));
+    }
+    while ($votes_amount = $db->fetch_array($db_resource))
+    {
+        if ('1' == $votes_amount['vote'])
+        {
+            $amount_type = 'recived_positive_votes';
+        }
+        else
+        {
+            $amount_type = 'recived_negative_votes';
+        }
+        $userinfo[$amount_type] = $votes_amount['count'];
+    }
+
+    // gived
+    $sql = 'SELECT
+                `vote` , count( vote ) AS count
+            FROM
+                ' . TABLE_PREFIX . 'post_votes
+            WHERE
+                `userid` = ' . $userinfo['userid'] . '
+            GROUP BY
+                `vote`';
+    $db_resource = $db->query_read($sql);
+    if ($db_resource)
+    {
+        $userinfo['gived_votes_search_url'] = create_vote_url(array('do'=>'search', 'userid'=>$userinfo['userid']));
+    }
+    while ($votes_amount = $db->fetch_array($db_resource))
+    {
+        if ('1' == $votes_amount['vote'])
+        {
+            $amount_type = 'gived_positive_votes';
+        }
+        else
+        {
+            $amount_type = 'gived_negative_votes';
+        }
+        $userinfo[$amount_type] = $votes_amount['count'];
+    }
+    if (isset($userinfo['gived_positive_votes'])
+        OR isset ($userinfo['gived_negative_votes'])
+        OR isset ($userinfo['recived_positive_votes'])
+        OR isset ($userinfo['recived_negative_votes'])
+    )
+    {
+        eval('$template_hook[profile_stats_pregeneral] .= "' . fetch_template('voted_memberinfo_block') . '";');
+    }
+}]]></phpcode>
+		</plugin>
+		<plugin active="1" executionorder="5">
+			<title>Show voted tables</title>
+			<hookname>postbit_display_complete</hookname>
+			<phpcode><![CDATA[
+require_once(DIR . '/includes/functions_votes.php');
+$votes = $post['votes'];
+$voted_table = '';
+if (is_array($votes) AND !empty($votes))
+{
+    foreach ($votes as $vote_type=>$user_voted_list)
+    {
+        $voted_table .= create_voted_result($vote_type, $user_voted_list, $post['postid']);
+    }
+}
+eval('$voted_div = "' . fetch_template('voted_div') . '";');
+$template_hook['postbit_end'] .= $voted_div;
+
+
+$show['vote_button_hide'] = true;
+if (is_user_can_vote($post['postid']))
+{
+    if ($this->registry->options['vbv_enable_neg_votes'])
+    {
+        $show['negative'] = true;
+    }
+    $post['vote_link'] = create_vote_url(array('do'=>'vote'));
+    $show['vote_button_hide'] = false;
+}
+
+eval('$template_hook[postbit_controls] .= " ' . fetch_template('forum_vote_buttons') . '";');
+
+        ]]></phpcode>
+		</plugin>
+		<plugin active="1" executionorder="5">
+			<title>Clear votes(post delete)</title>
+			<hookname>postdata_delete</hookname>
+			<phpcode><![CDATA[
+require_once(DIR . '/includes/functions_votes.php');
+delete_votes_by_target_id_list(array($postid), 'forum');
+        ]]></phpcode>
+		</plugin>
+		<plugin active="1" executionorder="5">
+			<title>Display search result</title>
+			<hookname>search_results_postbit</hookname>
+			<phpcode><![CDATA[eval('$post[\'typeprefix\'] = "' . fetch_template('forum_votes_search_postbit') . '" . $post[\'typeprefix\'];');]]></phpcode>
+		</plugin>
+		<plugin active="1" executionorder="5">
+			<title>Get votes amount(search)</title>
+			<hookname>search_results_prebits</hookname>
+			<phpcode><![CDATA[define ('VOTE_TARGET_TYPE', 'forum');
+require_once(DIR . '/includes/functions_votes.php');
+$post_votes = array();
+if (is_user_can_see_votes_result())
+{
+    $target_id_list = explode(',' , '0' . $ids);
+    if (! $vbulletin->options['vbv_enable_neg_votes'])
+    {
+        $vote_type = '1';
+    }
+    $post_votes = get_vote_for_post_list($target_id_list, $vote_type);
+    foreach ($post_votes as $post_id=>$votes)
+    {
+        if ($votes['1'])
+        {
+            $itemids[$post_id]['positive_votes'] = count($votes['1']);
+        }
+        if ($votes['-1'])
+        {
+            $itemids[$post_id]['negative_votes'] = count($votes['-1']);
+        }
+    }
+}
+        ]]></phpcode>
+		</plugin>
+		<plugin active="1" executionorder="5">
+			<title>Add init js into show thread page</title>
+			<hookname>showpost_complete</hookname>
+			<phpcode><![CDATA[$show['datepicker'] = true; // stub
+if (TRUE == $show['datepicker'])
+{
+    eval('$headinclude .= "' . fetch_template('forum_vote_js') . '";');
+    $postbits .= '<script type="text/javascript">
+                    <!--
+                        // initialize vote buttons
+                        AJAX_PostVote_Init(\'post'. $postid .'\');
+                        AJAX_PostVote_Init(\'votes_result_'. $postid .'\');
+                    //-->
+                </script>';
+}
+        ]]></phpcode>
+		</plugin>
+		<plugin active="1" executionorder="5">
+			<title>Add init js into show thread page</title>
+			<hookname>showthread_complete</hookname>
+			<phpcode><![CDATA[$show['datepicker'] = true; // stub
+if (TRUE == $show['datepicker'])
+{
+    eval('$headinclude .= "' . fetch_template('forum_vote_js') . '";');
+    $template_hook[showthread_after_activeusers] .= '<script type="text/javascript">
+            <!--
+                // initialize vote buttons and votes resulut table
+                AJAX_PostVote_Init(\'posts\');
+            //-->
+        </script>';
+}
+        ]]></phpcode>
+		</plugin>
+		<plugin active="1" executionorder="5">
+			<title>Add vote info into postbit</title>
+			<hookname>showthread_postbit_create</hookname>
+			<phpcode><![CDATA[if (isset($post_votes[$post['postid']]))
+{ 
+    $post['votes'] = $post_votes[$post['postid']];
+}]]></phpcode>
+		</plugin>
+		<plugin active="1" executionorder="5">
+			<title>Get votes from db</title>
+			<hookname>showthread_query</hookname>
+			<phpcode><![CDATA[define ('VOTE_TARGET_TYPE', 'forum');
+require_once(DIR . '/includes/functions_votes.php');
+$post_votes = array();
+if (is_user_can_see_votes_result())
+{
+    $target_id_list = explode(',' , '0' . $ids);
+    $post_votes = get_vote_for_post_list($target_id_list);
+}
+        ]]></phpcode>
+		</plugin>
+		<plugin active="1" executionorder="5">
+			<title>Clear votes(thread delete)</title>
+			<hookname>threaddata_delete</hookname>
+			<phpcode><![CDATA[$sql = 'SELECT `postid`
+            FROM ' . TABLE_PREFIX . 'post AS post
+            WHERE `threadid` = ' . $threadid;
+$posts = $this->dbobject->query_read($sql);
+$post_id_list = array();
+while ($post = $this->dbobject->fetch_array($posts))
+{
+    $post_id_list[] = $post['postid'];
+}
+if (!empty($post_id_list))
+{
+    require_once(DIR . '/includes/functions_votes.php');
+    delete_votes_by_target_id_list($post_id_list, 'forum');
+}
+        ]]></phpcode>
+		</plugin>
+		<plugin active="1" executionorder="5">
+			<title>Clear votes if thread moved into unvoted forum</title>
+			<hookname>threadmanage_move_complete</hookname>
+			<phpcode><![CDATA[$unvoted_forums = explode(',', $vbulletin->options['vbv_ignored_forums']);
+if (in_array($destforuminfo['forumid'], $unvoted_forums))
+{
+    $sql = 'SELECT `postid`
+            FROM ' . TABLE_PREFIX . 'post AS post
+            WHERE `threadid` = ' . $threadid;
+    $posts = $db->query_read($sql);
+    $post_id_list = array();
+    while ($post = $db->fetch_array($posts))
+    {
+        $post_id_list[] = $post['postid'];
+    }
+    if (!empty($post_id_list))
+    {
+        require_once(DIR . '/includes/functions_votes.php');
+        delete_votes_by_target_id_list($post_id_list, 'forum');
+    }
+}]]></phpcode>
+		</plugin>
+		<plugin active="1" executionorder="5">
+			<title>Merge votes</title>
+			<hookname>useradmin_merge</hookname>
+			<phpcode><![CDATA[// note: votes for old account will be remove into "Clear votes(user delete)" hook (userdata_delete)
+$sql = 'INSERT IGNORE INTO
+                `' . TABLE_PREFIX . 'post_votes`
+            SELECT
+                `targetid` ,
+                `targettype` ,
+                `vote` ,
+                ' . $destinfo['userid'] . ' ,
+                `postauthorid` ,
+                `date`
+            FROM
+                ' . TABLE_PREFIX . 'post_votes
+            WHERE
+                userid = '. $sourceinfo['userid'];
+$db->query_write($sql);]]></phpcode>
+		</plugin>
+		<plugin active="1" executionorder="5">
+			<title>Clear votes(user delete)</title>
+			<hookname>userdata_delete</hookname>
+			<phpcode><![CDATA[require_once(DIR . '/includes/functions_votes.php');
+clear_votes_by_user_id($this->existing['userid']);]]></phpcode>
+		</plugin>
+		<plugin active="1" executionorder="5">
+			<title>Clear votes for banned user</title>
+			<hookname>userdata_postsave</hookname>
+			<phpcode><![CDATA[if ($this->usergroups_changed())
+{
+    if (isset ($this->user['membergroupids']))
+    {
+        $user_group_list = explode(',', $this->user['membergroupids']);
+    }
+    if (isset ($this->user['usergroupid']))
+    {
+        $user_group_list[] = $this->user['usergroupid'];
+    }
+    $bann_groups = unserialize($this->registry->options['vbv_grp_banned']);
+    if (!empty($user_group_list) AND !empty($bann_groups))
+    {
+        $need_cleaning = false;
+        
+        foreach($user_group_list as $group)
+        {
+            if (in_array($group, $bann_groups))
+            {
+                $need_cleaning = true;
+                break;
+            }
+        }
+        if ($need_cleaning)
+        {
+            require_once(DIR . '/includes/functions_votes.php');
+            clear_votes_by_user_id($userid);
+        }
+    }
+}
+        ]]></phpcode>
+		</plugin>
 	</plugins>
 	<phrases>
+		<phrasetype name="Error Messages" fieldname="error">
+			<phrase name="vbv_post_can_not_be_voted" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[This post can't be voted]]></phrase>
+			<phrase name="vbv_post_old" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[This post too old]]></phrase>
+			<phrase name="vbv_post_voted" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[You are alredy vote for this post]]></phrase>
+			<phrase name="vbv_to_many_votes_per_day" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[To many votes, per day]]></phrase>
+			<phrase name="vbv_your_post" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[You try vote for yor post]]></phrase>
+		</phrasetype>
+		<phrasetype name="GLOBAL" fieldname="global">
+			<phrase name="vbv_gived_votes" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[Gived votes]]></phrase>
+			<phrase name="vbv_navbar_section" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[Top votes]]></phrase>
+			<phrase name="vbv_negative_votes_search" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[Top negative votes for {1} days]]></phrase>
+			<phrase name="vbv_positive_votes_search" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[Top positive votes for {1} days]]></phrase>
+			<phrase name="vbv_recived_votes" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[Recived votes]]></phrase>
+			<phrase name="vbv_votes_statistic" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[Votes]]></phrase>
+		</phrasetype>
+		<phrasetype name="Postbit" fieldname="postbit">
+			<phrase name="negative_user_votes" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[Abused:]]></phrase>
+			<phrase name="negative_vote" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[I didn't like this post]]></phrase>
+			<phrase name="positive_user_votes" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[Thanked:]]></phrase>
+			<phrase name="positive_vote" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[I like this post]]></phrase>
+			<phrase name="post_vote_remove_all_votes" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[Remove all vote]]></phrase>
+			<phrase name="post_vote_remove_user_vote" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[Remove your vote]]></phrase>
+		</phrasetype>
 		<phrasetype name="vBulletin Settings" fieldname="vbsettings">
 			<phrase name="setting_vbv_delete_own_votes_desc" date="1262984341" username="Vitaly" version="0.1"><![CDATA[Allow user to delete his own votes.]]></phrase>
 			<phrase name="setting_vbv_delete_own_votes_title" date="1262984341" username="Vitaly" version="0.1"><![CDATA[Can delete own votes]]></phrase>
-			<phrase name="setting_vbv_grp_disable_desc" date="1262983113" username="Vitaly" version="0.1"><![CDATA[User groups to completely disable mod. Recommended for guests, to keep good SEO rank.]]></phrase>
-			<phrase name="setting_vbv_grp_disable_title" date="1262983113" username="Vitaly" version="0.1"><![CDATA[Disabled Groups]]></phrase>
 			<phrase name="setting_vbv_enable_neg_votes_desc" date="1262985014" username="Vitaly" version="0.1"><![CDATA[If disabled, only positive voting is allowed.]]></phrase>
 			<phrase name="setting_vbv_enable_neg_votes_title" date="1262985014" username="Vitaly" version="0.1"><![CDATA[Enable Negative Votes]]></phrase>
 			<phrase name="setting_vbv_grp_banned_desc" date="1262987050" username="Vitaly" version="0.1"><![CDATA[When user goes to this group, all his votes are cleared.]]></phrase>
 			<phrase name="setting_vbv_grp_banned_title" date="1262987050" username="Vitaly" version="0.1"><![CDATA[Banned user groups]]></phrase>
+			<phrase name="setting_vbv_grp_disable_desc" date="1262983113" username="Vitaly" version="0.1"><![CDATA[User groups to completely disable mod. Recommended for guests, to keep good SEO rank.]]></phrase>
+			<phrase name="setting_vbv_grp_disable_title" date="1262983113" username="Vitaly" version="0.1"><![CDATA[Disabled Groups]]></phrase>
+			<phrase name="setting_vbv_grp_read_only_desc" date="1262987099" username="Vitaly" version="0.1"><![CDATA[This groups can view votes, but can't make new ones.]]></phrase>
+			<phrase name="setting_vbv_grp_read_only_title" date="1262987099" username="Vitaly" version="0.1"><![CDATA[Read Only Groups]]></phrase>
+			<phrase name="setting_vbv_grp_unvoteable_desc" date="1262987067" username="Vitaly" version="0.1"><![CDATA[Users from this groups can't get votes.]]></phrase>
+			<phrase name="setting_vbv_grp_unvoteable_title" date="1262987067" username="Vitaly" version="0.1"><![CDATA[Unvoteable groups]]></phrase>
 			<phrase name="setting_vbv_ignored_forums_desc" date="1262985915" username="Vitaly" version="0.1"><![CDATA[Votes will be disabled for this forums. Place forum IDs, separated by ",". For example "1,2,3"]]></phrase>
 			<phrase name="setting_vbv_ignored_forums_title" date="1262985915" username="Vitaly" version="0.1"><![CDATA[Ignored forums]]></phrase>
 			<phrase name="setting_vbv_max_votes_daily_desc" date="1262982578" username="Vitaly" version="0.1"><![CDATA[How many votes user can give per day]]></phrase>
 			<phrase name="setting_vbv_max_votes_daily_title" date="1262982578" username="Vitaly" version="0.1"><![CDATA[Max votes per day]]></phrase>
 			<phrase name="setting_vbv_neg_votes_expire_days_desc" date="1262985223" username="Vitaly" version="0.1"><![CDATA[After X days all negative votes are completely cleared. Set 0 to keep forever.]]></phrase>
 			<phrase name="setting_vbv_neg_votes_expire_days_title" date="1262985223" username="Vitaly" version="0.1"><![CDATA[Negative votes expiration time (days)]]></phrase>
-			<phrase name="setting_vbv_grp_read_only_desc" date="1262987099" username="Vitaly" version="0.1"><![CDATA[This groups can view votes, but can't make new ones.]]></phrase>
-			<phrase name="setting_vbv_grp_read_only_title" date="1262987099" username="Vitaly" version="0.1"><![CDATA[Read Only Groups]]></phrase>
+			<phrase name="setting_vbv_post_days_old_desc" date="1267194929" username="varnak" version="0.1"><![CDATA[This option allows you to disable the voting to any post that is old then the amound of days you post here. Votes given prior to the cut off date, will still show up. 
+<br /><br />
+<b>Note:</b>Put '0' to disable.]]></phrase>
+			<phrase name="setting_vbv_post_days_old_title" date="1267194929" username="varnak" version="0.1"><![CDATA[Disable voting if post is X days old]]></phrase>
 			<phrase name="setting_vbv_top_voted_days_desc" date="1262985570" username="Vitaly" version="0.1"><![CDATA[Limit (in days) fot top voted search]]></phrase>
 			<phrase name="setting_vbv_top_voted_days_title" date="1262985570" username="Vitaly" version="0.1"><![CDATA["Top Voted" days limit]]></phrase>
-			<phrase name="setting_vbv_grp_unvoteable_desc" date="1262987067" username="Vitaly" version="0.1"><![CDATA[Users from this groups can't get votes.]]></phrase>
-			<phrase name="setting_vbv_grp_unvoteable_title" date="1262987067" username="Vitaly" version="0.1"><![CDATA[Unvoteable groups]]></phrase>
 			<phrase name="settinggroup_vb_votes" date="1262979865" username="Vitaly" version="0.1"><![CDATA[vb Votes]]></phrase>
 		</phrasetype>
 	</phrases>
@@ -90,6 +605,10 @@
 			</setting>
 			<setting varname="vbv_ignored_forums" displayorder="100">
 				<datatype>free</datatype>
+			</setting>
+			<setting varname="vbv_post_days_old" displayorder="110">
+				<datatype>free</datatype>
+				<defaultvalue>7</defaultvalue>
 			</setting>
 		</settinggroup>
 	</options>
