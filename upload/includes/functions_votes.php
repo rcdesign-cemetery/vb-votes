@@ -223,13 +223,17 @@ function is_user_have_free_votes($user_id = null)
     global $db, $vbulletin;
     static $result;
 
+    if (0 == $vbulletin->options['vbv_max_votes_daily'])
+    {
+        return true;
+    }
     if (is_null($user_id))
     {
         $user_id = $vbulletin->userinfo['userid'];
     }
-
     if (!isset($result[$user_id]))
     {
+        $result[$user_id] = false;
         $time_line = TIMENOW - (24 * 60 * 60 * 1);
         $sql = 'SELECT
                     count(`userid`) as today_amount
@@ -239,7 +243,10 @@ function is_user_have_free_votes($user_id = null)
                     `userid` = ' . $user_id .' AND
                     `date` >= ' . $time_line;
         $user_post_vote_amount = $db->query_first($sql);
-        $result[$userid] = ($user_post_vote_amount['today_amount'] >= $vbulletin->options['vbv_max_votes_daily']);
+        if ((int)$user_post_vote_amount['today_amount'] >= $vbulletin->options['vbv_max_votes_daily'])
+        {
+            $result[$user_id] = true;
+        }
     }
     return $result[$user_id];
 }
