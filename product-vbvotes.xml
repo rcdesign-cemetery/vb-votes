@@ -157,6 +157,17 @@ if (THIS_SCRIPT == 'showthread' || THIS_SCRIPT == 'showpost' || THIS_SCRIPT == '
     $vbulletin->db->query_write($sql);
 }]]></phpcode>
 		</plugin>
+		<plugin active="1" executionorder="5">
+			<title>Add vote info into edit post ajax respons</title>
+			<hookname>editpost_update_complete</hookname>
+			<phpcode><![CDATA[define ('VOTE_TARGET_TYPE', 'forum');
+require_once(DIR . '/includes/functions_votes.php');
+$post_votes = array();
+if (is_user_can_see_votes_result())
+{
+    $post_votes = get_vote_for_post_list(array($postinfo['postid']));
+}]]></phpcode>
+		</plugin>
 		<plugin active="1" executionorder="20">
 			<title>Add items to search menu</title>
 			<hookname>global_setup_complete</hookname>
@@ -275,8 +286,7 @@ if (in_array($destforuminfo['forumid'], $unvoted_forums))
 		<plugin active="1" executionorder="5">
 			<title>Show voted tables</title>
 			<hookname>postbit_display_complete</hookname>
-			<phpcode><![CDATA[
-require_once(DIR . '/includes/functions_votes.php');
+			<phpcode><![CDATA[require_once(DIR . '/includes/functions_votes.php');
 $votes = $post['votes'];
 $voted_table = '';
 if (is_array($votes) AND !empty($votes))
@@ -301,9 +311,7 @@ if (is_user_can_vote($post['postid']))
     $show['vote_button_hide'] = false;
 }
 
-eval('$template_hook[postbit_controls] .= " ' . fetch_template('forum_vote_buttons') . '";');
-
-        ]]></phpcode>
+eval('$template_hook[postbit_controls] .= " ' . fetch_template('forum_vote_buttons') . '";');]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
 			<title>Clear votes(post delete)</title>
