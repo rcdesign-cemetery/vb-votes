@@ -115,7 +115,7 @@ if ($_REQUEST['do'] == 'search')
                 WHERE
                     `'. $type.'` = ' . $search_user_id . ' AND `vote` = "' . $value . '" AND `targettype` = "' . VOTE_TARGET_TYPE . '"
                 ORDER BY
-                    `date`
+                    `date` DESC
                 LIMIT ' . ($vbulletin->options['maxresults'] * 2);
     }
 
