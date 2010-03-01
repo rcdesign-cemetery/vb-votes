@@ -6,11 +6,6 @@
 	<version>0.1</version>
 	<url />
 	<versioncheckurl />
-	<apm_releasedate>0</apm_releasedate>
-	<apm_author />
-	<apm_relatedurl />
-	<apm_extrainfo />
-	<apm_extraedit />
 	<dependencies>
 	</dependencies>
 	<codes>
@@ -302,7 +297,7 @@ if (is_user_can_vote($post['postid']))
     {
         $show['negative'] = true;
     }
-    $post['vote_link'] = create_vote_url(array('do'=>'vote'));
+    $post['vote_link'] = create_vote_url(array('do'=>'vote', 'targetid'=>$post['postid']));
     $show['vote_button_hide'] = false;
 }
 
