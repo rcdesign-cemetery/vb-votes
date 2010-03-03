@@ -1,6 +1,17 @@
 <?php
 define('VOTE_HANDLER_SCRIPT', 'votes.php');
 
+/**
+ * Create votes result html output
+ *
+ * @global vB_Registry $vbulletin
+ * @global array $vbphrase
+ * @global array $stylevar
+ * @param string $vote_type
+ * @param array $user_voted_list
+ * @param int $target_id
+ * @return string
+ */
 function create_voted_result($vote_type, $user_voted_list, $target_id)
 {
     if (empty($user_voted_list))
@@ -43,6 +54,14 @@ function create_voted_result($vote_type, $user_voted_list, $target_id)
     return $voted_table;
 }
 
+/**
+ * Get votes for single post
+ *
+ * @param int $target_id
+ * @param string $vote_type
+ * @param string $target_type
+ * @return array
+ */
 function get_vote_for_post($target_id, $vote_type = NULL, $target_type = NULL)
 {
     $target_id_list[] = $target_id;
@@ -50,6 +69,16 @@ function get_vote_for_post($target_id, $vote_type = NULL, $target_type = NULL)
     return $result[$target_id];
 }
 
+/**
+ * Get votes for post list
+ *
+ * @global vB-Database $db
+ * @staticvar array $target_votes
+ * @param array $target_id_list
+ * @param string $vote_type
+ * @param string $target_type
+ * @return array
+ */
 function get_vote_for_post_list($target_id_list, $vote_type = NULL, $target_type = NULL)
 {
     if (is_null($target_type))
@@ -97,6 +126,18 @@ function get_vote_for_post_list($target_id_list, $vote_type = NULL, $target_type
     return $result;
 }
 
+/**
+ * Check user can vote?
+ * 
+ * <b>Note</b>: if flag $throw_error set as true, then script halts execution 
+ * and shows the specified error message
+ *
+ * @global vB_Registry $vbulletin
+ * @param int $target_id
+ * @param bool $throw_error
+ * @param string $target_type
+ * @return string
+ */
 function is_user_can_vote($target_id, $throw_error = false, $target_type = NULL)
 {
     global $vbulletin;
@@ -194,6 +235,13 @@ function is_user_can_vote($target_id, $throw_error = false, $target_type = NULL)
     return true;
 }
 
+/**
+ * Generate URL-encoded query string
+ *
+ * @param array $options
+ * @param string $script
+ * @return string
+ */
 function create_vote_url($options, $script = null)
 {
     if (is_null($options) OR !is_array($options))
@@ -207,6 +255,13 @@ function create_vote_url($options, $script = null)
     return $script . '?' . http_build_query($options, '', '&amp;');
 }
 
+/**
+ * Delete votes by user id
+ *
+ * @global vB_Database $db
+ * @param int $user_id
+ * @return bool
+ */
 function clear_votes_by_user_id($user_id)
 {
     global $db;
@@ -218,6 +273,15 @@ function clear_votes_by_user_id($user_id)
     return true;
 }
 
+/**
+ * Check day votes limit exceeded?
+ *
+ * @global vB_Database $db
+ * @global vB_Registry $vbulletin
+ * @staticvar array $result
+ * @param int $user_id
+ * @return bool
+ */
 function is_user_have_free_votes($user_id = null)
 {
     global $db, $vbulletin;
@@ -251,6 +315,12 @@ function is_user_have_free_votes($user_id = null)
     return $result[$user_id];
 }
 
+/**
+ * Check user can see votes result
+ *
+ * @global vB_Registry $vbulletin
+ * @return bool
+ */
 function is_user_can_see_votes_result()
 {
     global $vbulletin;
@@ -263,6 +333,14 @@ function is_user_can_see_votes_result()
     return true;
 }
 
+/**
+ * Delete votes for id list of target objects
+ *
+ * @global vB_Database $db
+ * @param array $target_id_list
+ * @param string $target_type
+ * @return bool
+ */
 function delete_votes_by_target_id_list($target_id_list, $target_type = null)
 {
     global $db;

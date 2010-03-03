@@ -1,6 +1,6 @@
 
 /**
- * Adds onclick events to appropriate elements for thread rating
+ * Adds onclick events to appropriate elements for post voting
  *
  * @param	string	The ID of the form that contains the rating options
  */
@@ -47,11 +47,21 @@ function AJAX_PostVote(post_id, action_name)
 
 }
 
+/**
+ * Add parameter to request pseudo form
+ *
+ * @param	string	name
+ * @param	string	value
+ */
 AJAX_PostVote.prototype.add_variable_to_request = function (name, value)
 {
     this.pseudoform.add_variable(name, value);
 }
 
+/**
+ * Handler function for vote buttons
+ *
+ */
 AJAX_PostVote.prototype.vote_click = function()
 {
     var post_id = this.name.substr(this.name.lastIndexOf("::")+2);
@@ -68,6 +78,9 @@ AJAX_PostVote.prototype.vote_click = function()
     
 }
 
+/**
+ * Handler function for remove vote(s) links
+ */
 AJAX_PostVote.prototype.remove_vote_click = function()
 {
 
@@ -89,6 +102,9 @@ AJAX_PostVote.prototype.remove_vote_click = function()
     return false;
 }
 
+/**
+ * Send ajax request to vote.php
+ */
 AJAX_PostVote.prototype.send_request = function()
 {
 
@@ -102,6 +118,9 @@ AJAX_PostVote.prototype.send_request = function()
     return false;
 }
 
+/**
+ * Handler for ajax response
+ */
 AJAX_PostVote.prototype.handle_ajax_response = function(ajax)
 {
     if (ajax.responseXML)
@@ -151,6 +170,9 @@ AJAX_PostVote.prototype.handle_ajax_response = function(ajax)
     }
 }
 
+/**
+ * Hide/show vote buttons
+ */
 AJAX_PostVote.prototype.handle_vote_button_div = function(vote_button_style)
 {
     var b_positive = YAHOO.util.Dom.get("PostVote::Positive::"+this.post_id);
