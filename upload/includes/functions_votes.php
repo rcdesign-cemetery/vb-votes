@@ -10,9 +10,10 @@ define('VOTE_HANDLER_SCRIPT', 'votes.php');
  * @param string $vote_type
  * @param array $user_voted_list
  * @param int $target_id
+ * @param string $target_type
  * @return string
  */
-function create_voted_result($vote_type, $user_voted_list, $target_id)
+function create_voted_result($vote_type, $user_voted_list, $target_id, $target_type = NULL)
 {
     if (empty($user_voted_list))
     {
@@ -49,7 +50,11 @@ function create_voted_result($vote_type, $user_voted_list, $target_id)
             $votes['remove_all_votes_link'] = create_vote_url(array('do'=>'remove', 'all'=>1, 'value'=>(string)$vote_type));
         }
 
-        eval('$voted_table = "' . fetch_template('voted_postbit') . '";');
+        if (is_null($target_type))
+        {
+            $target_type = VOTE_TARGET_TYPE;
+        }
+        eval('$voted_table = "' . fetch_template($target_type . '_voted_postbit') . '";');
     }
     return $voted_table;
 }

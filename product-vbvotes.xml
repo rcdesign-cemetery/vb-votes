@@ -66,9 +66,6 @@ $db->show_errors();]]></uninstallcode>
         </if>
         
         ]]></template>
-		<template name="voted_div" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
-            <div id="votes_result_$post[postid]">$voted_table</div>
-        ]]></template>
 		<template name="voted_memberinfo_block" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
 <fieldset class="statistics_group">
 	<legend>$vbphrase[vbv_votes_statistic]</legend>
@@ -102,7 +99,7 @@ $db->show_errors();]]></uninstallcode>
         </li>
 	</ul>
 </fieldset>]]></template>
-		<template name="voted_postbit" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
+		<template name="forum_voted_postbit" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
 <div style="padding:$stylevar[cellpadding]px 0px 0px 0px">
 	<table class="tborder" cellpadding="$stylevar[cellpadding]" cellspacing="$stylevar[cellspacing]" border="0" width="100%" align="center">
 		<tr>
@@ -139,7 +136,6 @@ if (THIS_SCRIPT == 'showthread' || THIS_SCRIPT == 'showpost' || THIS_SCRIPT == '
     $globaltemplates[] = 'forum_vote_buttons';
     $globaltemplates[] = 'forum_vote_js';
     $globaltemplates[] = 'forum_voted_user_bit';
-    $globaltemplates[] = 'voted_div';
     $globaltemplates[] = 'voted_postbit';
 }]]></phpcode>
 		</plugin>
@@ -283,16 +279,15 @@ if (in_array($destforuminfo['forumid'], $unvoted_forums))
 			<hookname>postbit_display_complete</hookname>
 			<phpcode><![CDATA[require_once(DIR . '/includes/functions_votes.php');
 $votes = $post['votes'];
-$voted_table = '';
+$vote_results = '';
 if (is_array($votes) AND !empty($votes))
 {
     foreach ($votes as $vote_type=>$user_voted_list)
     {
-        $voted_table .= create_voted_result($vote_type, $user_voted_list, $post['postid']);
+        $vote_results .= create_voted_result($vote_type, $user_voted_list, $post['postid'], VOTE_TARGET_TYPE);
     }
 }
-eval('$voted_div = "' . fetch_template('voted_div') . '";');
-$template_hook['postbit_end'] .= $voted_div;
+$template_hook['postbit_end'] .= $vote_results;
 
 
 $show['vote_button_hide'] = true;

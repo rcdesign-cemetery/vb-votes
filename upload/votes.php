@@ -292,7 +292,7 @@ if (is_user_can_see_votes_result())
     {
         foreach ($votes as $vote_type=>$user_voted_list)
         {
-            $voted_table .= create_voted_result($vote_type, $user_voted_list, $target_id);
+            $voted_table .= create_voted_result($vote_type, $user_voted_list, $target_id, VOTE_TARGET_TYPE);
         }
     }
 }
