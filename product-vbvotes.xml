@@ -32,9 +32,7 @@ $db->show_errors();]]></uninstallcode>
 	</codes>
 	<templates>
 		<template name="forum_voted_user_bit" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
-            <a href="member.php?$session[sessionurl]u=$voted_user[userid]" rel="nofollow">
-                $voted_user[username]
-            </a>&nbsp;
+            <a href="member.php?$session[sessionurl]u=$voted_user[userid]" rel="nofollow">$voted_user[username]</a>&nbsp;
         ]]></template>
 		<template name="forum_votes_search_postbit" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
             <if condition="$post['positive_votes']">+ $post[positive_votes]</if>
@@ -163,7 +161,7 @@ if (THIS_SCRIPT == 'showthread' || THIS_SCRIPT == 'showpost' || THIS_SCRIPT == '
 }]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
-			<title>Add vote info into edit post ajax respons</title>
+			<title>Fix ajax edit (add votes to response)</title>
 			<hookname>editpost_update_complete</hookname>
 			<phpcode><![CDATA[define ('VOTE_TARGET_TYPE', 'forum');
 require_once(DIR . '/includes/functions_votes.php');
@@ -181,23 +179,22 @@ if ($vbulletin->options['vbv_enable_neg_votes'])
 {
     $show['negative'] = true;
 }
-$navbar[day_limit] = $vbulletin->options['vbv_top_voted_days'];
-$navbar[votes_link] = create_vote_url(array('do'=>'search', 'top'=>'1'));
+$navbar['day_limit'] = $vbulletin->options['vbv_top_voted_days'];
+$navbar['votes_link'] = create_vote_url(array('do'=>'search', 'top'=>'1'));
 eval('$template_hook[navbar_search_menu] .= " ' . fetch_template('navbar_search_votes') . '";');]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
-			<title>Clear votes if post(s) moved into unvoted forum</title>
+			<title>Clear votes if post(s) moved in unvoteable forum</title>
 			<hookname>inlinemod_domoveposts</hookname>
 			<phpcode><![CDATA[$unvoted_forums = explode(',', $vbulletin->options['vbv_ignored_forums']);
 if (in_array($destforuminfo['forumid'], $unvoted_forums))
 {
     require_once(DIR . '/includes/functions_votes.php');
     delete_votes_by_target_id_list($post_id_list, 'forum');
-}
-        ]]></phpcode>
+}]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
-			<title>Clear votes if thread(s) moved into unvoted forum(inline)</title>
+			<title>Clear votes if thread(s) moved to unvoteable forum (inline)</title>
 			<hookname>inlinemod_domovethread</hookname>
 			<phpcode><![CDATA[$unvoted_forums = explode(',', $vbulletin->options['vbv_ignored_forums']);
 if (in_array($destforuminfo['forumid'], $unvoted_forums))
@@ -282,7 +279,7 @@ if (in_array($destforuminfo['forumid'], $unvoted_forums))
 }]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
-			<title>Show voted tables</title>
+			<title>Display votes</title>
 			<hookname>postbit_display_complete</hookname>
 			<phpcode><![CDATA[require_once(DIR . '/includes/functions_votes.php');
 $votes = $post['votes'];
@@ -312,20 +309,18 @@ if (is_user_can_vote($post['postid']))
 eval('$template_hook[postbit_controls] .= " ' . fetch_template('forum_vote_buttons') . '";');]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
-			<title>Clear votes(post delete)</title>
+			<title>Clear votes (post delete)</title>
 			<hookname>postdata_delete</hookname>
-			<phpcode><![CDATA[
-require_once(DIR . '/includes/functions_votes.php');
-delete_votes_by_target_id_list(array($postid), 'forum');
-        ]]></phpcode>
+			<phpcode><![CDATA[require_once(DIR . '/includes/functions_votes.php');
+delete_votes_by_target_id_list(array($postid), 'forum');]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
-			<title>Display search result</title>
+			<title>Add votes to search result. Part 2.</title>
 			<hookname>search_results_postbit</hookname>
 			<phpcode><![CDATA[eval('$post[\'typeprefix\'] = "' . fetch_template('forum_votes_search_postbit') . '" . $post[\'typeprefix\'];');]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
-			<title>Get votes amount(search)</title>
+			<title>Add votes to search result. Part 1.</title>
 			<hookname>search_results_prebits</hookname>
 			<phpcode><![CDATA[define ('VOTE_TARGET_TYPE', 'forum');
 require_once(DIR . '/includes/functions_votes.php');
@@ -349,11 +344,10 @@ if (is_user_can_see_votes_result())
             $itemids[$post_id]['negative_votes'] = count($votes['-1']);
         }
     }
-}
-        ]]></phpcode>
+}]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
-			<title>Add init js into show thread page</title>
+			<title>Add init js into show post page</title>
 			<hookname>showpost_complete</hookname>
 			<phpcode><![CDATA[$show['datepicker'] = true; // stub
 if (TRUE == $show['datepicker'])
@@ -366,8 +360,7 @@ if (TRUE == $show['datepicker'])
                         AJAX_PostVote_Init(\'votes_result_'. $postid .'\');
                     //-->
                 </script>';
-}
-        ]]></phpcode>
+}]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
 			<title>Add init js into show thread page</title>
@@ -386,7 +379,7 @@ if (TRUE == $show['datepicker'])
         ]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
-			<title>Add vote info into postbit</title>
+			<title>Add votes to showthread. Part 2.</title>
 			<hookname>showthread_postbit_create</hookname>
 			<phpcode><![CDATA[if (isset($post_votes[$post['postid']]))
 { 
@@ -394,7 +387,7 @@ if (TRUE == $show['datepicker'])
 }]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
-			<title>Get votes from db</title>
+			<title>Add votes to showthread. Part 1.</title>
 			<hookname>showthread_query</hookname>
 			<phpcode><![CDATA[define ('VOTE_TARGET_TYPE', 'forum');
 require_once(DIR . '/includes/functions_votes.php');
@@ -403,11 +396,10 @@ if (is_user_can_see_votes_result())
 {
     $target_id_list = explode(',' , '0' . $ids);
     $post_votes = get_vote_for_post_list($target_id_list);
-}
-        ]]></phpcode>
+}]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
-			<title>Clear votes(thread delete)</title>
+			<title>Clear votes (thread delete)</title>
 			<hookname>threaddata_delete</hookname>
 			<phpcode><![CDATA[$sql = 'SELECT `postid`
             FROM ' . TABLE_PREFIX . 'post AS post
@@ -422,11 +414,10 @@ if (!empty($post_id_list))
 {
     require_once(DIR . '/includes/functions_votes.php');
     delete_votes_by_target_id_list($post_id_list, 'forum');
-}
-        ]]></phpcode>
+}]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
-			<title>Clear votes if thread moved into unvoted forum</title>
+			<title>Clear votes if thread moved to unvoteable forum</title>
 			<hookname>threadmanage_move_complete</hookname>
 			<phpcode><![CDATA[$unvoted_forums = explode(',', $vbulletin->options['vbv_ignored_forums']);
 if (in_array($destforuminfo['forumid'], $unvoted_forums))
@@ -467,7 +458,7 @@ $sql = 'INSERT IGNORE INTO
 $db->query_write($sql);]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
-			<title>Clear votes(user delete)</title>
+			<title>Clear votes (user delete)</title>
 			<hookname>userdata_delete</hookname>
 			<phpcode><![CDATA[require_once(DIR . '/includes/functions_votes.php');
 clear_votes_by_user_id($this->existing['userid']);]]></phpcode>
