@@ -511,12 +511,12 @@ clear_votes_by_user_id($this->existing['userid']);]]></phpcode>
 			<phrase name="vbv_votes_statistic" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[Votes]]></phrase>
 		</phrasetype>
 		<phrasetype name="Postbit" fieldname="postbit">
-			<phrase name="negative_user_votes" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[Abused:]]></phrase>
-			<phrase name="negative_vote" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[I didn't like this post]]></phrase>
-			<phrase name="positive_user_votes" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[Thanked:]]></phrase>
-			<phrase name="positive_vote" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[I like this post]]></phrase>
-			<phrase name="post_vote_remove_all_votes" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[Remove all vote]]></phrase>
-			<phrase name="post_vote_remove_user_vote" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[Remove your vote]]></phrase>
+			<phrase name="vbv_negative_user_votes" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[Abused:]]></phrase>
+			<phrase name="vbv_negative_vote" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[I didn't like this post]]></phrase>
+			<phrase name="vbv_positive_user_votes" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[Thanked:]]></phrase>
+			<phrase name="vbv_positive_vote" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[I like this post]]></phrase>
+			<phrase name="vbv_post_vote_remove_all_votes" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[Remove all vote]]></phrase>
+			<phrase name="vbv_post_vote_remove_user_vote" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[Remove your vote]]></phrase>
 		</phrasetype>
 		<phrasetype name="vBulletin Settings" fieldname="vbsettings">
 			<phrase name="setting_vbv_delete_own_votes_desc" date="1262984341" username="Vitaly" version="0.1"><![CDATA[Allow user to delete his own votes.]]></phrase>
