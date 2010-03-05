@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<language name="Russian (RU)" vbversion="3.8.4" product="vbvotes" type="custom">
+	<settings>
+		<options><![CDATA[1]]></options>
+		<languagecode><![CDATA[ru]]></languagecode>
+		<charset><![CDATA[UTF-8]]></charset>
+		<imagesoverride />
+		<dateoverride><![CDATA[d.m.Y]]></dateoverride>
+		<timeoverride><![CDATA[H:i]]></timeoverride>
+		<registereddateoverride><![CDATA[d.m.Y]]></registereddateoverride>
+		<calformat1override><![CDATA[j F Y]]></calformat1override>
+		<calformat2override><![CDATA[j F]]></calformat2override>
+		<logdateoverride><![CDATA[H:i, d.m.Y]]></logdateoverride>
+		<locale />
+		<decimalsep><![CDATA[.]]></decimalsep>
+		<thousandsep><![CDATA[,]]></thousandsep>
+	</settings>
+	<phrasetype name="Error Messages" fieldname="error">
+		<phrase name="vbv_post_can_not_be_voted" date="1267730139" username="Vitaly"><![CDATA[За это сообщение голосовать нельзя]]></phrase>
+		<phrase name="vbv_post_old" date="1267730189" username="Vitaly"><![CDATA[Нельзя голосовать за старые сообщения]]></phrase>
+		<phrase name="vbv_post_voted" date="1267730229" username="Vitaly"><![CDATA[Вы уже проголосовали за это сообщение]]></phrase>
+		<phrase name="vbv_to_many_votes_per_day" date="1267730287" username="Vitaly"><![CDATA[Вы исчерпали лимит голосов за сутки]]></phrase>
+		<phrase name="vbv_your_post" date="1267730343" username="Vitaly"><![CDATA[Нельзя голосовать за самого себя]]></phrase>
+	</phrasetype>
+	<phrasetype name="GLOBAL" fieldname="global">
+		<phrase name="vbv_gived_votes" date="1267728837" username="Vitaly"><![CDATA[Роздано на форуме]]></phrase>
+		<phrase name="vbv_navbar_section" date="1267728997" username="Vitaly"><![CDATA[Топ голосов]]></phrase>
+		<phrase name="vbv_negative_votes_search" date="1267728969" username="Vitaly"><![CDATA[Топ помидорин за {1} дней]]></phrase>
+		<phrase name="vbv_positive_votes_search" date="1267698477" username="varnak" version="0.1"><![CDATA[Топ благодарностей за {1} дней]]></phrase>
+		<phrase name="vbv_received_votes" date="1267784708" username="varnak" version="0.1"><![CDATA[Получено на форуме]]></phrase>
+		<phrase name="vbv_votes_statistic" date="1267728754" username="Vitaly"><![CDATA[Голоса]]></phrase>
+	</phrasetype>
+	<phrasetype name="Postbit" fieldname="postbit">
+		<phrase name="vbv_negative_user_votes" date="1267729658" username="Vitaly"><![CDATA[Запомидорили:]]></phrase>
+		<phrase name="vbv_negative_vote" date="1267729831" username="Vitaly"><![CDATA[Кинуть помидором]]></phrase>
+		<phrase name="vbv_positive_user_votes" date="1267729680" username="Vitaly"><![CDATA[Сказали спасибо:]]></phrase>
+		<phrase name="vbv_positive_vote" date="1267729882" username="Vitaly"><![CDATA[Поблагодарить автора]]></phrase>
+		<phrase name="vbv_post_vote_remove_all_votes" date="1267729548" username="Vitaly"><![CDATA[Удалить все голоса]]></phrase>
+		<phrase name="vbv_post_vote_remove_user_vote" date="1267729592" username="Vitaly"><![CDATA[Удалить ваш голос]]></phrase>
+	</phrasetype>
+</language>
