@@ -33,13 +33,13 @@ echo "max thank id = " . $max_id . "\n";
 $offset = 0;
 while ($offset <= $max_id)
 {
-    $sql = 'INSERT IGNORE INTO `' . TABLE_PREFIX . 'post_votes`
+    $sql = 'INSERT IGNORE INTO `' . TABLE_PREFIX . 'votes`
         SELECT 
             pt.`postid` AS targetid,
             "forum" AS targettype, 
             "1" AS vote,
-            pt.`userid` ,
-            p.`userid` AS postauthorid, 
+            pt.`userid` AS fromuserid,
+            p.`userid` AS touserid,
             pt.`date`
         FROM 
             ' . TABLE_PREFIX . 'post_thanks AS pt
@@ -69,13 +69,13 @@ echo "max groan id = " . $max_id . "\n";
 $offset = 0;
 while ($offset <= $max_id)
 {
-    $sql = 'INSERT IGNORE INTO ' . TABLE_PREFIX . 'post_votes
+    $sql = 'INSERT IGNORE INTO ' . TABLE_PREFIX . 'votes
             SELECT
                 pg.`postid` AS targetid,
                 "forum" AS targettype,
                 "-1" AS vote,
-                pg.`userid` ,
-                p.`userid` AS postauthorid,
+                pg.`userid` AS fromuserid,
+                p.`userid` AS touseridid,
                 pg.`date`
             FROM
                 ' . TABLE_PREFIX . 'post_groan AS pg
