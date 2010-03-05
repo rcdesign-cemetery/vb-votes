@@ -29,7 +29,7 @@ function create_voted_result($vote_type, $user_voted_list, $target_id, $target_t
         eval('$user_vote_bit = "' . fetch_template('forum_voted_user_bit') . '";');
         $votes['vote_list'] .= $user_vote_bit;
         // add link remove own user vote
-        if ($voted_user['userid'] == $vbulletin->userinfo['userid'] AND $vbulletin->options['vbv_enable_neg_votes'])
+        if ($voted_user['fromuserid'] == $vbulletin->userinfo['userid'] AND $vbulletin->options['vbv_enable_neg_votes'])
         {
             $votes['remove_vote_link'] = create_vote_url(array('do'=>'remove'));
         }
@@ -113,19 +113,19 @@ function get_vote_for_post_list($target_id_list, $vote_type = NULL, $target_type
             $vote_type_condition = ' AND pv.`vote` = "' . $vote_type;
         }
         $sql = 'SELECT
-                    pv.`targetid`, pv.`targettype`, pv.`vote`, pv.`userid`, u.`username`
+                    pv.`targetid`, pv.`targettype`, pv.`vote`, pv.`fromuserid`, u.`username`
                 FROM
-                    ' . TABLE_PREFIX . 'post_votes AS pv
+                    ' . TABLE_PREFIX . 'votes AS pv
                 LEFT JOIN
-                    `user` AS u ON u.`userid` = pv.`userid`
+                    `user` AS u ON u.`userid` = pv.`fromuserid`
                 WHERE
                     pv.`targetid` IN (' . implode($target_id_list, ', ')  . ') AND pv.`targettype` = "' . $target_type . '" ' .$vote_type_condition;
         $db_resource = $db->query_read($sql);
         $target_votes = array();
         while ($vote = $db->fetch_array($db_resource))
         {
-            $target_votes[$vote['targetid']][$vote['vote']][] = array('userid'=>$vote['userid'], 'username'=>$vote['username']);
-            $result[$vote['targetid']][$vote['vote']][] = array('userid'=>$vote['userid'], 'username'=>$vote['username']);
+            $target_votes[$vote['targetid']][$vote['vote']][] = array('fromuserid'=>$vote['fromuserid'], 'username'=>$vote['username']);
+            $result[$vote['targetid']][$vote['vote']][] = array('fromuserid'=>$vote['fromuserid'], 'username'=>$vote['username']);
         }
     }
     return $result;
@@ -217,7 +217,7 @@ function is_user_can_vote($target_id, $throw_error = false, $target_type = NULL)
         {
             foreach ($vote_type as $vote)
             {
-                if ($vote['userid'] == $vbulletin->userinfo['userid'])
+                if ($vote['fromuserid'] == $vbulletin->userinfo['userid'])
                 {
                     if ($throw_error)
                     {
@@ -271,9 +271,9 @@ function clear_votes_by_user_id($user_id)
 {
     global $db;
     $sql = 'DELETE FROM
-                `' . TABLE_PREFIX . 'post_votes`
+                `' . TABLE_PREFIX . 'votes`
             WHERE
-                `userid` = ' . $user_id;
+                `fromuserid` = ' . $user_id;
     $db->query_write($sql);
     return true;
 }
@@ -305,11 +305,11 @@ function is_user_have_free_votes($user_id = null)
         $result[$user_id] = false;
         $time_line = TIMENOW - (24 * 60 * 60 * 1);
         $sql = 'SELECT
-                    count(`userid`) as today_amount
+                    count(`fromuserid`) as today_amount
                 FROM
-                    `' . TABLE_PREFIX . 'post_votes`
+                    `' . TABLE_PREFIX . 'votes`
                 WHERE
-                    `userid` = ' . $user_id .' AND
+                    `fromuserid` = ' . $user_id .' AND
                     `date` >= ' . $time_line;
         $user_post_vote_amount = $db->query_first($sql);
         if ((int)$user_post_vote_amount['today_amount'] >= $vbulletin->options['vbv_max_votes_daily'])
@@ -356,7 +356,7 @@ function delete_votes_by_target_id_list($target_id_list, $target_type = null)
     }
 
     $sql = 'DELETE FROM
-                ' . TABLE_PREFIX . 'post_votes
+                ' . TABLE_PREFIX . 'votes
             WHERE
                 `targetid` IN(' . implode(', ', $target_id_list) . ') AND
                 `targettype` = "' . $target_type . '"';

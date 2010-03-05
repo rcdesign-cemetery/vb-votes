@@ -12,27 +12,30 @@
 		<code version="0.1">
 			<installcode><![CDATA[$db->hide_errors();
 $vbulletin->db->query_write("
-CREATE TABLE IF NOT EXISTS `" . TABLE_PREFIX . "post_votes` (
+CREATE TABLE IF NOT EXISTS " . TABLE_PREFIX . "votes (
   `targetid` int(11) NOT NULL,
   `targettype` enum('forum','sg') NOT NULL,
   `vote` enum('1','-1') NOT NULL,
-  `userid` int(11) NOT NULL,
-  `postauthorid` int(11) NOT NULL,
+  `fromuserid` int(11) NOT NULL,
+  `touserid` int(11) NOT NULL,
   `date` int(11) NOT NULL,
-  PRIMARY KEY (`targetid`,`targettype`,`vote`,`userid`),
-  UNIQUE KEY `user_set_votes` (`userid`,`targettype`,`targetid`),
-  KEY `authers_get_votes` (`postauthorid`,`vote`,`targettype`),
-  KEY `date` (`date`,`vote`,`targettype`)
+  PRIMARY KEY (`targetid`, `targettype`, `vote`, `fromuserid`),
+  KEY `user_votes` (`fromuserid`, `targettype`, `vote`, `date`),
+  KEY `received_votes` (`touserid`, `targettype`, `vote`, `date`),
+  KEY `votes_per_day` (`fromuserid`, `date`),
+  KEY `date` (`date`, `vote`, `targettype`, `targetid`)
 )");
+$db->query_write("ALTER TABLE " . TABLE_PREFIX . "user ADD INDEX `user_name_id` ( `fromuserid` , `username` ) ");
 $db->show_errors();]]></installcode>
 			<uninstallcode><![CDATA[$db->hide_errors();
 $vbulletin->db->query_write("DROP TABLE IF EXISTS " . TABLE_PREFIX . "post_votes");
+$db->query_write("ALTER TABLE " . TABLE_PREFIX . "user DROP INDEX user_name_id");
 $db->show_errors();]]></uninstallcode>
 		</code>
 	</codes>
 	<templates>
 		<template name="forum_voted_user_bit" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
-            <a href="member.php?$session[sessionurl]u=$voted_user[userid]" rel="nofollow">$voted_user[username]</a>&nbsp;
+            <a href="member.php?$session[sessionurl]u=$voted_user[fromuserid]" rel="nofollow">$voted_user[username]</a>&nbsp;
         ]]></template>
 		<template name="forum_votes_search_postbit" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
             <if condition="$post['positive_votes']">+ $post[positive_votes]</if>
@@ -70,19 +73,6 @@ $db->show_errors();]]></uninstallcode>
 <fieldset class="statistics_group">
 	<legend>$vbphrase[vbv_votes_statistic]</legend>
 	<ul class="list_no_decoration">
-        <li><span class="shade">$vbphrase[vbv_gived_votes]:</span>
-            <if condition="$userinfo['gived_positive_votes'] OR $userinfo['gived_negative_votes']">
-                <if condition="$userinfo['gived_positive_votes']">
-                    + <a href="$userinfo[gived_votes_search_url]&amp;value=1">$userinfo[gived_positive_votes]</a>
-                </if>
-                <if condition="$userinfo['gived_positive_votes'] AND $userinfo['gived_negative_votes']"> / </if>
-                <if condition="$userinfo['gived_negative_votes']">
-                    - <a href="$userinfo[gived_votes_search_url]&amp;value=-1">$userinfo[gived_negative_votes]</a>
-                </if>
-            <else />
-                0
-            </if>
-        </li>
         <li><span class="shade">$vbphrase[vbv_received_votes]:</span>
             <if condition="$userinfo['received_positive_votes'] OR $userinfo['received_negative_votes']">
             
@@ -92,6 +82,19 @@ $db->show_errors();]]></uninstallcode>
                 <if condition="$userinfo['received_positive_votes'] AND $userinfo['received_negative_votes']"> / </if>
                 <if condition="$userinfo['received_negative_votes']">
                     - <a href="$userinfo[received_votes_search_url]&amp;value=-1">$userinfo[received_negative_votes]</a>
+                </if>
+            <else />
+                0
+            </if>
+        </li>
+        <li><span class="shade">$vbphrase[vbv_gived_votes]:</span>
+            <if condition="$userinfo['gived_positive_votes'] OR $userinfo['gived_negative_votes']">
+                <if condition="$userinfo['gived_positive_votes']">
+                    + <a href="$userinfo[gived_votes_search_url]&amp;value=1">$userinfo[gived_positive_votes]</a>
+                </if>
+                <if condition="$userinfo['gived_positive_votes'] AND $userinfo['gived_negative_votes']"> / </if>
+                <if condition="$userinfo['gived_negative_votes']">
+                    - <a href="$userinfo[gived_votes_search_url]&amp;value=-1">$userinfo[gived_negative_votes]</a>
                 </if>
             <else />
                 0
@@ -149,7 +152,7 @@ if (THIS_SCRIPT == 'showthread' || THIS_SCRIPT == 'showpost' || THIS_SCRIPT == '
 
     // Delete old votes
     $sql = 'DELETE FROM
-                `' . TABLE_PREFIX . 'post_votes`
+                `' . TABLE_PREFIX . 'votes`
             WHERE
                 `vote` = "-1" AND
                 `date` < ' . $date_limit;
@@ -222,15 +225,15 @@ if (in_array($destforuminfo['forumid'], $unvoted_forums))
     $sql = 'SELECT
             `vote` , count( vote ) AS count
         FROM
-            ' . TABLE_PREFIX . 'post_votes
+            ' . TABLE_PREFIX . 'votes
         WHERE
-            `postauthorid` = ' . $userinfo['userid'] . '
+            `touserid` = ' . $userinfo['userid'] . '
         GROUP BY
             `vote`';
     $db_resource = $db->query_read($sql);
     if ($db_resource)
     {
-        $userinfo['received_votes_search_url'] = create_vote_url(array('do'=>'search', 'authorid'=>$userinfo['userid']));
+        $userinfo['received_votes_search_url'] = create_vote_url(array('do'=>'search', 'touserid'=>$userinfo['userid']));
     }
     while ($votes_amount = $db->fetch_array($db_resource))
     {
@@ -249,15 +252,15 @@ if (in_array($destforuminfo['forumid'], $unvoted_forums))
     $sql = 'SELECT
                 `vote` , count( vote ) AS count
             FROM
-                ' . TABLE_PREFIX . 'post_votes
+                ' . TABLE_PREFIX . 'votes
             WHERE
-                `userid` = ' . $userinfo['userid'] . '
+                `fromuserid` = ' . $userinfo['userid'] . '
             GROUP BY
                 `vote`';
     $db_resource = $db->query_read($sql);
     if ($db_resource)
     {
-        $userinfo['gived_votes_search_url'] = create_vote_url(array('do'=>'search', 'userid'=>$userinfo['userid']));
+        $userinfo['gived_votes_search_url'] = create_vote_url(array('do'=>'search', 'fromuserid'=>$userinfo['userid']));
     }
     while ($votes_amount = $db->fetch_array($db_resource))
     {
@@ -442,18 +445,18 @@ if (in_array($destforuminfo['forumid'], $unvoted_forums))
 			<hookname>useradmin_merge</hookname>
 			<phpcode><![CDATA[// note: votes for old account will be remove into "Clear votes(user delete)" hook (userdata_delete)
 $sql = 'INSERT IGNORE INTO
-                `' . TABLE_PREFIX . 'post_votes`
+                `' . TABLE_PREFIX . 'votes`
             SELECT
                 `targetid` ,
                 `targettype` ,
                 `vote` ,
                 ' . $destinfo['userid'] . ' ,
-                `postauthorid` ,
+                `touserid` ,
                 `date`
             FROM
-                ' . TABLE_PREFIX . 'post_votes
+                ' . TABLE_PREFIX . 'votes
             WHERE
-                userid = '. $sourceinfo['userid'];
+                `fromuserid` = '. $sourceinfo['userid'];
 $db->query_write($sql);]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">

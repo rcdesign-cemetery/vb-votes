@@ -44,8 +44,8 @@ if ($_REQUEST['do'] == 'search')
     require_once(DIR . '/includes/functions_misc.php');
 
     $vbulletin->input->clean_array_gpc('r', array(
-        'userid'	=> TYPE_UINT,
-        'authorid'	=> TYPE_UINT,
+        'fromuserid'	=> TYPE_UINT,
+        'touserid'	=> TYPE_UINT,
         'value' => TYPE_BOOL,
         'top' => TYPE_BOOL,
     ));
@@ -66,7 +66,7 @@ if ($_REQUEST['do'] == 'search')
         $sql = 'SELECT
                     `targetid`, count(`vote`) AS vote_count
                 FROM
-                    `' . TABLE_PREFIX . 'post_votes`
+                    `' . TABLE_PREFIX . 'votes`
                 WHERE
                     `date` > ' . $time_line . ' AND `vote` = "' . $value . '" AND `targettype` = "' . VOTE_TARGET_TYPE . '"
                 GROUP BY
@@ -81,21 +81,21 @@ if ($_REQUEST['do'] == 'search')
     else
     {
         // search by vote user or search by voted post author
-        if (!$vbulletin->GPC['userid'] AND !$vbulletin->GPC['authorid'])
+        if (!$vbulletin->GPC['fromuserid'] AND !$vbulletin->GPC['touserid'])
         {
             eval(standard_error(fetch_error('invalidid', $vbphrase['user'], $vbulletin->options['contactuslink'])));
         }
-        if ($vbulletin->GPC['userid'])
+        if ($vbulletin->GPC['fromuserid'])
         {
             // search by vote user
-            $type = 'userid';
-            $search_user_id = $vbulletin->GPC['userid'];
+            $type = 'fromuserid';
+            $search_user_id = $vbulletin->GPC['fromuserid'];
         }
         else
         {
             // search by voted post author
-            $type = 'postauthorid';
-            $search_user_id = $vbulletin->GPC['authorid'];
+            $type = 'touserid';
+            $search_user_id = $vbulletin->GPC['touserid'];
         }
         // get user info
         if ($user = $db->query_first("SELECT userid, username, posts FROM " . TABLE_PREFIX . "user WHERE userid = " . $search_user_id))
@@ -107,11 +107,11 @@ if ($_REQUEST['do'] == 'search')
         {
             eval(standard_error(fetch_error('invalidid', $vbphrase['user'], $vbulletin->options['contactuslink'])));
         }
-        $searchhash = md5(THIS_SCRIPT . TIMENOW . $type . $vbulletin->GPC['userid'] . $searchuser);
+        $searchhash = md5(THIS_SCRIPT . TIMENOW . $type . $search_user_id . $searchuser);
         $sql = 'SELECT
                     `targetid`, `targettype`
                 FROM
-                    `' . TABLE_PREFIX . 'post_votes`
+                    `' . TABLE_PREFIX . 'votes`
                 WHERE
                     `'. $type.'` = ' . $search_user_id . ' AND `vote` = "' . $value . '" AND `targettype` = "' . VOTE_TARGET_TYPE . '"
                 ORDER BY
@@ -192,12 +192,12 @@ if ($_REQUEST['do'] == 'vote')
     is_user_can_vote($target_id, true);
 
     // save vote into db
-    $sql = 'INSERT INTO `' . TABLE_PREFIX . 'post_votes` (
+    $sql = 'INSERT INTO `' . TABLE_PREFIX . 'votes` (
                     `targetid` ,
                     `targettype` ,
                     `vote` ,
-                    `userid` ,
-                    `postauthorid` ,
+                    `fromuserid` ,
+                    `touserid` ,
                     `date`
             )
             VALUES (
@@ -238,7 +238,7 @@ if ($_REQUEST['do'] == 'remove')
     }
 
     $sql = 'DELETE FROM
-                    `' . TABLE_PREFIX . 'post_votes`
+                    `' . TABLE_PREFIX . 'votes`
                 WHERE
                     `targetid` = ' .$target_id . '  AND
                     `targettype` = "' . VOTE_TARGET_TYPE . '" AND ';
@@ -251,7 +251,7 @@ if ($_REQUEST['do'] == 'remove')
     else
     {
         // remove single user vote
-        $sql .= '`userid` = ' . $vbulletin->userinfo['userid'];
+        $sql .= '`fromuserid` = ' . $vbulletin->userinfo['userid'];
     }
 
     $db->query_write($sql);
