@@ -154,8 +154,8 @@ if (THIS_SCRIPT == 'showthread' || THIS_SCRIPT == 'showpost' || THIS_SCRIPT == '
     $sql = 'DELETE FROM
                 `' . TABLE_PREFIX . 'votes`
             WHERE
-                `vote` = "-1" AND
-                `date` < ' . $date_limit;
+                `date` < ' . $date_limit AND
+                `vote` = "-1";
     $vbulletin->db->query_write($sql);
 }]]></phpcode>
 		</plugin>
@@ -220,14 +220,15 @@ if (in_array($destforuminfo['forumid'], $unvoted_forums))
 			<phpcode><![CDATA[if ('vB_ProfileBlock_Statistics' == get_class($this))
 {
     global $db;
-    
+
+    $target_type = 'forum';
     // received voted
     $sql = 'SELECT
             `vote` , count( vote ) AS count
         FROM
             ' . TABLE_PREFIX . 'votes
         WHERE
-            `touserid` = ' . $userinfo['userid'] . '
+            `touserid` = ' . $userinfo['userid'] . ' AND `targettype` = "' . $target_type . '"
         GROUP BY
             `vote`';
     $db_resource = $db->query_read($sql);
@@ -254,7 +255,7 @@ if (in_array($destforuminfo['forumid'], $unvoted_forums))
             FROM
                 ' . TABLE_PREFIX . 'votes
             WHERE
-                `fromuserid` = ' . $userinfo['userid'] . '
+                `fromuserid` = ' . $userinfo['userid'] . ' AND `targettype` = "' . $target_type . '"
             GROUP BY
                 `vote`';
     $db_resource = $db->query_read($sql);
