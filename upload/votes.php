@@ -152,7 +152,6 @@ if ($_REQUEST['do'] == 'search')
         'words' => array(),
         'highlight' => array(),
         'common' => array(),
-        'users' => array($user['userid'] => $user['username']),
         'forums' => iif($showforums, $display['forums'], 0),
         'options' => array(
             'starteronly' => 0,

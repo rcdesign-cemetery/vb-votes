@@ -139,20 +139,9 @@ AJAX_PostVote.prototype.handle_ajax_response = function(ajax)
             {
                 votes_html = vote_response[0].firstChild.nodeValue;
             }
-            var votes_div = YAHOO.util.Dom.get("votes_result_"+this.post_id);
-            if (! votes_div)
-            {
-                var post_div = YAHOO.util.Dom.get("post"+this.post_id);
-                if (! post_div)
-                {
-                    // todo add error handle
-                    return false;
-                }
-                var votes_div = document.createElement('div');
-                votes_div.id = "votes_result_"+this.post_id;
-                post_div.appendChild(votes_div);
-            }
-            votes_div.innerHTML = votes_html;
+            this.remove_votes_result();
+            var edit_div = YAHOO.util.Dom.get('edit' + this.post_id);
+            edit_div.innerHTML = edit_div.innerHTML + votes_html;
             // enable/disable vote buttons
             var vote_button_style = '';
             var vote_button_style_response = ajax.responseXML.getElementsByTagName('vote_button_style');
@@ -164,8 +153,8 @@ AJAX_PostVote.prototype.handle_ajax_response = function(ajax)
                 }
             }
             this.handle_vote_button_div(vote_button_style);
-            AJAX_PostVote_Init('post' + this.post_id);
-            AJAX_PostVote_Init('votes_result_' + this.post_id);
+            //AJAX_PostVote_Init('post' + this.post_id);
+            AJAX_PostVote_Init('edit' + this.post_id);
         }
     }
 }
@@ -185,4 +174,25 @@ AJAX_PostVote.prototype.handle_vote_button_div = function(vote_button_style)
     {
         b_negative.style.display = vote_button_style;
     }
+}
+
+/**
+ * Remove votes results
+ * Hotfix for "remove div-container" bug
+ * TODO: refactor client and server side
+ */
+AJAX_PostVote.prototype.remove_votes_result = function()
+{
+    var edit_div = YAHOO.util.Dom.get('edit' + this.post_id);
+    var result_positive = YAHOO.util.Dom.get('PostVotesResult::Positive::' + this.post_id);
+    if (result_positive)
+    {
+        edit_div.removeChild(result_positive);
+    }
+    var result_negative = YAHOO.util.Dom.get('PostVotesResult::Negative::' + this.post_id);
+    if (result_negative)
+    {
+        edit_div.removeChild(result_negative);
+    }
+    return true;
 }

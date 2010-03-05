@@ -39,11 +39,11 @@ function create_voted_result($vote_type, $user_voted_list, $target_id, $target_t
     {
         $votes['target_id'] = $target_id;
         $votes['vote_type'] = 'Positive';
-        $votes['post_user_votes'] = $vbphrase['positive_user_votes'];
+        $votes['post_user_votes'] = $vbphrase['vbv_positive_user_votes'];
         if ('-1' == $vote_type)
         {
             $votes['vote_type'] = 'Negative';
-            $votes['post_user_votes'] = $vbphrase['negative_user_votes'];
+            $votes['post_user_votes'] = $vbphrase['vbv_negative_user_votes'];
         }
         if (can_administer())
         {

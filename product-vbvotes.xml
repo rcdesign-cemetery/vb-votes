@@ -41,11 +41,11 @@ $db->show_errors();]]></uninstallcode>
         ]]></template>
 		<template name="forum_vote_buttons" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
             <a href="$post[vote_link]&amp;value=1" rel="nofollow" name="PostVote::Positive::$post[postid]" id="PostVote::Positive::$post[postid]" <if condition="$show[vote_button_hide]">style="display: none;"</if> >
-                <img src="$stylevar[imgdir_button]/positive_vote.gif" alt="$vbphrase[positive_vote]" border="0" />
+                <img src="$stylevar[imgdir_button]/positive_vote.gif" alt="$vbphrase[vbv_positive_vote]" border="0" />
             </a>
             <if condition="$show[negative]">
             <a href="$post[vote_link]&amp;value=0" rel="nofollow" name="PostVote::Negative::$post[postid]" id="PostVote::Negative::$post[postid]"  <if condition="$show[vote_button_hide]">style="display: none;"</if> >
-                <img src="$stylevar[imgdir_button]/negative_vote.gif" alt="$vbphrase[negative_vote]" border="0" />
+                <img src="$stylevar[imgdir_button]/negative_vote.gif" alt="$vbphrase[vbv_negative_vote]" border="0" />
             </a>
             </if>
         ]]></template>
@@ -100,17 +100,17 @@ $db->show_errors();]]></uninstallcode>
 	</ul>
 </fieldset>]]></template>
 		<template name="forum_voted_postbit" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
-<div style="padding:$stylevar[cellpadding]px 0px 0px 0px">
+<div id="PostVotesResult::$votes[vote_type]::$votes[target_id]" style="padding:$stylevar[cellpadding]px 0px 0px 0px">
 	<table class="tborder" cellpadding="$stylevar[cellpadding]" cellspacing="$stylevar[cellspacing]" border="0" width="100%" align="center">
 		<tr>
 			<td class="alt2" width="175">
                 <strong>$votes[post_user_votes]</strong>
 			
                 <if condition="$votes[remove_all_votes_link]">
-					<br /><a href="$votes[remove_all_votes_link]&amp;targetid=$votes[target_id]" rel="nofollow" name="RemoveVote::All::$votes[vote_type]::$votes[target_id]" id="RemoveVote::All::$votes[vote_type]::$votes[target_id]" >$vbphrase[post_vote_remove_all_votes]</a>
+					<br /><a href="$votes[remove_all_votes_link]&amp;targetid=$votes[target_id]" rel="nofollow" name="RemoveVote::All::$votes[vote_type]::$votes[target_id]" id="RemoveVote::All::$votes[vote_type]::$votes[target_id]" >$vbphrase[vbv_post_vote_remove_all_votes]</a>
                 </if>
                 <if condition="$votes[remove_vote_link]">
-					<br /><a href="$votes[remove_vote_link]&amp;targetid=$votes[target_id]" rel="nofollow" name="RemoveVote::$votes[vote_type]::$votes[target_id]" id="RemoveVote::All::$votes[vote_type]::$votes[target_id]" >$vbphrase[post_vote_remove_user_vote]</a>
+					<br /><a href="$votes[remove_vote_link]&amp;targetid=$votes[target_id]" rel="nofollow" name="RemoveVote::$votes[vote_type]::$votes[target_id]" id="RemoveVote::All::$votes[vote_type]::$votes[target_id]" >$vbphrase[vbv_post_vote_remove_user_vote]</a>
                 </if>
             </td>
 		<td class="alt1" colspan="3"><div>$votes[vote_list]</div></td></tr>
@@ -500,27 +500,31 @@ clear_votes_by_user_id($this->existing['userid']);]]></phpcode>
 	</plugins>
 	<phrases>
 		<phrasetype name="Error Messages" fieldname="error">
-			<phrase name="vbv_post_can_not_be_voted" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[This post can't be voted]]></phrase>
-			<phrase name="vbv_post_old" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[This post too old]]></phrase>
-			<phrase name="vbv_post_voted" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[You are alredy vote for this post]]></phrase>
-			<phrase name="vbv_to_many_votes_per_day" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[To many votes, per day]]></phrase>
-			<phrase name="vbv_your_post" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[You try vote for yor post]]></phrase>
+			<phrase name="vbv_post_can_not_be_voted" date="1267730139" username="Vitaly" version=""><![CDATA[This post can't be voted]]></phrase>
+			<phrase name="vbv_post_old" date="1267730189" username="Vitaly" version=""><![CDATA[This post is too old to be voted]]></phrase>
+			<phrase name="vbv_post_voted" date="1267730229" username="Vitaly" version=""><![CDATA[You've already voted this post]]></phrase>
+			<phrase name="vbv_to_many_votes_per_day" date="1267730287" username="Vitaly" version=""><![CDATA[Your daily voting limit exceeded]]></phrase>
+			<phrase name="vbv_your_post" date="1267730343" username="Vitaly" version=""><![CDATA[You can't vote yourself]]></phrase>
 		</phrasetype>
 		<phrasetype name="GLOBAL" fieldname="global">
-			<phrase name="vbv_gived_votes" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[Given votes]]></phrase>
-			<phrase name="vbv_navbar_section" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[Top votes]]></phrase>
-			<phrase name="vbv_negative_votes_search" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[Top negative votes for {1} days]]></phrase>
+			<phrase name="vbv_gived_votes" date="1267728837" username="Vitaly" version=""><![CDATA[Given at forum]]></phrase>
+			<phrase name="vbv_navbar_section" date="1267728997" username="Vitaly" version=""><![CDATA[Top votes]]></phrase>
+			<phrase name="vbv_negative" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[negative]]></phrase>
+			<phrase name="vbv_negative_votes_search" date="1267728969" username="Vitaly" version=""><![CDATA[Top negative votes for {1} days]]></phrase>
+			<phrase name="vbv_positive" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[positive]]></phrase>
 			<phrase name="vbv_positive_votes_search" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[Top positive votes for {1} days]]></phrase>
-			<phrase name="vbv_recived_votes" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[Received votes]]></phrase>
-			<phrase name="vbv_votes_statistic" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[Votes]]></phrase>
+			<phrase name="vbv_recived_votes" date="1267728923" username="Vitaly" version=""><![CDATA[Received at forum]]></phrase>
+			<phrase name="vbv_user_given_votes" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[User {1} give {2} votes]]></phrase>
+			<phrase name="vbv_user_received_votes" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[User {1} receive {2} votes]]></phrase>
+			<phrase name="vbv_votes_statistic" date="1267728754" username="Vitaly" version=""><![CDATA[Votes]]></phrase>
 		</phrasetype>
 		<phrasetype name="Postbit" fieldname="postbit">
-			<phrase name="vbv_negative_user_votes" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[Abused:]]></phrase>
-			<phrase name="vbv_negative_vote" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[I didn't like this post]]></phrase>
-			<phrase name="vbv_positive_user_votes" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[Thanked:]]></phrase>
-			<phrase name="vbv_positive_vote" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[I like this post]]></phrase>
-			<phrase name="vbv_post_vote_remove_all_votes" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[Remove all vote]]></phrase>
-			<phrase name="vbv_post_vote_remove_user_vote" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[Remove your vote]]></phrase>
+			<phrase name="vbv_negative_user_votes" date="1267729658" username="Vitaly" version=""><![CDATA[Thrown tomato:]]></phrase>
+			<phrase name="vbv_negative_vote" date="1267729831" username="Vitaly" version=""><![CDATA[Throw tomato]]></phrase>
+			<phrase name="vbv_positive_user_votes" date="1267729680" username="Vitaly" version=""><![CDATA[Thanked:]]></phrase>
+			<phrase name="vbv_positive_vote" date="1267729882" username="Vitaly" version=""><![CDATA[Thank author]]></phrase>
+			<phrase name="vbv_post_vote_remove_all_votes" date="1267729548" username="Vitaly" version=""><![CDATA[Remove all votes]]></phrase>
+			<phrase name="vbv_post_vote_remove_user_vote" date="1267729592" username="Vitaly" version=""><![CDATA[Remove your vote]]></phrase>
 		</phrasetype>
 		<phrasetype name="vBulletin Settings" fieldname="vbsettings">
 			<phrase name="setting_vbv_delete_own_votes_desc" date="1262984341" username="Vitaly" version="0.1"><![CDATA[Allow user to delete his own votes.]]></phrase>
