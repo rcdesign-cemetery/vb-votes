@@ -83,15 +83,15 @@ $db->show_errors();]]></uninstallcode>
                 0
             </if>
         </li>
-        <li><span class="shade">$vbphrase[vbv_recived_votes]:</span>
-            <if condition="$userinfo['recived_positive_votes'] OR $userinfo['recived_negative_votes']">
+        <li><span class="shade">$vbphrase[vbv_received_votes]:</span>
+            <if condition="$userinfo['received_positive_votes'] OR $userinfo['received_negative_votes']">
             
-                <if condition="$userinfo['recived_positive_votes']">
-                    + <a href="$userinfo[recived_votes_search_url]&amp;value=1">$userinfo[recived_positive_votes]</a>
+                <if condition="$userinfo['received_positive_votes']">
+                    + <a href="$userinfo[received_votes_search_url]&amp;value=1">$userinfo[received_positive_votes]</a>
                 </if>
-                <if condition="$userinfo['recived_positive_votes'] AND $userinfo['recived_negative_votes']"> / </if>
-                <if condition="$userinfo['recived_negative_votes']">
-                    - <a href="$userinfo[recived_votes_search_url]&amp;value=-1">$userinfo[recived_negative_votes]</a>
+                <if condition="$userinfo['received_positive_votes'] AND $userinfo['received_negative_votes']"> / </if>
+                <if condition="$userinfo['received_negative_votes']">
+                    - <a href="$userinfo[received_votes_search_url]&amp;value=-1">$userinfo[received_negative_votes]</a>
                 </if>
             <else />
                 0
@@ -218,7 +218,7 @@ if (in_array($destforuminfo['forumid'], $unvoted_forums))
 {
     global $db;
     
-    // recived voted
+    // received voted
     $sql = 'SELECT
             `vote` , count( vote ) AS count
         FROM
@@ -230,17 +230,17 @@ if (in_array($destforuminfo['forumid'], $unvoted_forums))
     $db_resource = $db->query_read($sql);
     if ($db_resource)
     {
-        $userinfo['recived_votes_search_url'] = create_vote_url(array('do'=>'search', 'authorid'=>$userinfo['userid']));
+        $userinfo['received_votes_search_url'] = create_vote_url(array('do'=>'search', 'authorid'=>$userinfo['userid']));
     }
     while ($votes_amount = $db->fetch_array($db_resource))
     {
         if ('1' == $votes_amount['vote'])
         {
-            $amount_type = 'recived_positive_votes';
+            $amount_type = 'received_positive_votes';
         }
         else
         {
-            $amount_type = 'recived_negative_votes';
+            $amount_type = 'received_negative_votes';
         }
         $userinfo[$amount_type] = $votes_amount['count'];
     }
@@ -513,7 +513,7 @@ clear_votes_by_user_id($this->existing['userid']);]]></phpcode>
 			<phrase name="vbv_negative_votes_search" date="1267728969" username="Vitaly" version=""><![CDATA[Top negative votes for {1} days]]></phrase>
 			<phrase name="vbv_positive" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[positive]]></phrase>
 			<phrase name="vbv_positive_votes_search" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[Top positive votes for {1} days]]></phrase>
-			<phrase name="vbv_recived_votes" date="1267728923" username="Vitaly" version=""><![CDATA[Received at forum]]></phrase>
+			<phrase name="vbv_received_votes" date="1267728923" username="Vitaly" version=""><![CDATA[Received at forum]]></phrase>
 			<phrase name="vbv_user_given_votes" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[User {1} give {2} votes]]></phrase>
 			<phrase name="vbv_user_received_votes" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[User {1} receive {2} votes]]></phrase>
 			<phrase name="vbv_votes_statistic" date="1267728754" username="Vitaly" version=""><![CDATA[Votes]]></phrase>
