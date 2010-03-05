@@ -139,7 +139,7 @@ if (THIS_SCRIPT == 'showthread' || THIS_SCRIPT == 'showpost' || THIS_SCRIPT == '
     $globaltemplates[] = 'forum_vote_buttons';
     $globaltemplates[] = 'forum_vote_js';
     $globaltemplates[] = 'forum_voted_user_bit';
-    $globaltemplates[] = 'voted_postbit';
+    $globaltemplates[] = 'forum_voted_postbit';
 }]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
