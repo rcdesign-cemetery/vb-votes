@@ -282,7 +282,7 @@ if (in_array($destforuminfo['forumid'], $unvoted_forums))
 			<title>Display votes</title>
 			<hookname>postbit_display_complete</hookname>
 			<phpcode><![CDATA[
-if (0 < (int)$this->registry->userinfo[userid])
+if ( array_key_exists('votes', $post) AND 0 < (int)$this->registry->userinfo['userid'])
 {
     require_once(DIR . '/includes/functions_votes.php');
     $votes = $post['votes'];
