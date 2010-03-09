@@ -64,19 +64,39 @@ if ($_REQUEST['do'] == 'search')
         $time_line = TIMENOW - 24 * 60 * 60 * $vbulletin->options['vbv_top_voted_days'];
         // search top voted posts
         $sql = 'SELECT
-                    `targetid`, count(`vote`) AS vote_count
+                    `targetid`
                 FROM
                     `' . TABLE_PREFIX . 'votes`
                 WHERE
                     `date` > ' . $time_line . ' AND `vote` = "' . $value . '" AND `targettype` = "' . VOTE_TARGET_TYPE . '"
                 GROUP BY
                     `targetid`
+                LIMIT ' . ($vbulletin->options['maxresults']);
+
+        $target_id_list = array();
+        $targets = $db->query_read($sql);
+        while ($target = $db->fetch_array($targets))
+        {
+            $target_id_list[] = $target['targetid'];
+        }
+        // did we get some results?
+        if (empty($target_id_list))
+        {
+            eval(standard_error(fetch_error('searchnoresults', ''), '', false));
+        }
+        $sql = 'SELECT
+                    `targetid`, count(`vote`) AS vote_count
+                FROM
+                    `' . TABLE_PREFIX . 'votes`
+                WHERE
+                    `targetid` IN (' . implode($target_id_list, ', ') . ')  AND `targettype` = "' . VOTE_TARGET_TYPE . '"
+                GROUP BY
+                    `targetid`
                 ORDER BY
-                    vote_count DESC
-                LIMIT ' . ($vbulletin->options['maxresults'] * 2);
+                    vote_count DESC';
         // build search hash
-        $forumchoice = $foruminfo['forumid'];
         $searchhash = md5(THIS_SCRIPT . TIMENOW . 'top' . $vote);
+        unset($target_id_list);
     }
     else
     {
