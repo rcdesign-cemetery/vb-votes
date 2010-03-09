@@ -98,7 +98,7 @@ if ($_REQUEST['do'] == 'search')
             $search_user_id = $vbulletin->GPC['touserid'];
         }
         // get user info
-        if ($user = $db->query_first("SELECT userid, username, posts FROM " . TABLE_PREFIX . "user WHERE userid = " . $search_user_id))
+        if ($user = $db->query_first("SELECT userid, username FROM " . TABLE_PREFIX . "user WHERE userid = " . $search_user_id))
         {
             $searchuser =& $user['username'];
         }
@@ -159,6 +159,17 @@ if ($_REQUEST['do'] == 'search')
             'action' => 'process'
         )
     );
+
+    if (isset($searchuser))
+    {
+        $display['votes'][$type] = $search_user_id;
+        $display['votes']['username'] = $searchuser;
+    }
+    else
+    {
+        $display['votes']['top'] = 'top';
+    }
+    $display['votes']['value'] = $value;
 
     // end search timer
     $searchtime = number_format(fetch_microtime_difference($searchtime), 5, '.', '');

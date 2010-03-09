@@ -34,6 +34,24 @@ $db->show_errors();]]></uninstallcode>
 		</code>
 	</codes>
 	<templates>
+		<template name="forum_voted_postbit" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
+<div id="PostVotesResult::$votes[vote_type]::$votes[target_id]" style="padding:$stylevar[cellpadding]px 0px 0px 0px">
+	<table class="tborder" cellpadding="$stylevar[cellpadding]" cellspacing="$stylevar[cellspacing]" border="0" width="100%" align="center">
+		<tr>
+			<td class="alt2" width="175">
+                <strong>$votes[post_user_votes]</strong>
+			
+                <if condition="$votes[remove_all_votes_link]">
+					<br /><a href="$votes[remove_all_votes_link]&amp;targetid=$votes[target_id]" rel="nofollow" name="RemoveVote::All::$votes[vote_type]::$votes[target_id]" id="RemoveVote::All::$votes[vote_type]::$votes[target_id]" >$vbphrase[vbv_post_vote_remove_all_votes]</a>
+                </if>
+                <if condition="$votes[remove_vote_link]">
+					<br /><a href="$votes[remove_vote_link]&amp;targetid=$votes[target_id]" rel="nofollow" name="RemoveVote::$votes[vote_type]::$votes[target_id]" id="RemoveVote::All::$votes[vote_type]::$votes[target_id]" >$vbphrase[vbv_post_vote_remove_user_vote]</a>
+                </if>
+            </td>
+		<td class="alt1" colspan="3"><div>$votes[vote_list]</div></td></tr>
+	</table>
+</div>
+        ]]></template>
 		<template name="forum_voted_user_bit" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
             <a href="member.php?$session[sessionurl]u=$voted_user[fromuserid]" rel="nofollow">$voted_user[username]</a>&nbsp;
         ]]></template>
@@ -102,24 +120,6 @@ $db->show_errors();]]></uninstallcode>
         </li>
 	</ul>
 </fieldset>]]></template>
-		<template name="forum_voted_postbit" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
-<div id="PostVotesResult::$votes[vote_type]::$votes[target_id]" style="padding:$stylevar[cellpadding]px 0px 0px 0px">
-	<table class="tborder" cellpadding="$stylevar[cellpadding]" cellspacing="$stylevar[cellspacing]" border="0" width="100%" align="center">
-		<tr>
-			<td class="alt2" width="175">
-                <strong>$votes[post_user_votes]</strong>
-			
-                <if condition="$votes[remove_all_votes_link]">
-					<br /><a href="$votes[remove_all_votes_link]&amp;targetid=$votes[target_id]" rel="nofollow" name="RemoveVote::All::$votes[vote_type]::$votes[target_id]" id="RemoveVote::All::$votes[vote_type]::$votes[target_id]" >$vbphrase[vbv_post_vote_remove_all_votes]</a>
-                </if>
-                <if condition="$votes[remove_vote_link]">
-					<br /><a href="$votes[remove_vote_link]&amp;targetid=$votes[target_id]" rel="nofollow" name="RemoveVote::$votes[vote_type]::$votes[target_id]" id="RemoveVote::All::$votes[vote_type]::$votes[target_id]" >$vbphrase[vbv_post_vote_remove_user_vote]</a>
-                </if>
-            </td>
-		<td class="alt1" colspan="3"><div>$votes[vote_list]</div></td></tr>
-	</table>
-</div>
-        ]]></template>
 	</templates>
 	<plugins>
 		<plugin active="1" executionorder="5">
@@ -323,6 +323,38 @@ delete_votes_by_target_id_list(array($postid), 'forum');]]></phpcode>
 			<phpcode><![CDATA[eval('$post[\'typeprefix\'] = "' . fetch_template('forum_votes_search_postbit') . '" . $post[\'typeprefix\'];');]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
+			<title>Add title to votes search result</title>
+			<hookname>search_results_prebits</hookname>
+			<phpcode><![CDATA[if (isset($display['votes']))
+{
+    if ('1' == $display['votes']['value'])
+    {
+        $votes_type = 'positive';
+    }
+    else
+    {
+        $votes_type = 'negative';
+    }
+    if (array_key_exists('top', $display['votes']))
+    {
+        $display['tag'] = construct_phrase($vbphrase['vbv_' . $votes_type .'_votes_search'], $vbulletin->options['vbv_top_voted_days']);
+    }
+    else
+    {
+        if (array_key_exists('touserid', $display['votes']))
+        {
+            $vote_phrase_name = 'vbv_user_given_' . $votes_type .'_votes';
+        }
+        else
+        {
+            $vote_phrase_name = 'vbv_user_received_' . $votes_type .'_votes';
+
+        }
+        $display['tag'] = construct_phrase($vbphrase[$vote_phrase_name], $display['votes']['username']);
+    }
+}]]></phpcode>
+		</plugin>
+		<plugin active="1" executionorder="5">
 			<title>Add votes to search result. Part 1.</title>
 			<hookname>search_results_prebits</hookname>
 			<phpcode><![CDATA[define ('VOTE_TARGET_TYPE', 'forum');
@@ -513,13 +545,13 @@ clear_votes_by_user_id($this->existing['userid']);]]></phpcode>
 		<phrasetype name="GLOBAL" fieldname="global">
 			<phrase name="vbv_gived_votes" date="1267728837" username="Vitaly" version=""><![CDATA[Given at forum]]></phrase>
 			<phrase name="vbv_navbar_section" date="1267728997" username="Vitaly" version=""><![CDATA[Top votes]]></phrase>
-			<phrase name="vbv_negative" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[negative]]></phrase>
 			<phrase name="vbv_negative_votes_search" date="1267728969" username="Vitaly" version=""><![CDATA[Top negative votes for {1} days]]></phrase>
-			<phrase name="vbv_positive" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[positive]]></phrase>
 			<phrase name="vbv_positive_votes_search" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[Top positive votes for {1} days]]></phrase>
 			<phrase name="vbv_received_votes" date="1267728923" username="Vitaly" version=""><![CDATA[Received at forum]]></phrase>
-			<phrase name="vbv_user_given_votes" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[User {1} give {2} votes]]></phrase>
-			<phrase name="vbv_user_received_votes" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[User {1} receive {2} votes]]></phrase>
+			<phrase name="vbv_user_given_negative_votes" date="1268136724" username="Vitaly" version=""><![CDATA[{1} - gave negative votes]]></phrase>
+			<phrase name="vbv_user_given_positive_votes" date="1268136742" username="Vitaly" version=""><![CDATA[{1} - gave positive votes]]></phrase>
+			<phrase name="vbv_user_received_negative_votes" date="1268136762" username="Vitaly" version=""><![CDATA[{1} - received negative votes]]></phrase>
+			<phrase name="vbv_user_received_positive_votes" date="1268136786" username="Vitaly" version=""><![CDATA[{1} - received positive votes]]></phrase>
 			<phrase name="vbv_votes_statistic" date="1267728754" username="Vitaly" version=""><![CDATA[Votes]]></phrase>
 		</phrasetype>
 		<phrasetype name="Postbit" fieldname="postbit">
@@ -549,9 +581,8 @@ clear_votes_by_user_id($this->existing['userid']);]]></phpcode>
 			<phrase name="setting_vbv_max_votes_daily_title" date="1262982578" username="Vitaly" version="0.1"><![CDATA[Max votes per day]]></phrase>
 			<phrase name="setting_vbv_neg_votes_expire_days_desc" date="1262985223" username="Vitaly" version="0.1"><![CDATA[After X days all negative votes are completely cleared. Set 0 to keep forever.]]></phrase>
 			<phrase name="setting_vbv_neg_votes_expire_days_title" date="1262985223" username="Vitaly" version="0.1"><![CDATA[Negative votes expiration time (days)]]></phrase>
-			<phrase name="setting_vbv_post_days_old_desc" date="1267194929" username="varnak" version="0.1"><![CDATA[This option allows you to disable the voting to any post that is old then the amound of days you post here. Votes given prior to the cut off date, will still show up. 
-<br /><br />
-<b>Note:</b>Put '0' to disable.]]></phrase>
+			<phrase name="setting_vbv_post_days_old_desc" date="1268136687" username="Vitaly" version=""><![CDATA[This option allows to disable voting for posts, which are older XX days. So, only new posts can be voted.<br /><br />
+<b>Note:</b>Set '0' to disable limits.]]></phrase>
 			<phrase name="setting_vbv_post_days_old_title" date="1267194929" username="varnak" version="0.1"><![CDATA[Disable voting if post is X days old]]></phrase>
 			<phrase name="setting_vbv_top_voted_days_desc" date="1262985570" username="Vitaly" version="0.1"><![CDATA[Limit (in days) fot top voted search]]></phrase>
 			<phrase name="setting_vbv_top_voted_days_title" date="1262985570" username="Vitaly" version="0.1"><![CDATA["Top Voted" days limit]]></phrase>
