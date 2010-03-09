@@ -45,6 +45,7 @@ function create_voted_result($vote_type, $user_voted_list, $target_id, $target_t
             $votes['vote_type'] = 'Negative';
             $votes['post_user_votes'] = $vbphrase['vbv_negative_user_votes'];
         }
+        require_once(DIR . '/includes/adminfunctions.php'); // required for can_administer
         if (can_administer())
         {
             $votes['remove_all_votes_link'] = create_vote_url(array('do'=>'remove', 'all'=>1, 'value'=>(string)$vote_type));
