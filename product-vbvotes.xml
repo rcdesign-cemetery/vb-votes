@@ -151,7 +151,7 @@ if (THIS_SCRIPT == 'showthread' || THIS_SCRIPT == 'showpost' || THIS_SCRIPT == '
                 `' . TABLE_PREFIX . 'votes`
             WHERE
                 `date` < ' . $date_limit AND
-                `vote` = "-1";
+                `vote` = "-1"';
     $vbulletin->db->query_write($sql);
 }]]></phpcode>
 		</plugin>
@@ -278,31 +278,33 @@ if (in_array($destforuminfo['forumid'], $unvoted_forums))
 			<title>Display votes</title>
 			<hookname>postbit_display_complete</hookname>
 			<phpcode><![CDATA[
-if ( array_key_exists('votes', $post) AND 0 < (int)$this->registry->userinfo['userid'])
+if (THIS_SCRIPT == 'showthread' || THIS_SCRIPT == 'showpost' || THIS_SCRIPT == 'votepost')
 {
-    require_once(DIR . '/includes/functions_votes.php');
-    $votes = $post['votes'];
-    $vote_results = '';
-    if (is_array($votes) AND !empty($votes))
+    if ( 0 < (int)$this->registry->userinfo['userid'])
     {
-        foreach ($votes as $vote_type=>$user_voted_list)
+        require_once(DIR . '/includes/functions_votes.php');
+        $votes = $post['votes'];
+        $vote_results = '';
+        if (is_array($votes) AND !empty($votes))
         {
-            $vote_results .= create_voted_result($vote_type, $user_voted_list, $post['postid'], VOTE_TARGET_TYPE);
+            foreach ($votes as $vote_type=>$user_voted_list)
+            {
+                $vote_results .= create_voted_result($vote_type, $user_voted_list, $post['postid'], VOTE_TARGET_TYPE);
+            }
+        }
+        $template_hook['postbit_end'] .= $vote_results;
+
+        $show['vote_button_hide'] = true;
+        if (is_user_can_vote($post['postid']))
+        {
+            if ($this->registry->options['vbv_enable_neg_votes'])
+            {
+                $show['negative'] = true;
+            }
+            $post['vote_link'] = create_vote_url(array('do'=>'vote', 'targetid'=>$post['postid']));
+            $show['vote_button_hide'] = false;
         }
     }
-    $template_hook['postbit_end'] .= $vote_results;
-
-    $show['vote_button_hide'] = true;
-    if (is_user_can_vote($post['postid']))
-    {
-        if ($this->registry->options['vbv_enable_neg_votes'])
-        {
-            $show['negative'] = true;
-        }
-        $post['vote_link'] = create_vote_url(array('do'=>'vote', 'targetid'=>$post['postid']));
-        $show['vote_button_hide'] = false;
-    }
-
     eval('$template_hook[postbit_controls] .= " ' . fetch_template('forum_vote_buttons') . '";');
 }
     ]]></phpcode>
