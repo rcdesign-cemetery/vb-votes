@@ -369,12 +369,11 @@ if (isset($display['votes']))
     {
         if (array_key_exists('touserid', $display['votes']))
         {
-            $vote_phrase_name = 'vbv_user_given_' . $votes_type .'_votes';
+            $vote_phrase_name = 'vbv_user_received_' . $votes_type .'_votes';
         }
         else
         {
-            $vote_phrase_name = 'vbv_user_received_' . $votes_type .'_votes';
-
+            $vote_phrase_name = 'vbv_user_given_' . $votes_type .'_votes';
         }
         $display['tag'] = construct_phrase($vbphrase[$vote_phrase_name], $display['votes']['username']);
     }
