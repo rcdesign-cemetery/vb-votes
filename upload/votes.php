@@ -64,13 +64,11 @@ if ($_REQUEST['do'] == 'search')
         $time_line = TIMENOW - 24 * 60 * 60 * $vbulletin->options['vbv_top_voted_days'];
         // search top voted posts
         $sql = 'SELECT
-                    `targetid`
+                    DISTINCT `targetid`
                 FROM
                     `' . TABLE_PREFIX . 'votes`
                 WHERE
                     `date` > ' . $time_line . ' AND `vote` = "' . $value . '" AND `targettype` = "' . VOTE_TARGET_TYPE . '"
-                GROUP BY
-                    `targetid`
                 LIMIT ' . ($vbulletin->options['maxresults']);
 
         $target_id_list = array();
@@ -89,7 +87,7 @@ if ($_REQUEST['do'] == 'search')
                 FROM
                     `' . TABLE_PREFIX . 'votes`
                 WHERE
-                    `targetid` IN (' . implode($target_id_list, ', ') . ')  AND `targettype` = "' . VOTE_TARGET_TYPE . '"
+                    `targetid` IN (' . implode($target_id_list, ', ') . ')  AND `targettype` = "' . VOTE_TARGET_TYPE . '" AND `vote` = "' . $value . '
                 GROUP BY
                     `targetid`
                 ORDER BY
