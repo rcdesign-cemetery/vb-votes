@@ -20,8 +20,8 @@ CREATE TABLE IF NOT EXISTS " . TABLE_PREFIX . "votes (
   `touserid` int(11) NOT NULL,
   `date` int(11) NOT NULL,
   PRIMARY KEY (`targetid`, `targettype`, `vote`, `fromuserid`),
-  KEY `user_votes` (`fromuserid`, `targettype`, `vote`, `date`),
-  KEY `received_votes` (`touserid`, `targettype`, `vote`, `date`),
+  KEY `given_votes` (`fromuserid`, `targettype`, `vote`),
+  KEY `received_votes` (`touserid`, `targettype`, `vote`),
   KEY `votes_per_day` (`fromuserid`, `date`),
   KEY `date` (`date`, `vote`, `targettype`, `targetid`)
 )");

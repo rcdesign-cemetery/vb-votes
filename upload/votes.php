@@ -132,9 +132,7 @@ if ($_REQUEST['do'] == 'search')
                     `' . TABLE_PREFIX . 'votes`
                 WHERE
                     `'. $type.'` = ' . $search_user_id . ' AND `vote` = "' . $value . '" AND `targettype` = "' . VOTE_TARGET_TYPE . '"
-                ORDER BY
-                    `date` DESC
-                LIMIT ' . ($vbulletin->options['maxresults'] * 2);
+                LIMIT ' . ($vbulletin->options['maxresults']);
     }
 
     // check if search already done
