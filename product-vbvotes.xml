@@ -61,13 +61,9 @@ $db->show_errors();]]></uninstallcode>
             <if condition="$post['negative_votes']">- $post[negative_votes]</if>
         ]]></template>
 		<template name="forum_vote_buttons" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
-            <a href="$post[vote_link]&amp;value=1" rel="nofollow" name="PostVote::Positive::$post[postid]" id="PostVote::Positive::$post[postid]" <if condition="$show[vote_button_hide]">style="display: none;"</if> >
-                <img src="$stylevar[imgdir_button]/positive_vote.gif" alt="$vbphrase[vbv_positive_vote]" border="0" />
-            </a>
+            <a href="$post[vote_link]&amp;value=1" rel="nofollow" name="PostVote::Positive::$post[postid]" id="PostVote::Positive::$post[postid]" <if condition="$show[vote_button_hide]">style="display: none;"</if> ><img src="$stylevar[imgdir_button]/positive_vote.gif" alt="$vbphrase[vbv_positive_vote]" border="0" /></a>
             <if condition="$show[negative]">
-            <a href="$post[vote_link]&amp;value=0" rel="nofollow" name="PostVote::Negative::$post[postid]" id="PostVote::Negative::$post[postid]"  <if condition="$show[vote_button_hide]">style="display: none;"</if> >
-                <img src="$stylevar[imgdir_button]/negative_vote.gif" alt="$vbphrase[vbv_negative_vote]" border="0" />
-            </a>
+            <a href="$post[vote_link]&amp;value=0" rel="nofollow" name="PostVote::Negative::$post[postid]" id="PostVote::Negative::$post[postid]"  <if condition="$show[vote_button_hide]">style="display: none;"</if> ><img src="$stylevar[imgdir_button]/negative_vote.gif" alt="$vbphrase[vbv_negative_vote]" border="0" /></a>
             </if>
         ]]></template>
 		<template name="forum_vote_js" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
