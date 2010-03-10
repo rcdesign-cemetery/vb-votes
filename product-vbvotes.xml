@@ -175,8 +175,11 @@ if ($vbulletin->options['vbv_enable_neg_votes'])
     $show['negative'] = true;
 }
 $navbar['day_limit'] = $vbulletin->options['vbv_top_voted_days'];
-$navbar['votes_link'] = create_vote_url(array('do'=>'search', 'top'=>'1'));
-eval('$template_hook[navbar_search_menu] .= " ' . fetch_template('navbar_search_votes') . '";');]]></phpcode>
+if (0 < $navbar['day_limit'])
+{
+    $navbar['votes_link'] = create_vote_url(array('do'=>'search', 'top'=>'1'));
+    eval('$template_hook[navbar_search_menu] .= " ' . fetch_template('navbar_search_votes') . '";');
+}]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
 			<title>Clear votes if post(s) moved in unvoteable forum</title>
@@ -321,9 +324,34 @@ delete_votes_by_target_id_list(array($postid), 'forum');]]></phpcode>
 			<phpcode><![CDATA[eval('$post[\'typeprefix\'] = "' . fetch_template('forum_votes_search_postbit') . '" . $post[\'typeprefix\'];');]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
-			<title>Add title to votes search result</title>
+			<title>Add votes to search result. Part 1.</title>
 			<hookname>search_results_prebits</hookname>
-			<phpcode><![CDATA[if (isset($display['votes']))
+			<phpcode><![CDATA[define ('VOTE_TARGET_TYPE', 'forum');
+require_once(DIR . '/includes/functions_votes.php');
+$post_votes = array();
+if (is_user_can_see_votes_result())
+{
+    $target_id_list = explode(',' , '0' . $ids);
+    if (! $vbulletin->options['vbv_enable_neg_votes'])
+    {
+        $vote_type = '1';
+    }
+    $post_votes = get_vote_for_post_list($target_id_list, $vote_type);
+    foreach ($post_votes as $post_id=>$votes)
+    {
+        if ($votes['1'])
+        {
+            $itemids[$post_id]['positive_votes'] = count($votes['1']);
+        }
+        if ($votes['-1'])
+        {
+            $itemids[$post_id]['negative_votes'] = count($votes['-1']);
+        }
+    }
+}
+
+// Add title to votes search result
+if (isset($display['votes']))
 {
     if ('1' == $display['votes']['value'])
     {
@@ -349,33 +377,6 @@ delete_votes_by_target_id_list(array($postid), 'forum');]]></phpcode>
 
         }
         $display['tag'] = construct_phrase($vbphrase[$vote_phrase_name], $display['votes']['username']);
-    }
-}]]></phpcode>
-		</plugin>
-		<plugin active="1" executionorder="5">
-			<title>Add votes to search result. Part 1.</title>
-			<hookname>search_results_prebits</hookname>
-			<phpcode><![CDATA[define ('VOTE_TARGET_TYPE', 'forum');
-require_once(DIR . '/includes/functions_votes.php');
-$post_votes = array();
-if (is_user_can_see_votes_result())
-{
-    $target_id_list = explode(',' , '0' . $ids);
-    if (! $vbulletin->options['vbv_enable_neg_votes'])
-    {
-        $vote_type = '1';
-    }
-    $post_votes = get_vote_for_post_list($target_id_list, $vote_type);
-    foreach ($post_votes as $post_id=>$votes)
-    {
-        if ($votes['1'])
-        {
-            $itemids[$post_id]['positive_votes'] = count($votes['1']);
-        }
-        if ($votes['-1'])
-        {
-            $itemids[$post_id]['negative_votes'] = count($votes['-1']);
-        }
     }
 }]]></phpcode>
 		</plugin>
