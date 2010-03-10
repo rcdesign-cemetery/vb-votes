@@ -87,7 +87,7 @@ if ($_REQUEST['do'] == 'search')
                 FROM
                     `' . TABLE_PREFIX . 'votes`
                 WHERE
-                    `targetid` IN (' . implode($target_id_list, ', ') . ')  AND `targettype` = "' . VOTE_TARGET_TYPE . '" AND `vote` = "' . $value . '
+                    `targetid` IN (' . implode($target_id_list, ', ') . ')  AND `targettype` = "' . VOTE_TARGET_TYPE . '" AND `vote` = "' . $value . '"
                 GROUP BY
                     `targetid`
                 ORDER BY
