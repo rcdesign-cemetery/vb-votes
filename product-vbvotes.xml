@@ -583,7 +583,7 @@ clear_votes_by_user_id($this->existing['userid']);]]></phpcode>
 			<phrase name="setting_vbv_post_days_old_desc" date="1268136687" username="Vitaly" version=""><![CDATA[This option allows to disable voting for posts, which are older XX days. So, only new posts can be voted.<br /><br />
 <b>Note:</b>Set '0' to disable limits.]]></phrase>
 			<phrase name="setting_vbv_post_days_old_title" date="1267194929" username="varnak" version="0.1"><![CDATA[Disable voting if post is X days old]]></phrase>
-			<phrase name="setting_vbv_top_voted_days_desc" date="1262985570" username="Vitaly" version="0.1"><![CDATA[Limit (in days) fot top voted search]]></phrase>
+			<phrase name="setting_vbv_top_voted_days_desc" date="1268235098" username="Vitaly" version=""><![CDATA[Limit (in days) fot top voted search. Set 0 disable top links at all.]]></phrase>
 			<phrase name="setting_vbv_top_voted_days_title" date="1262985570" username="Vitaly" version="0.1"><![CDATA["Top Voted" days limit]]></phrase>
 			<phrase name="settinggroup_vb_votes" date="1262979865" username="Vitaly" version="0.1"><![CDATA[vb Votes]]></phrase>
 		</phrasetype>
