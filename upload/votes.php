@@ -103,6 +103,7 @@ if ($_REQUEST['do'] == 'search')
         {
             eval(standard_error(fetch_error('invalidid', $vbphrase['user'], $vbulletin->options['contactuslink'])));
         }
+        $need_distinct = false;
         if ($vbulletin->GPC['fromuserid'])
         {
             // search by vote user
@@ -114,6 +115,7 @@ if ($_REQUEST['do'] == 'search')
             // search by voted post author
             $type = 'touserid';
             $search_user_id = $vbulletin->GPC['touserid'];
+            $need_distinct = true;
         }
         // get user info
         if ($user = $db->query_first("SELECT userid, username FROM " . TABLE_PREFIX . "user WHERE userid = " . $search_user_id))
@@ -126,7 +128,7 @@ if ($_REQUEST['do'] == 'search')
             eval(standard_error(fetch_error('invalidid', $vbphrase['user'], $vbulletin->options['contactuslink'])));
         }
         $searchhash = md5(THIS_SCRIPT . TIMENOW . $type . $search_user_id . $searchuser);
-        $sql = 'SELECT
+        $sql = 'SELECT ' . ($need_distinct ? 'DISTINCT' : '') . '
                     `targetid`, `targettype`
                 FROM
                     `' . TABLE_PREFIX . 'votes`
