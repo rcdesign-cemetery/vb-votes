@@ -162,6 +162,10 @@ if ($_REQUEST['do'] == 'search')
     {
         eval(standard_error(fetch_error('searchnoresults', ''), '', false));
     }
+    if (!$vbulletin->GPC['top'])
+    {
+        rsort($orderedids, SORT_NUMERIC);
+    }
 
     // set display terms
     $display = array(
