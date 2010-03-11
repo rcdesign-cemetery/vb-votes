@@ -35,7 +35,6 @@ $vbulletin->input->clean_array_gpc('r', array(
     'targetid'    => TYPE_INT, // post id
     'ajax'    => TYPE_BOOL 
 ));
-$target_id = $vbulletin->GPC['targetid'];
 require_once(DIR . '/includes/functions_votes.php');
 
 if ($_REQUEST['do'] == 'search')
@@ -207,6 +206,9 @@ if ($_REQUEST['do'] == 'search')
     eval(print_standard_redirect('search'));
 }
 
+$target_id = $vbulletin->GPC['targetid'];
+$target = fetch_post($target_id);
+
 if ($_REQUEST['do'] == 'vote')
 {
     $vbulletin->input->clean_array_gpc('r', array(
@@ -219,10 +221,8 @@ if ($_REQUEST['do'] == 'vote')
         standard_error(fetch_error('vbv_try_neg_vote'));
     }
 
-    $postinfo = fetch_postinfo($target_id);
-
     // check and throw error
-    is_user_can_vote($target_id, true);
+    is_user_can_vote($target, true);
 
     // save vote into db
     $sql = 'INSERT INTO `' . TABLE_PREFIX . 'votes` (
@@ -238,15 +238,15 @@ if ($_REQUEST['do'] == 'vote')
                     "' . VOTE_TARGET_TYPE . '",
                     "' . ($vbulletin->GPC['value'] ? '1': '-1') . '",
                     ' . $vbulletin->userinfo['userid'] . ',
-                    ' . $postinfo['userid'] . ',
+                    ' . $target['userid'] . ',
                     ' . TIMENOW .
-        ')';
+            ')';
 
     $db->query_write($sql);
     if (!$vbulletin->GPC['ajax'])
     {
         // voted message + redirect
-        $vbulletin->url = 'showthread.php?' . $vbulletin->session->vars['sessionurl_js'] . "p=$postinfo[postid]#post$postinfo[postid]";
+        $vbulletin->url = 'showthread.php?' . $vbulletin->session->vars['sessionurl_js'] . "p=$target[postid]#post$target[postid]";
         eval(print_standard_redirect('redirect_'. VOTE_TARGET_TYPE .'_vote_add'));
     }
     $vote_button_style = 'none';
@@ -265,7 +265,7 @@ if ($_REQUEST['do'] == 'remove')
             print_no_permission();
         }
     }
-    elseif (!$vbulletin->options['vbv_delete_own_votes'])
+    elseif (!$vbulletin->options['vbv_delete_own_votes'] OR is_post_old($target['dateline']))
     {
         print_no_permission();
     }
@@ -291,8 +291,7 @@ if ($_REQUEST['do'] == 'remove')
 
     if (!$vbulletin->GPC['ajax'])
     {
-        $postinfo = fetch_postinfo($target_id);
-        $vbulletin->url = 'showthread.php?' . $vbulletin->session->vars['sessionurl_js'] . "p=$postinfo[postid]#post$postinfo[postid]";
+        $vbulletin->url = 'showthread.php?' . $vbulletin->session->vars['sessionurl_js'] . "p=$target[postid]#post$target[postid]";
         eval(print_standard_redirect('redirect_'. VOTE_TARGET_TYPE .'_vote_add'));
     }
 
@@ -324,7 +323,7 @@ if (is_user_can_see_votes_result())
     {
         foreach ($votes as $vote_type=>$user_voted_list)
         {
-            $voted_table .= create_voted_result($vote_type, $user_voted_list, $target_id, VOTE_TARGET_TYPE);
+            $voted_table .= create_voted_result($vote_type, $user_voted_list, $target, VOTE_TARGET_TYPE);
         }
     }
 }

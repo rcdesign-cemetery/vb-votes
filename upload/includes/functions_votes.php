@@ -9,11 +9,11 @@ define('VOTE_HANDLER_SCRIPT', 'votes.php');
  * @global array $stylevar
  * @param string $vote_type
  * @param array $user_voted_list
- * @param int $target_id
+ * @param array $target
  * @param string $target_type
  * @return string
  */
-function create_voted_result($vote_type, $user_voted_list, $target_id, $target_type = NULL)
+function create_voted_result($vote_type, $user_voted_list, $target, $target_type = NULL)
 {
     if (empty($user_voted_list))
     {
@@ -29,7 +29,7 @@ function create_voted_result($vote_type, $user_voted_list, $target_id, $target_t
         eval('$user_vote_bit = "' . fetch_template('forum_voted_user_bit') . '";');
         $votes['vote_list'] .= $user_vote_bit;
         // add link remove own user vote
-        if ($voted_user['fromuserid'] == $vbulletin->userinfo['userid'] AND $vbulletin->options['vbv_enable_neg_votes'])
+        if ($vbulletin->options['vbv_delete_own_votes'] AND $voted_user['fromuserid'] == $vbulletin->userinfo['userid'] AND !is_post_old($target['dateline']))
         {
             $votes['remove_vote_link'] = create_vote_url(array('do'=>'remove'));
         }
@@ -37,7 +37,7 @@ function create_voted_result($vote_type, $user_voted_list, $target_id, $target_t
 
     if ('' !== $votes['vote_list'])
     {
-        $votes['target_id'] = $target_id;
+        $votes['target_id'] = $target['postid'];
         $votes['vote_type'] = 'Positive';
         $votes['post_user_votes'] = $vbphrase['vbv_positive_user_votes'];
         if ('-1' == $vote_type)
@@ -134,20 +134,21 @@ function get_vote_for_post_list($target_id_list, $vote_type = NULL, $target_type
 
 /**
  * Check user can vote?
- * 
- * <b>Note</b>: if flag $throw_error set as true, then script halts execution 
+ *
+ * <b>Note</b>: if flag $throw_error set as true, then script halts execution
  * and shows the specified error message
  *
  * @global vB_Registry $vbulletin
- * @param int $target_id
+ * @param array $target
  * @param bool $throw_error
  * @param string $target_type
  * @return string
  */
-function is_user_can_vote($target_id, $throw_error = false, $target_type = NULL)
+function is_user_can_vote($target, $throw_error = false, $target_type = NULL)
 {
     global $vbulletin;
     $error = null;
+    $target_id = $target['postid'];
 
     if (is_null($target_type))
     {
@@ -171,23 +172,18 @@ function is_user_can_vote($target_id, $throw_error = false, $target_type = NULL)
 
     if ('forum' == $target_type)
     {
-        $postinfo = fetch_postinfo($target_id);
-
-        // this is new post
-        if ((int)$vbulletin->options['vbv_post_days_old'] > 0)
+        // is this post old
+        if (is_post_old($target['dateline']))
         {
-            $date_limit = TIMENOW - 24 * 60 * 60 * (int)$vbulletin->options['vbv_post_days_old'];
-            if ($postinfo['dateline'] < $date_limit)
+            if ($throw_error)
             {
-                if ($throw_error)
-                {
-                    standard_error(fetch_error('vbv_post_old'));
-                }
-                return false;
+                standard_error(fetch_error('vbv_post_old'));
             }
+            return false;
         }
 
-        $threadinfo = fetch_threadinfo($postinfo['threadid']);
+
+        $threadinfo = fetch_threadinfo($target['threadid']);
         // this post is not in close forum
         $unvoted_forum = explode(',', $vbulletin->options['vbv_ignored_forums']);
         if (in_array($threadinfo['forumid'], $unvoted_forum))
@@ -200,7 +196,7 @@ function is_user_can_vote($target_id, $throw_error = false, $target_type = NULL)
         }
 
         // user is not author of this topic
-        if ( $vbulletin->userinfo['userid'] == $postinfo['userid'])
+        if ( $vbulletin->userinfo['userid'] == $target['userid'])
         {
 
             if ($throw_error)
@@ -350,7 +346,7 @@ function is_user_can_see_votes_result()
 function delete_votes_by_target_id_list($target_id_list, $target_type = null)
 {
     global $db;
-    
+
     if (is_null($target_type))
     {
         $target_type = VOTE_TARGET_TYPE;
@@ -363,5 +359,23 @@ function delete_votes_by_target_id_list($target_id_list, $target_type = null)
                 `targettype` = "' . $target_type . '"';
     $db->query_write($sql);
     return trus;
+}
+
+/**
+ * 
+ *
+ * @global vb_Registry $vbulletin
+ * @param int $date
+ * @return bool
+ */
+function is_post_old($date)
+{
+    global $vbulletin;
+    if ((int)$vbulletin->options['vbv_post_days_old'] > 0)
+    {
+        $date_limit = TIMENOW - 24 * 60 * 60 * (int)$vbulletin->options['vbv_post_days_old'];
+        return ($date < $date_limit);
+    }
+    return false;
 }
 ?>

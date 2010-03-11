@@ -292,13 +292,13 @@ if (THIS_SCRIPT == 'showthread' || THIS_SCRIPT == 'showpost' || THIS_SCRIPT == '
         {
             foreach ($votes as $vote_type=>$user_voted_list)
             {
-                $vote_results .= create_voted_result($vote_type, $user_voted_list, $post['postid'], VOTE_TARGET_TYPE);
+                $vote_results .= create_voted_result($vote_type, $user_voted_list, $post, VOTE_TARGET_TYPE);
             }
         }
         $template_hook['postbit_end'] .= $vote_results;
 
         $show['vote_button_hide'] = true;
-        if (is_user_can_vote($post['postid']))
+        if (is_user_can_vote($post))
         {
             if ($this->registry->options['vbv_enable_neg_votes'])
             {
