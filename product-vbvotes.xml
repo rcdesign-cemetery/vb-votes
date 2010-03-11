@@ -304,11 +304,11 @@ if (THIS_SCRIPT == 'showthread' || THIS_SCRIPT == 'showpost' || THIS_SCRIPT == '
             {
                 $show['negative'] = true;
             }
-            $post['vote_link'] = create_vote_url(array('do'=>'vote', 'targetid'=>$post['postid']));
             $show['vote_button_hide'] = false;
         }
+        $post['vote_link'] = create_vote_url(array('do'=>'vote', 'targetid'=>$post['postid']));
+        eval('$template_hook[postbit_controls] .= " ' . fetch_template('forum_vote_buttons') . '";');
     }
-    eval('$template_hook[postbit_controls] .= " ' . fetch_template('forum_vote_buttons') . '";');
 }
     ]]></phpcode>
 		</plugin>
