@@ -207,7 +207,7 @@ if ($_REQUEST['do'] == 'search')
 }
 
 $target_id = $vbulletin->GPC['targetid'];
-$target = fetch_post($target_id);
+$target = fetch_postinfo($target_id);
 
 if ($_REQUEST['do'] == 'vote')
 {
@@ -297,7 +297,7 @@ if ($_REQUEST['do'] == 'remove')
 
 
     $vote_button = '';
-    if (!is_user_can_vote($target_id))
+    if (!is_user_can_vote($target))
     {
         $vote_button_style = 'none';
     }
