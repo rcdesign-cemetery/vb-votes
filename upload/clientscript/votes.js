@@ -1,6 +1,6 @@
 
 /**
- * Adds onclick events to appropriate elements for post voting
+ * Adds onclick events to voting buttons and delete links
  *
  * @param	string	The ID of the form that contains the rating options
  */

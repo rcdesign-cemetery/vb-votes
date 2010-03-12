@@ -60,8 +60,9 @@ if ($_REQUEST['do'] == 'search')
 
     if ($vbulletin->GPC['top'])
     {
-        $time_line = TIMENOW - 24 * 60 * 60 * $vbulletin->options['vbv_top_voted_days'];
         // search top voted posts
+        $time_line = TIMENOW - 24 * 60 * 60 * $vbulletin->options['vbv_top_voted_days'];
+        
         $sql = 'SELECT
                     DISTINCT `targetid`
                 FROM
@@ -97,7 +98,7 @@ if ($_REQUEST['do'] == 'search')
     }
     else
     {
-        // search by vote user or search by voted post author
+        // search given or received votes by user
         if (!$vbulletin->GPC['fromuserid'] AND !$vbulletin->GPC['touserid'])
         {
             eval(standard_error(fetch_error('invalidid', $vbphrase['user'], $vbulletin->options['contactuslink'])));
@@ -163,6 +164,8 @@ if ($_REQUEST['do'] == 'search')
     {
         eval(standard_error(fetch_error('searchnoresults', ''), '', false));
     }
+
+    // order by id (postid) for search from user profile
     if (!$vbulletin->GPC['top'])
     {
         rsort($orderedids, SORT_NUMERIC);
@@ -295,8 +298,6 @@ if ($_REQUEST['do'] == 'remove')
         eval(print_standard_redirect('redirect_'. VOTE_TARGET_TYPE .'_vote_add'));
     }
 
-
-    $vote_button = '';
     if (!is_user_can_vote($target))
     {
         $vote_button_style = 'none';
@@ -310,8 +311,7 @@ require_once(DIR . '/includes/class_xml.php');
 $xml = new vB_AJAX_XML_Builder($vbulletin, 'text/xml');
 $xml->add_group('voting');
 
-
-$voted_table = '<div id="votes_buttons_$post[postid]"></div';
+$voted_table = '';
 if (is_user_can_see_votes_result())
 {
     if (! $vbulletin->options['vbv_enable_neg_votes'])

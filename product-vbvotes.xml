@@ -128,7 +128,7 @@ if (THIS_SCRIPT == 'member')
 }
 if (THIS_SCRIPT == 'search')
 {
-    $globaltemplates[] =forum_votes_search_postbit;
+    $globaltemplates[] = forum_votes_search_postbit;
 }
 if (THIS_SCRIPT == 'showthread' || THIS_SCRIPT == 'showpost' || THIS_SCRIPT == 'votepost')
 {
@@ -214,14 +214,15 @@ if (in_array($destforuminfo['forumid'], $unvoted_forums))
 }]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
-			<title>Dysplay votes statistic in member profile</title>
+			<title>Display votes statistics in member profile</title>
 			<hookname>member_profileblock_fetch_unwrapped</hookname>
 			<phpcode><![CDATA[if ('vB_ProfileBlock_Statistics' == get_class($this))
 {
     global $db;
 
     $target_type = 'forum';
-    // received voted
+
+    // received votes
     $sql = 'SELECT
             `vote` , count( vote ) AS count
         FROM
@@ -248,7 +249,7 @@ if (in_array($destforuminfo['forumid'], $unvoted_forums))
         $userinfo[$amount_type] = $votes_amount['count'];
     }
 
-    // gived
+    // given
     $sql = 'SELECT
                 `vote` , count( vote ) AS count
             FROM
@@ -278,10 +279,9 @@ if (in_array($destforuminfo['forumid'], $unvoted_forums))
 }]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
-			<title>Display votes</title>
+			<title>Display votes after post</title>
 			<hookname>postbit_display_complete</hookname>
-			<phpcode><![CDATA[
-if (THIS_SCRIPT == 'showthread' || THIS_SCRIPT == 'showpost' || THIS_SCRIPT == 'votepost')
+			<phpcode><![CDATA[if (THIS_SCRIPT == 'showthread' || THIS_SCRIPT == 'showpost' || THIS_SCRIPT == 'votepost')
 {
     if ( 0 < (int)$this->registry->userinfo['userid'])
     {
@@ -309,11 +309,10 @@ if (THIS_SCRIPT == 'showthread' || THIS_SCRIPT == 'showpost' || THIS_SCRIPT == '
         $post['vote_link'] = create_vote_url(array('do'=>'vote', 'targetid'=>$post['postid']));
         eval('$template_hook[postbit_controls] .= " ' . fetch_template('forum_vote_buttons') . '";');
     }
-}
-    ]]></phpcode>
+}]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
-			<title>Clear votes (post delete)</title>
+			<title>Clear votes on post delete</title>
 			<hookname>postdata_delete</hookname>
 			<phpcode><![CDATA[require_once(DIR . '/includes/functions_votes.php');
 delete_votes_by_target_id_list(array($postid), 'forum');]]></phpcode>
@@ -328,6 +327,8 @@ delete_votes_by_target_id_list(array($postid), 'forum');]]></phpcode>
 			<hookname>search_results_prebits</hookname>
 			<phpcode><![CDATA[define ('VOTE_TARGET_TYPE', 'forum');
 require_once(DIR . '/includes/functions_votes.php');
+
+// Collect votes info fro all searchbits
 $post_votes = array();
 if (is_user_can_see_votes_result())
 {
@@ -350,7 +351,9 @@ if (is_user_can_see_votes_result())
     }
 }
 
-// Add title to votes search result
+// Add title to votes search results:
+// - for "top"
+// - for user stat
 if (isset($display['votes']))
 {
     if ('1' == $display['votes']['value'])
@@ -432,7 +435,7 @@ if (is_user_can_see_votes_result())
 }]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
-			<title>Clear votes (thread delete)</title>
+			<title>Clear votes on thread delete</title>
 			<hookname>threaddata_delete</hookname>
 			<phpcode><![CDATA[$sql = 'SELECT `postid`
             FROM ' . TABLE_PREFIX . 'post AS post
@@ -472,7 +475,7 @@ if (in_array($destforuminfo['forumid'], $unvoted_forums))
 }]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
-			<title>Merge votes</title>
+			<title>Merge votes on user accounts merge</title>
 			<hookname>useradmin_merge</hookname>
 			<phpcode><![CDATA[// note: votes for old account will be remove into "Clear votes(user delete)" hook (userdata_delete)
 $sql = 'INSERT IGNORE INTO
@@ -491,13 +494,13 @@ $sql = 'INSERT IGNORE INTO
 $db->query_write($sql);]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
-			<title>Clear votes (user delete)</title>
+			<title>Clear votes on user delete</title>
 			<hookname>userdata_delete</hookname>
 			<phpcode><![CDATA[require_once(DIR . '/includes/functions_votes.php');
 clear_votes_by_user_id($this->existing['userid']);]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
-			<title>Clear votes for banned user</title>
+			<title>Clear votes on user move to banned group</title>
 			<hookname>userdata_postsave</hookname>
 			<phpcode><![CDATA[if ($this->usergroups_changed())
 {
@@ -528,8 +531,7 @@ clear_votes_by_user_id($this->existing['userid']);]]></phpcode>
             clear_votes_by_user_id($userid);
         }
     }
-}
-        ]]></phpcode>
+}]]></phpcode>
 		</plugin>
 	</plugins>
 	<phrases>

@@ -78,7 +78,7 @@ function get_vote_for_post($target_id, $vote_type = NULL, $target_type = NULL)
 /**
  * Get votes for post list
  *
- * @global vB-Database $db
+ * @global vB_Database $db
  * @staticvar array $target_votes
  * @param array $target_id_list
  * @param string $vote_type
@@ -362,7 +362,7 @@ function delete_votes_by_target_id_list($target_id_list, $target_type = null)
 }
 
 /**
- * 
+ * Check, is this post too old to be voted?
  *
  * @global vb_Registry $vbulletin
  * @param int $date
