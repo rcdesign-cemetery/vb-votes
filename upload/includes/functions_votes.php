@@ -26,7 +26,7 @@ function create_voted_result($vote_type, $user_voted_list, $target, $target_type
     $votes['remove_vote_link'] = '';
     foreach ($user_voted_list as $voted_user)
     {
-        eval('$user_vote_bit = "' . fetch_template('forum_voted_user_bit') . '";');
+        eval('$user_vote_bit = "' . fetch_template('vote_postbit_user') . '";');
         $votes['vote_list'] .= $user_vote_bit;
         // add link remove own user vote
         if ($vbulletin->options['vbv_delete_own_votes'] AND $voted_user['fromuserid'] == $vbulletin->userinfo['userid'] AND !is_post_old($target['dateline']))
@@ -50,12 +50,7 @@ function create_voted_result($vote_type, $user_voted_list, $target, $target_type
         {
             $votes['remove_all_votes_link'] = create_vote_url(array('do'=>'remove', 'all'=>1, 'value'=>(string)$vote_type));
         }
-
-        if (is_null($target_type))
-        {
-            $target_type = VOTE_TARGET_TYPE;
-        }
-        eval('$voted_table = "' . fetch_template($target_type . '_voted_postbit') . '";');
+        eval('$voted_table = "' . fetch_template('vote_postbit_info') . '";');
     }
     return $voted_table;
 }

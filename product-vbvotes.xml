@@ -34,7 +34,7 @@ $db->show_errors();]]></uninstallcode>
 		</code>
 	</codes>
 	<templates>
-		<template name="forum_voted_postbit" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
+		<template name="vote_postbit_info" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
 <div id="PostVotesResult::$votes[vote_type]::$votes[target_id]" style="padding:$stylevar[cellpadding]px 0px 0px 0px">
 	<table class="tborder" cellpadding="$stylevar[cellpadding]" cellspacing="$stylevar[cellspacing]" border="0" width="100%" align="center">
 		<tr>
@@ -52,24 +52,24 @@ $db->show_errors();]]></uninstallcode>
 	</table>
 </div>
         ]]></template>
-		<template name="forum_voted_user_bit" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
+		<template name="vote_postbit_user" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
             <a href="member.php?$session[sessionurl]u=$voted_user[fromuserid]" rel="nofollow">$voted_user[username]</a>&nbsp;
         ]]></template>
-		<template name="forum_votes_search_postbit" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
+		<template name="vote_searchbit_stat" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
             <if condition="$post['positive_votes']">+ $post[positive_votes]</if>
             <if condition="$post['positive_votes'] AND $post['negative_votes']">/</if>
             <if condition="$post['negative_votes']">- $post[negative_votes]</if>
         ]]></template>
-		<template name="forum_vote_buttons" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
+		<template name="vote_postbit_button" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
             <a href="$post[vote_link]&amp;value=1" rel="nofollow" name="PostVote::Positive::$post[postid]" id="PostVote::Positive::$post[postid]" <if condition="$show[vote_button_hide]">style="display: none;"</if> ><img src="$stylevar[imgdir_button]/vote_positive.gif" alt="$vbphrase[vbv_positive_vote]" border="0" /></a>
             <if condition="$show[negative]">
             <a href="$post[vote_link]&amp;value=0" rel="nofollow" name="PostVote::Negative::$post[postid]" id="PostVote::Negative::$post[postid]"  <if condition="$show[vote_button_hide]">style="display: none;"</if> ><img src="$stylevar[imgdir_button]/vote_negative.gif" alt="$vbphrase[vbv_negative_vote]" border="0" /></a>
             </if>
         ]]></template>
-		<template name="forum_vote_js" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
+		<template name="vote_js" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
             <script type="text/javascript" src="clientscript/votes.js"></script>
         ]]></template>
-		<template name="navbar_search_votes" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
+		<template name="vote_navbar_toplinks" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
         <tr>
             <td class="thead">$vbphrase[vbv_navbar_section]</td>
         </tr>
@@ -83,7 +83,7 @@ $db->show_errors();]]></uninstallcode>
         </if>
         
         ]]></template>
-		<template name="voted_memberinfo_block" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
+		<template name="vote_profile_stat" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
 <fieldset class="statistics_group">
 	<legend>$vbphrase[vbv_votes_statistic]</legend>
 	<ul class="list_no_decoration">
@@ -101,14 +101,14 @@ $db->show_errors();]]></uninstallcode>
                 0
             </if>
         </li>
-        <li><span class="shade">$vbphrase[vbv_gived_votes]:</span>
-            <if condition="$userinfo['gived_positive_votes'] OR $userinfo['gived_negative_votes']">
-                <if condition="$userinfo['gived_positive_votes']">
-                    + <a href="$userinfo[gived_votes_search_url]&amp;value=1">$userinfo[gived_positive_votes]</a>
+        <li><span class="shade">$vbphrase[vbv_given_votes]:</span>
+            <if condition="$userinfo['given_positive_votes'] OR $userinfo['given_negative_votes']">
+                <if condition="$userinfo['given_positive_votes']">
+                    + <a href="$userinfo[given_votes_search_url]&amp;value=1">$userinfo[given_positive_votes]</a>
                 </if>
-                <if condition="$userinfo['gived_positive_votes'] AND $userinfo['gived_negative_votes']"> / </if>
-                <if condition="$userinfo['gived_negative_votes']">
-                    - <a href="$userinfo[gived_votes_search_url]&amp;value=-1">$userinfo[gived_negative_votes]</a>
+                <if condition="$userinfo['given_positive_votes'] AND $userinfo['given_negative_votes']"> / </if>
+                <if condition="$userinfo['given_negative_votes']">
+                    - <a href="$userinfo[given_votes_search_url]&amp;value=-1">$userinfo[given_negative_votes]</a>
                 </if>
             <else />
                 0
@@ -121,21 +121,21 @@ $db->show_errors();]]></uninstallcode>
 		<plugin active="1" executionorder="5">
 			<title>Cache templates</title>
 			<hookname>cache_templates</hookname>
-			<phpcode><![CDATA[$globaltemplates[] = 'navbar_search_votes';
+			<phpcode><![CDATA[$globaltemplates[] = 'vote_navbar_toplinks';
 if (THIS_SCRIPT == 'member')
 {
-    $globaltemplates[] = 'voted_memberinfo_block';
+    $globaltemplates[] = 'vote_profile_stat';
 }
 if (THIS_SCRIPT == 'search')
 {
-    $globaltemplates[] = forum_votes_search_postbit;
+    $globaltemplates[] = 'vote_searchbit_stat';
 }
 if (THIS_SCRIPT == 'showthread' || THIS_SCRIPT == 'showpost' || THIS_SCRIPT == 'votepost')
 {
-    $globaltemplates[] = 'forum_vote_buttons';
-    $globaltemplates[] = 'forum_vote_js';
-    $globaltemplates[] = 'forum_voted_user_bit';
-    $globaltemplates[] = 'forum_voted_postbit';
+    $globaltemplates[] = 'vote_postbit_button';
+    $globaltemplates[] = 'vote_js';
+    $globaltemplates[] = 'vote_postbit_user';
+    $globaltemplates[] = 'vote_postbit_info';
 }]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
@@ -178,7 +178,7 @@ $navbar['day_limit'] = $vbulletin->options['vbv_top_voted_days'];
 if (0 < $navbar['day_limit'])
 {
     $navbar['votes_link'] = create_vote_url(array('do'=>'search', 'top'=>'1'));
-    eval('$template_hook[navbar_search_menu] .= " ' . fetch_template('navbar_search_votes') . '";');
+    eval('$template_hook[navbar_search_menu] .= " ' . fetch_template('vote_navbar_toplinks') . '";');
 }]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
@@ -261,21 +261,21 @@ if (in_array($destforuminfo['forumid'], $unvoted_forums))
     $db_resource = $db->query_read($sql);
     if ($db_resource)
     {
-        $userinfo['gived_votes_search_url'] = create_vote_url(array('do'=>'search', 'fromuserid'=>$userinfo['userid']));
+        $userinfo['given_votes_search_url'] = create_vote_url(array('do'=>'search', 'fromuserid'=>$userinfo['userid']));
     }
     while ($votes_amount = $db->fetch_array($db_resource))
     {
         if ('1' == $votes_amount['vote'])
         {
-            $amount_type = 'gived_positive_votes';
+            $amount_type = 'given_positive_votes';
         }
         else
         {
-            $amount_type = 'gived_negative_votes';
+            $amount_type = 'given_negative_votes';
         }
         $userinfo[$amount_type] = $votes_amount['count'];
     }
-    eval('$template_hook[profile_stats_pregeneral] .= "' . fetch_template('voted_memberinfo_block') . '";');
+    eval('$template_hook[profile_stats_pregeneral] .= "' . fetch_template('vote_profile_stat') . '";');
 }]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
@@ -307,7 +307,7 @@ if (in_array($destforuminfo['forumid'], $unvoted_forums))
             $show['vote_button_hide'] = false;
         }
         $post['vote_link'] = create_vote_url(array('do'=>'vote', 'targetid'=>$post['postid']));
-        eval('$template_hook[postbit_controls] .= " ' . fetch_template('forum_vote_buttons') . '";');
+        eval('$template_hook[postbit_controls] .= " ' . fetch_template('vote_postbit_button') . '";');
     }
 }]]></phpcode>
 		</plugin>
@@ -320,7 +320,7 @@ delete_votes_by_target_id_list(array($postid), 'forum');]]></phpcode>
 		<plugin active="1" executionorder="5">
 			<title>Add votes to search result. Part 2.</title>
 			<hookname>search_results_postbit</hookname>
-			<phpcode><![CDATA[eval('$post[\'typeprefix\'] = "' . fetch_template('forum_votes_search_postbit') . '" . $post[\'typeprefix\'];');]]></phpcode>
+			<phpcode><![CDATA[eval('$post[\'typeprefix\'] = "' . fetch_template('vote_searchbit_stat') . '" . $post[\'typeprefix\'];');]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
 			<title>Add votes to search result. Part 1.</title>
@@ -388,7 +388,7 @@ if (isset($display['votes']))
 			<phpcode><![CDATA[$show['datepicker'] = true; // stub
 if (TRUE == $show['datepicker'])
 {
-    eval('$headinclude .= "' . fetch_template('forum_vote_js') . '";');
+    eval('$headinclude .= "' . fetch_template('vote_js') . '";');
     $postbits .= '<script type="text/javascript">
                     <!--
                         // initialize vote buttons
@@ -404,7 +404,7 @@ if (TRUE == $show['datepicker'])
 			<phpcode><![CDATA[$show['datepicker'] = true; // stub
 if (TRUE == $show['datepicker'])
 {
-    eval('$headinclude .= "' . fetch_template('forum_vote_js') . '";');
+    eval('$headinclude .= "' . fetch_template('vote_js') . '";');
     $template_hook[showthread_after_activeusers] .= '<script type="text/javascript">
             <!--
                 // initialize vote buttons and votes resulut table

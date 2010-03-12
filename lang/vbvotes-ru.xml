@@ -24,7 +24,7 @@
 		<phrase name="vbv_your_post" date="1267730343" username="Vitaly"><![CDATA[Нельзя голосовать за самого себя]]></phrase>
 	</phrasetype>
 	<phrasetype name="GLOBAL" fieldname="global">
-		<phrase name="vbv_gived_votes" date="1267728837" username="Vitaly"><![CDATA[Роздано на форуме]]></phrase>
+		<phrase name="vbv_given_votes" date="1268400987" username="varnak" version="0.1"><![CDATA[Роздано на форуме]]></phrase>
 		<phrase name="vbv_navbar_section" date="1267728997" username="Vitaly"><![CDATA[Топ голосов]]></phrase>
 		<phrase name="vbv_negative_votes_search" date="1267728969" username="Vitaly"><![CDATA[Топ помидорин за {1} дней]]></phrase>
 		<phrase name="vbv_positive_votes_search" date="1267698477" username="varnak" version="0.1"><![CDATA[Топ благодарностей за {1} дней]]></phrase>
