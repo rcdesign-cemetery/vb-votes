@@ -29,10 +29,10 @@
 		<phrase name="vbv_negative_votes_search" date="1267728969" username="Vitaly"><![CDATA[Топ помидорин за {1} дней]]></phrase>
 		<phrase name="vbv_positive_votes_search" date="1267698477" username="varnak" version="0.1"><![CDATA[Топ благодарностей за {1} дней]]></phrase>
 		<phrase name="vbv_received_votes" date="1267784708" username="varnak" version="0.1"><![CDATA[Получено на форуме]]></phrase>
-		<phrase name="vbv_user_given_negative_votes" date="1268136724" username="Vitaly"><![CDATA[{1} - роздал отрицательных оценок]]></phrase>
-		<phrase name="vbv_user_given_positive_votes" date="1268136742" username="Vitaly"><![CDATA[{1} - роздал положительных оценок]]></phrase>
-		<phrase name="vbv_user_received_negative_votes" date="1268136762" username="Vitaly"><![CDATA[{1} - получил отрицательных оценок]]></phrase>
-		<phrase name="vbv_user_received_positive_votes" date="1268136786" username="Vitaly"><![CDATA[{1} - получил положительных оценок]]></phrase>
+		<phrase name="vbv_user_given_negative_votes" date="1268461940" username="Vitaly"><![CDATA[{1} - розданные отрицательные оценки]]></phrase>
+		<phrase name="vbv_user_given_positive_votes" date="1268461965" username="Vitaly"><![CDATA[{1} - розданные положительные оценки]]></phrase>
+		<phrase name="vbv_user_received_negative_votes" date="1268461987" username="Vitaly"><![CDATA[{1} - полученные отрицательные оценки]]></phrase>
+		<phrase name="vbv_user_received_positive_votes" date="1268462010" username="Vitaly"><![CDATA[{1} - полученные положительные оценки]]></phrase>
 		<phrase name="vbv_votes_statistic" date="1267728754" username="Vitaly"><![CDATA[Голоса]]></phrase>
 	</phrasetype>
 	<phrasetype name="Postbit" fieldname="postbit">
