@@ -34,6 +34,29 @@ $db->show_errors();]]></uninstallcode>
 		</code>
 	</codes>
 	<templates>
+		<template name="vote_js" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
+            <script type="text/javascript" src="clientscript/votes.js"></script>
+        ]]></template>
+		<template name="vote_navbar_toplinks" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
+        <tr>
+            <td class="thead">$vbphrase[vbv_navbar_section]</td>
+        </tr>
+        <tr>
+            <td class="vbmenu_option"><a href="$navbar[votes_link]&amp;value=1"><phrase 1="$navbar[day_limit]">$vbphrase[vbv_positive_votes_search]</phrase></a></td>
+        </tr>
+        <if condition="$show[negative]">
+            <tr>
+                <td class="vbmenu_option"><a href="$navbar[votes_link]&amp;value=-1"><phrase 1="$navbar[day_limit]">$vbphrase[vbv_negative_votes_search]</phrase></a></td>
+            </tr>
+        </if>
+        
+        ]]></template>
+		<template name="vote_postbit_button" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
+            <a href="$post[vote_link]&amp;value=1" rel="nofollow" name="PostVote::Positive::$post[postid]" id="PostVote::Positive::$post[postid]" <if condition="$show[vote_button_hide]">style="display: none;"</if> ><img src="$stylevar[imgdir_button]/vote_positive.gif" alt="$vbphrase[vbv_positive_vote]" border="0" /></a>
+            <if condition="$show[negative]">
+            <a href="$post[vote_link]&amp;value=0" rel="nofollow" name="PostVote::Negative::$post[postid]" id="PostVote::Negative::$post[postid]"  <if condition="$show[vote_button_hide]">style="display: none;"</if> ><img src="$stylevar[imgdir_button]/vote_negative.gif" alt="$vbphrase[vbv_negative_vote]" border="0" /></a>
+            </if>
+        ]]></template>
 		<template name="vote_postbit_info" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
 <div id="PostVotesResult::$votes[vote_type]::$votes[target_id]" style="padding:$stylevar[cellpadding]px 0px 0px 0px">
 	<table class="tborder" cellpadding="$stylevar[cellpadding]" cellspacing="$stylevar[cellspacing]" border="0" width="100%" align="center">
@@ -54,34 +77,6 @@ $db->show_errors();]]></uninstallcode>
         ]]></template>
 		<template name="vote_postbit_user" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
             <a href="member.php?$session[sessionurl]u=$voted_user[fromuserid]" rel="nofollow">$voted_user[username]</a>&nbsp;
-        ]]></template>
-		<template name="vote_searchbit_stat" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
-            <if condition="$post['positive_votes']">+ $post[positive_votes]</if>
-            <if condition="$post['positive_votes'] AND $post['negative_votes']">/</if>
-            <if condition="$post['negative_votes']">- $post[negative_votes]</if>
-        ]]></template>
-		<template name="vote_postbit_button" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
-            <a href="$post[vote_link]&amp;value=1" rel="nofollow" name="PostVote::Positive::$post[postid]" id="PostVote::Positive::$post[postid]" <if condition="$show[vote_button_hide]">style="display: none;"</if> ><img src="$stylevar[imgdir_button]/vote_positive.gif" alt="$vbphrase[vbv_positive_vote]" border="0" /></a>
-            <if condition="$show[negative]">
-            <a href="$post[vote_link]&amp;value=0" rel="nofollow" name="PostVote::Negative::$post[postid]" id="PostVote::Negative::$post[postid]"  <if condition="$show[vote_button_hide]">style="display: none;"</if> ><img src="$stylevar[imgdir_button]/vote_negative.gif" alt="$vbphrase[vbv_negative_vote]" border="0" /></a>
-            </if>
-        ]]></template>
-		<template name="vote_js" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
-            <script type="text/javascript" src="clientscript/votes.js"></script>
-        ]]></template>
-		<template name="vote_navbar_toplinks" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
-        <tr>
-            <td class="thead">$vbphrase[vbv_navbar_section]</td>
-        </tr>
-        <tr>
-            <td class="vbmenu_option"><a href="$navbar[votes_link]&amp;value=1"><phrase 1="$navbar[day_limit]">$vbphrase[vbv_positive_votes_search]</phrase></a></td>
-        </tr>
-        <if condition="$show[negative]">
-            <tr>
-                <td class="vbmenu_option"><a href="$navbar[votes_link]&amp;value=-1"><phrase 1="$navbar[day_limit]">$vbphrase[vbv_negative_votes_search]</phrase></a></td>
-            </tr>
-        </if>
-        
         ]]></template>
 		<template name="vote_profile_stat" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
 <fieldset class="statistics_group">
@@ -116,6 +111,11 @@ $db->show_errors();]]></uninstallcode>
         </li>
 	</ul>
 </fieldset>]]></template>
+		<template name="vote_searchbit_stat" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
+            <if condition="$post['positive_votes']">+ $post[positive_votes]</if>
+            <if condition="$post['positive_votes'] AND $post['negative_votes']">/</if>
+            <if condition="$post['negative_votes']">- $post[negative_votes]</if>
+        ]]></template>
 	</templates>
 	<plugins>
 		<plugin active="1" executionorder="5">
@@ -161,9 +161,9 @@ if (THIS_SCRIPT == 'showthread' || THIS_SCRIPT == 'showpost' || THIS_SCRIPT == '
 			<phpcode><![CDATA[define ('VOTE_TARGET_TYPE', 'forum');
 require_once(DIR . '/includes/functions_votes.php');
 $post_votes = array();
-if (is_user_can_see_votes_result())
+if (can_vote_today())
 {
-    $post_votes = get_vote_for_post_list(array($postinfo['postid']));
+    $post_votes = get_votes_for_post_list(array($postinfo['postid']));
 }]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="20">
@@ -292,7 +292,7 @@ if (in_array($destforuminfo['forumid'], $unvoted_forums))
         {
             foreach ($votes as $vote_type=>$user_voted_list)
             {
-                $vote_results .= create_voted_result($vote_type, $user_voted_list, $post, VOTE_TARGET_TYPE);
+                $vote_results .= create_vote_result_bit($vote_type, $user_voted_list, $post, VOTE_TARGET_TYPE);
             }
         }
         $template_hook['postbit_end'] .= $vote_results;
@@ -330,14 +330,14 @@ require_once(DIR . '/includes/functions_votes.php');
 
 // Collect votes info fro all searchbits
 $post_votes = array();
-if (is_user_can_see_votes_result())
+if (can_vote_today())
 {
     $target_id_list = explode(',' , '0' . $ids);
     if (! $vbulletin->options['vbv_enable_neg_votes'])
     {
         $vote_type = '1';
     }
-    $post_votes = get_vote_for_post_list($target_id_list, $vote_type);
+    $post_votes = get_votes_for_post_list($target_id_list, $vote_type);
     foreach ($post_votes as $post_id=>$votes)
     {
         if ($votes['1'])
@@ -364,21 +364,19 @@ if (isset($display['votes']))
     {
         $votes_type = 'negative';
     }
-    if (array_key_exists('top', $display['votes']))
+    switch ($display['votes']['title_type'])
     {
-        $display['tag'] = construct_phrase($vbphrase['vbv_' . $votes_type .'_votes_search'], $vbulletin->options['vbv_top_voted_days']);
-    }
-    else
-    {
-        if (array_key_exists('touserid', $display['votes']))
-        {
-            $vote_phrase_name = 'vbv_user_received_' . $votes_type .'_votes';
-        }
-        else
-        {
+        case 'top':
+            $display['tag'] = construct_phrase($vbphrase['vbv_' . $votes_type .'_votes_search'], $vbulletin->options['vbv_top_voted_days']);
+            break;
+        case 'fromuser':
             $vote_phrase_name = 'vbv_user_given_' . $votes_type .'_votes';
-        }
-        $display['tag'] = construct_phrase($vbphrase[$vote_phrase_name], $display['votes']['username']);
+            $display['tag'] = construct_phrase($vbphrase[$vote_phrase_name], $display['votes']['username']);
+            break;
+        case 'touser':
+            $vote_phrase_name = 'vbv_user_received_' . $votes_type .'_votes';
+            $display['tag'] = construct_phrase($vbphrase[$vote_phrase_name], $display['votes']['username']);
+            break;
     }
 }]]></phpcode>
 		</plugin>
@@ -428,10 +426,10 @@ if (TRUE == $show['datepicker'])
 			<phpcode><![CDATA[define ('VOTE_TARGET_TYPE', 'forum');
 require_once(DIR . '/includes/functions_votes.php');
 $post_votes = array();
-if (is_user_can_see_votes_result())
+if (can_vote_today())
 {
     $target_id_list = explode(',' , '0' . $ids);
-    $post_votes = get_vote_for_post_list($target_id_list);
+    $post_votes = get_votes_for_post_list($target_id_list);
 }]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
@@ -543,15 +541,15 @@ clear_votes_by_user_id($this->existing['userid']);]]></phpcode>
 			<phrase name="vbv_your_post" date="1267730343" username="Vitaly" version=""><![CDATA[You can't vote yourself]]></phrase>
 		</phrasetype>
 		<phrasetype name="GLOBAL" fieldname="global">
-			<phrase name="vbv_gived_votes" date="1267728837" username="Vitaly" version=""><![CDATA[Given at forum]]></phrase>
+			<phrase name="vbv_given_votes" date="1267728837" username="Vitaly" version=""><![CDATA[Given at forum]]></phrase>
 			<phrase name="vbv_navbar_section" date="1267728997" username="Vitaly" version=""><![CDATA[Top votes]]></phrase>
 			<phrase name="vbv_negative_votes_search" date="1267728969" username="Vitaly" version=""><![CDATA[Top negative votes for {1} days]]></phrase>
 			<phrase name="vbv_positive_votes_search" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[Top positive votes for {1} days]]></phrase>
 			<phrase name="vbv_received_votes" date="1267728923" username="Vitaly" version=""><![CDATA[Received at forum]]></phrase>
-			<phrase name="vbv_user_given_negative_votes" date="1268136724" username="Vitaly" version=""><![CDATA[{1} - gave negative votes]]></phrase>
-			<phrase name="vbv_user_given_positive_votes" date="1268136742" username="Vitaly" version=""><![CDATA[{1} - gave positive votes]]></phrase>
-			<phrase name="vbv_user_received_negative_votes" date="1268136762" username="Vitaly" version=""><![CDATA[{1} - received negative votes]]></phrase>
-			<phrase name="vbv_user_received_positive_votes" date="1268136786" username="Vitaly" version=""><![CDATA[{1} - received positive votes]]></phrase>
+			<phrase name="vbv_user_given_negative_votes" date="1268461940" username="Vitaly" version=""><![CDATA[{1} - gave negative votes]]></phrase>
+			<phrase name="vbv_user_given_positive_votes" date="1268461965" username="Vitaly" version=""><![CDATA[{1} - gave positive votes]]></phrase>
+			<phrase name="vbv_user_received_negative_votes" date="1268461987" username="Vitaly" version=""><![CDATA[{1} - received negative votes]]></phrase>
+			<phrase name="vbv_user_received_positive_votes" date="1268462010" username="Vitaly" version=""><![CDATA[{1} - received positive votes]]></phrase>
 			<phrase name="vbv_votes_statistic" date="1267728754" username="Vitaly" version=""><![CDATA[Votes]]></phrase>
 		</phrasetype>
 		<phrasetype name="Postbit" fieldname="postbit">

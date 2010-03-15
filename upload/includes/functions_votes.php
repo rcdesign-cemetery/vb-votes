@@ -13,14 +13,14 @@ define('VOTE_HANDLER_SCRIPT', 'votes.php');
  * @param string $target_type
  * @return string
  */
-function create_voted_result($vote_type, $user_voted_list, $target, $target_type = NULL)
+function create_vote_result_bit($vote_type, $user_voted_list, $target, $target_type = NULL)
 {
     if (empty($user_voted_list))
     {
         return '';
     }
     global $vbulletin, $vbphrase, $stylevar;
-    $voted_table = '';
+    $vote_results = '';
     $votes = array();
     $votes['vote_list'] = '';
     $votes['remove_vote_link'] = '';
@@ -50,28 +50,37 @@ function create_voted_result($vote_type, $user_voted_list, $target, $target_type
         {
             $votes['remove_all_votes_link'] = create_vote_url(array('do'=>'remove', 'all'=>1, 'value'=>(string)$vote_type));
         }
-        eval('$voted_table = "' . fetch_template('vote_postbit_info') . '";');
+        eval('$vote_results = "' . fetch_template('vote_postbit_info') . '";');
     }
-    return $voted_table;
+    return $vote_results;
 }
 
 /**
  * Get votes for single post
+ * <b>Note:</b> The result will have the following format:
+ * [vote_type] (1 / -1)
+ *     [fromuserid]
+ *     [username]
  *
  * @param int $target_id
  * @param string $vote_type
  * @param string $target_type
  * @return array
  */
-function get_vote_for_post($target_id, $vote_type = NULL, $target_type = NULL)
+function get_votes_for_post($target_id, $vote_type = NULL, $target_type = NULL)
 {
     $target_id_list[] = $target_id;
-    $result = get_vote_for_post_list($target_id_list, $vote_type, $target_type);
+    $result = get_votes_for_post_list($target_id_list, $vote_type, $target_type);
     return $result[$target_id];
 }
 
 /**
  * Get votes for post list
+ * <b>Note:</b> The result will have the following format:
+ * [target_id]
+ *     [vote_type] (1 / -1)
+ *         [fromuserid]
+ *         [username]
  *
  * @global vB_Database $db
  * @staticvar array $target_votes
@@ -80,7 +89,7 @@ function get_vote_for_post($target_id, $vote_type = NULL, $target_type = NULL)
  * @param string $target_type
  * @return array
  */
-function get_vote_for_post_list($target_id_list, $vote_type = NULL, $target_type = NULL)
+function get_votes_for_post_list($target_id_list, $vote_type = NULL, $target_type = NULL)
 {
     if (is_null($target_type))
     {
@@ -153,7 +162,7 @@ function is_user_can_vote($target, $throw_error = false, $target_type = NULL)
     // user is not in banned, "disabled mod" or read only group
     $bann_groups = unserialize($vbulletin->options['vbv_grp_banned']);
     $read_only_groups = unserialize($vbulletin->options['vbv_grp_read_only']);
-    if (!is_user_can_see_votes_result() OR
+    if (!can_vote_today() OR
         is_member_of($vbulletin->userinfo, $bann_groups) OR
         is_member_of($vbulletin->userinfo, $read_only_groups)
     )
@@ -202,7 +211,7 @@ function is_user_can_vote($target, $throw_error = false, $target_type = NULL)
         }
     }
     // user didn't vote for this post
-    $votes_list = get_vote_for_post($target_id);
+    $votes_list = get_votes_for_post($target_id);
     if (is_array($votes_list))
     {
         foreach ($votes_list as $vote_type)
@@ -318,7 +327,7 @@ function is_user_have_free_votes($user_id = null)
  * @global vB_Registry $vbulletin
  * @return bool
  */
-function is_user_can_see_votes_result()
+function can_vote_today()
 {
     global $vbulletin;
     // user is not in "disabled mod" group

@@ -62,7 +62,7 @@ if ($_REQUEST['do'] == 'search')
     {
         // search top voted posts
         $time_line = TIMENOW - 24 * 60 * 60 * $vbulletin->options['vbv_top_voted_days'];
-        
+
         $sql = 'SELECT
                     DISTINCT `targetid`
                 FROM
@@ -95,6 +95,7 @@ if ($_REQUEST['do'] == 'search')
         // build search hash
         $searchhash = md5(THIS_SCRIPT . TIMENOW . 'top' . $vote);
         unset($target_id_list);
+        $title_type = 'top';
     }
     else
     {
@@ -109,12 +110,14 @@ if ($_REQUEST['do'] == 'search')
             // search by vote user
             $type = 'fromuserid';
             $search_user_id = $vbulletin->GPC['fromuserid'];
+            $title_type = 'fromuser';
         }
         else
         {
             // search by voted post author
             $type = 'touserid';
             $search_user_id = $vbulletin->GPC['touserid'];
+            $title_type = 'touser';
             $need_distinct = true;
         }
         // get user info
@@ -140,8 +143,8 @@ if ($_REQUEST['do'] == 'search')
     // check if search already done
     if ($search = $db->query_first("SELECT searchid FROM " . TABLE_PREFIX . "search AS search WHERE searchhash = '" . $db->escape_string($searchhash) . "'"))
     {
-    	$vbulletin->url = 'search.php?' . $vbulletin->session->vars['sessionurl'] . 'searchid='.$search['searchid'];
-    	eval(print_standard_redirect('search'));
+        $vbulletin->url = 'search.php?' . $vbulletin->session->vars['sessionurl'] . 'searchid='.$search['searchid'];
+        eval(print_standard_redirect('search'));
     }
 
     // start search timer
@@ -184,15 +187,12 @@ if ($_REQUEST['do'] == 'search')
         )
     );
 
-    if (isset($searchuser))
+    // set special display terms for votes
+    if ('top' != $title_type)
     {
-        $display['votes'][$type] = $search_user_id;
         $display['votes']['username'] = $searchuser;
     }
-    else
-    {
-        $display['votes']['top'] = 'top';
-    }
+    $display['votes']['title_type'] = $title_type;
     $display['votes']['value'] = $value;
 
     // end search timer
@@ -211,7 +211,7 @@ if ($_REQUEST['do'] == 'search')
 
 $target_id = $vbulletin->GPC['targetid'];
 $target = fetch_postinfo($target_id);
-
+$need_ajax_response = false;
 if ($_REQUEST['do'] == 'vote')
 {
     $vbulletin->input->clean_array_gpc('r', array(
@@ -253,6 +253,7 @@ if ($_REQUEST['do'] == 'vote')
         eval(print_standard_redirect('redirect_'. VOTE_TARGET_TYPE .'_vote_add'));
     }
     $vote_button_style = 'none';
+    $need_ajax_response = true;
 }
 
 if ($_REQUEST['do'] == 'remove')
@@ -302,38 +303,43 @@ if ($_REQUEST['do'] == 'remove')
     {
         $vote_button_style = 'none';
     }
+    $need_ajax_response = true;
 }
 
-
-// create response for ajax
-require_once(DIR . '/includes/class_xml.php');
-
-$xml = new vB_AJAX_XML_Builder($vbulletin, 'text/xml');
-$xml->add_group('voting');
-
-$voted_table = '';
-if (is_user_can_see_votes_result())
+if ($need_ajax_response)
 {
-    if (! $vbulletin->options['vbv_enable_neg_votes'])
+    // create response for ajax
+    require_once(DIR . '/includes/class_xml.php');
+
+    $xml = new vB_AJAX_XML_Builder($vbulletin, 'text/xml');
+    $xml->add_group('voting');
+
+    // get votes results
+    $vote_results = '';
+    if (can_vote_today())
     {
-        $vote_type = '1';
-    }
-    $votes = get_vote_for_post($target_id, $vote_type);
-    if (is_array($votes) AND !empty($votes))
-    {
-        foreach ($votes as $vote_type=>$user_voted_list)
+        if (! $vbulletin->options['vbv_enable_neg_votes'])
         {
-            $voted_table .= create_voted_result($vote_type, $user_voted_list, $target, VOTE_TARGET_TYPE);
+            $vote_type = '1';
+        }
+        $votes = get_votes_for_post($target_id, $vote_type);
+        if (is_array($votes) AND !empty($votes))
+        {
+            foreach ($votes as $vote_type=>$user_voted_list)
+            {
+                $vote_results .= create_vote_result_bit($vote_type, $user_voted_list, $target, VOTE_TARGET_TYPE);
+            }
         }
     }
+
+    $xml->add_tag('vote_results', $vote_results);
+
+    // enable/disable vote buttons
+    $xml->add_tag('vote_button_style', $vote_button_style);
+
+    // return response
+    $xml->close_group();
+    $xml->print_xml();
 }
-
-$xml->add_tag('voted_div', $voted_table);
-
-// enable/disable vote buttons
-$xml->add_tag('vote_button_style', $vote_button_style);
-// return response
-$xml->close_group();
-$xml->print_xml();
-
+print_stop_message('invalid_action_specified');
 ?>
