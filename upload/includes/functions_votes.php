@@ -24,40 +24,44 @@ function create_vote_result_bit($vote_type, $user_voted_list, $target, $target_t
     $votes = array();
     $votes['vote_list'] = '';
     $votes['remove_vote_link'] = '';
+    $is_author = false;
     foreach ($user_voted_list as $voted_user)
     {
         eval('$user_vote_bit = "' . fetch_template('vote_postbit_user') . '";');
         $votes['vote_list'] .= $user_vote_bit;
-        // add link remove own user vote
-        if ($vbulletin->options['vbv_delete_own_votes'] AND $voted_user['fromuserid'] == $vbulletin->userinfo['userid'] AND !is_post_old($target['dateline']))
+        if ($voted_user['fromuserid'] == $vbulletin->userinfo['userid'])
         {
-            $votes['remove_vote_link'] = create_vote_url(array('do'=>'remove'));
+            $is_author = true;
         }
     }
 
-    if ('' !== $votes['vote_list'])
+    // add link remove own user vote
+    if ($is_author AND $vbulletin->options['vbv_delete_own_votes'] AND !is_post_old($target['dateline']))
     {
-        $votes['target_id'] = $target['postid'];
-        $votes['vote_type'] = 'Positive';
-        $votes['post_user_votes'] = $vbphrase['vbv_positive_user_votes'];
-        if ('-1' == $vote_type)
-        {
-            $votes['vote_type'] = 'Negative';
-            $votes['post_user_votes'] = $vbphrase['vbv_negative_user_votes'];
-        }
-        require_once(DIR . '/includes/adminfunctions.php'); // required for can_administer
-        if (can_administer())
-        {
-            $votes['remove_all_votes_link'] = create_vote_url(array('do'=>'remove', 'all'=>1, 'value'=>(string)$vote_type));
-        }
-        eval('$vote_results = "' . fetch_template('vote_postbit_info') . '";');
+        $votes['remove_vote_link'] = create_vote_url(array('do'=>'remove'));
     }
+
+    $votes['target_id'] = $target['postid'];
+    $votes['vote_type'] = 'Positive';
+    $votes['post_user_votes'] = $vbphrase['vbv_positive_user_votes'];
+    if ('-1' == $vote_type)
+    {
+        $votes['vote_type'] = 'Negative';
+        $votes['post_user_votes'] = $vbphrase['vbv_negative_user_votes'];
+    }
+    require_once(DIR . '/includes/adminfunctions.php'); // required for can_administer
+    if (can_administer())
+    {
+        $votes['remove_all_votes_link'] = create_vote_url(array('do'=>'remove', 'all'=>1, 'value'=>(string)$vote_type));
+    }
+    eval('$vote_results = "' . fetch_template('vote_postbit_info') . '";');
+
     return $vote_results;
 }
 
 /**
  * Get votes for single post
- * <b>Note:</b> The result will have the following format:
+ * Note: The result will have the following format:
  * [vote_type] (1 / -1)
  *     [fromuserid]
  *     [username]
@@ -76,7 +80,7 @@ function get_votes_for_post($target_id, $vote_type = NULL, $target_type = NULL)
 
 /**
  * Get votes for post list
- * <b>Note:</b> The result will have the following format:
+ * Note: The result will have the following format:
  * [target_id]
  *     [vote_type] (1 / -1)
  *         [fromuserid]
@@ -99,6 +103,7 @@ function get_votes_for_post_list($target_id_list, $vote_type = NULL, $target_typ
     static $target_votes;
     $result = array();
     // if post id in static store, then remove id from search list and add value to result array
+    // TODO refactor
     if (!empty($target_votes) and is_array($target_votes))
     {
         foreach ($target_id_list as $post_id)
@@ -115,7 +120,7 @@ function get_votes_for_post_list($target_id_list, $vote_type = NULL, $target_typ
         $vote_type_condition = '';
         if (!is_null($vote_type))
         {
-            $vote_type_condition = ' AND pv.`vote` = "' . $vote_type;
+            $vote_type_condition = ' AND pv.`vote` = "' . $vote_type . '"';
         }
         $sql = 'SELECT
                     pv.`targetid`, pv.`targettype`, pv.`vote`, pv.`fromuserid`, u.`username`
@@ -137,9 +142,9 @@ function get_votes_for_post_list($target_id_list, $vote_type = NULL, $target_typ
 }
 
 /**
- * Check user can vote?
+ * Check if user can vote for particular item?
  *
- * <b>Note</b>: if flag $throw_error set as true, then script halts execution
+ * Note: if flag $throw_error set as true, then script halts execution
  * and shows the specified error message
  *
  * @global vB_Registry $vbulletin
