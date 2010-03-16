@@ -225,7 +225,7 @@ if ($_REQUEST['do'] == 'vote')
     }
 
     // check and throw error
-    is_user_can_vote($target, true);
+    is_user_can_vote_item($target, true);
 
     // save vote into db
     $sql = 'INSERT INTO `' . TABLE_PREFIX . 'votes` (
@@ -299,7 +299,7 @@ if ($_REQUEST['do'] == 'remove')
         eval(print_standard_redirect('redirect_'. VOTE_TARGET_TYPE .'_vote_add'));
     }
 
-    if (!is_user_can_vote($target))
+    if (!is_user_can_vote_item($target))
     {
         $vote_button_style = 'none';
     }

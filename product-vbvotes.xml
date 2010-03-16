@@ -298,7 +298,7 @@ if (in_array($destforuminfo['forumid'], $unvoted_forums))
         $template_hook['postbit_end'] .= $vote_results;
 
         $show['vote_button_hide'] = true;
-        if (is_user_can_vote($post))
+        if (is_user_can_vote_item($post))
         {
             if ($this->registry->options['vbv_enable_neg_votes'])
             {

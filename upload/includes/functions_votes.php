@@ -153,7 +153,7 @@ function get_votes_for_post_list($target_id_list, $vote_type = NULL, $target_typ
  * @param string $target_type
  * @return string
  */
-function is_user_can_vote($target, $throw_error = false, $target_type = NULL)
+function is_user_can_vote_item($target, $throw_error = false, $target_type = NULL)
 {
     global $vbulletin;
     $error = null;
