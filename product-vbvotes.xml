@@ -161,7 +161,7 @@ if (THIS_SCRIPT == 'showthread' || THIS_SCRIPT == 'showpost' || THIS_SCRIPT == '
 			<phpcode><![CDATA[define ('VOTE_TARGET_TYPE', 'forum');
 require_once(DIR . '/includes/functions_votes.php');
 $post_votes = array();
-if (can_vote_today())
+if (can_see_results())
 {
     $post_votes = get_votes_for_post_list(array($postinfo['postid']));
 }]]></phpcode>
@@ -330,7 +330,7 @@ require_once(DIR . '/includes/functions_votes.php');
 
 // Collect votes info fro all searchbits
 $post_votes = array();
-if (can_vote_today())
+if (can_see_results())
 {
     $target_id_list = explode(',' , '0' . $ids);
     if (! $vbulletin->options['vbv_enable_neg_votes'])
@@ -426,7 +426,7 @@ if (TRUE == $show['datepicker'])
 			<phpcode><![CDATA[define ('VOTE_TARGET_TYPE', 'forum');
 require_once(DIR . '/includes/functions_votes.php');
 $post_votes = array();
-if (can_vote_today())
+if (can_see_results())
 {
     $target_id_list = explode(',' , '0' . $ids);
     $post_votes = get_votes_for_post_list($target_id_list);

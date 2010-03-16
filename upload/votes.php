@@ -316,7 +316,7 @@ if ($need_ajax_response)
 
     // get votes results
     $vote_results = '';
-    if (can_vote_today())
+    if (can_see_results())
     {
         if (! $vbulletin->options['vbv_enable_neg_votes'])
         {
