@@ -75,9 +75,7 @@ $db->show_errors();]]></uninstallcode>
 	</table>
 </div>
         ]]></template>
-		<template name="vote_postbit_user" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
-            <a href="member.php?$session[sessionurl]u=$voted_user[fromuserid]" rel="nofollow">$voted_user[username]</a>&nbsp;
-        ]]></template>
+		<template name="vote_postbit_user" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[<a href="member.php?$session[sessionurl]u=$voted_user[fromuserid]" rel="nofollow">$voted_user[username]</a>]]></template>
 		<template name="vote_profile_stat" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
 <fieldset class="statistics_group">
 	<legend>$vbphrase[vbv_votes_statistic]</legend>

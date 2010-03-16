@@ -25,15 +25,18 @@ function create_vote_result_bit($vote_type, $user_voted_list, $target, $target_t
     $votes['vote_list'] = '';
     $votes['remove_vote_link'] = '';
     $is_author = false;
+    $bits = array();
     foreach ($user_voted_list as $voted_user)
     {
         eval('$user_vote_bit = "' . fetch_template('vote_postbit_user') . '";');
-        $votes['vote_list'] .= $user_vote_bit;
+        $bits[] = $user_vote_bit;
         if ($voted_user['fromuserid'] == $vbulletin->userinfo['userid'])
         {
             $is_author = true;
         }
     }
+
+    $votes['vote_list'] = implode(', ', $bits);
 
     // add link remove own user vote
     if ($is_author AND $vbulletin->options['vbv_delete_own_votes'] AND !is_post_old($target['dateline']))
