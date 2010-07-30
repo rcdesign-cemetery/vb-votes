@@ -3,9 +3,14 @@
 <product productid="vbvotes" active="1">
 	<title>vB Votes</title>
 	<description>User voting for useful content</description>
-	<version>0.1</version>
+	<version>0.4</version>
 	<url />
 	<versioncheckurl />
+	<apm_releasedate></apm_releasedate>
+	<apm_author></apm_author>
+	<apm_relatedurl></apm_relatedurl>
+	<apm_extrainfo></apm_extrainfo>
+	<apm_extraedit></apm_extraedit>
 	<dependencies>
 	</dependencies>
 	<codes>
@@ -25,115 +30,193 @@ CREATE TABLE IF NOT EXISTS " . TABLE_PREFIX . "votes (
   KEY `votes_per_day` (`fromuserid`, `date`),
   KEY `date` (`date`, `vote`, `targettype`, `targetid`)
 )");
-$db->query_write("ALTER TABLE " . TABLE_PREFIX . "user ADD INDEX `user_name_id` ( `fromuserid` , `username` ) ");
+$db->query_write("ALTER TABLE " . TABLE_PREFIX . "user ADD INDEX `user_name` ( `userid` , `username` ) ");
 $db->show_errors();]]></installcode>
 			<uninstallcode><![CDATA[$db->hide_errors();
 $vbulletin->db->query_write("DROP TABLE IF EXISTS " . TABLE_PREFIX . "post_votes");
 $db->query_write("ALTER TABLE " . TABLE_PREFIX . "user DROP INDEX user_name_id");
 $db->show_errors();]]></uninstallcode>
 		</code>
+		<code version="0.4">
+			<installcode><![CDATA[$db->hide_errors();
+$db->query_write("ALTER TABLE " . TABLE_PREFIX . "votes CHANGE `targettype` `contenttypeid` INT NOT NULL");
+$db->show_errors();]]></installcode>
+			<uninstallcode />
+		</code>
 	</codes>
 	<templates>
-		<template name="vote_js" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
-            <script type="text/javascript" src="clientscript/votes.js"></script>
+		<template name="vote_buttons_css" templatetype="template" date="1279867860" username="varnak" version="0.4"><![CDATA[<style type="text/css">
+.postbitlegacy .postfoot .textcontrols a.votepos, .postbit .postfoot .textcontrols a.votepos  {
+	background: url({vb:stylevar imgdir_button}/vote_pos.png) no-repeat {vb:stylevar postbit_control_background} {vb:stylevar left};
+	padding: {vb:stylevar postbit_control_padding};
+	padding-{vb:stylevar left}: {vb:math {vb:stylevar postbit_control_padding}+20};
+	border: {vb:stylevar postbit_control_border};
+}
+.postbitlegacy .postfoot .textcontrols a.votepos:hover, .postbit .postfoot .textcontrols a.votepos:hover  {
+	background: url({vb:stylevar imgdir_button}/vote_pos-hover.png) no-repeat {vb:stylevar postbit_control_hover_background} {vb:stylevar left};
+	padding: {vb:stylevar postbit_control_padding};
+	padding-{vb:stylevar left}: {vb:math {vb:stylevar postbit_control_padding}+20};
+	border: {vb:stylevar postbit_control_hover_border};
+}
+
+.postbitlegacy .postfoot .textcontrols a.voteneg, .postbit .postfoot .textcontrols a.voteneg  {
+	background: url({vb:stylevar imgdir_button}/vote_neg.png) no-repeat {vb:stylevar postbit_control_background} {vb:stylevar left};
+	padding: {vb:stylevar postbit_control_padding};
+	padding-{vb:stylevar left}: {vb:math {vb:stylevar postbit_control_padding}+20};
+	border: {vb:stylevar postbit_control_border};
+}
+.postbitlegacy .postfoot .textcontrols a.voteneg:hover, .postbit .postfoot .textcontrols a.voteneg:hover  {
+	background: url({vb:stylevar imgdir_button}/vote_neg-hover.png) no-repeat {vb:stylevar postbit_control_hover_background} {vb:stylevar left};
+	padding: {vb:stylevar postbit_control_padding};
+	padding-{vb:stylevar left}: {vb:math {vb:stylevar postbit_control_padding}+20};
+	border: {vb:stylevar postbit_control_hover_border};
+}
+</style>]]></template>
+		<template name="vote_js" templatetype="template" date="1279025348" username="varnak" version="0.4"><![CDATA[            <script type="text/javascript" src="clientscript/votes.js?v={vb:raw version}"></script>
         ]]></template>
-		<template name="vote_navbar_toplinks" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
-        <tr>
-            <td class="thead">$vbphrase[vbv_navbar_section]</td>
-        </tr>
-        <tr>
-            <td class="vbmenu_option"><a href="$navbar[votes_link]&amp;value=1"><phrase 1="$navbar[day_limit]">$vbphrase[vbv_positive_votes_search]</phrase></a></td>
-        </tr>
-        <if condition="$show[negative]">
-            <tr>
-                <td class="vbmenu_option"><a href="$navbar[votes_link]&amp;value=-1"><phrase 1="$navbar[day_limit]">$vbphrase[vbv_negative_votes_search]</phrase></a></td>
-            </tr>
-        </if>
-        
-        ]]></template>
-		<template name="vote_postbit_button" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
-            <a href="$post[vote_link]&amp;value=1" rel="nofollow" name="PostVote::Positive::$post[postid]" id="PostVote::Positive::$post[postid]" <if condition="$show[vote_button_hide]">style="display: none;"</if> ><img src="$stylevar[imgdir_button]/vote_positive.gif" alt="$vbphrase[vbv_positive_vote]" border="0" /></a>
-            <if condition="$show[negative]">
-            <a href="$post[vote_link]&amp;value=0" rel="nofollow" name="PostVote::Negative::$post[postid]" id="PostVote::Negative::$post[postid]"  <if condition="$show[vote_button_hide]">style="display: none;"</if> ><img src="$stylevar[imgdir_button]/vote_negative.gif" alt="$vbphrase[vbv_negative_vote]" border="0" /></a>
-            </if>
-        ]]></template>
-		<template name="vote_postbit_info" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
-<div id="PostVotesResult::$votes[vote_type]::$votes[target_id]" style="padding:$stylevar[cellpadding]px 0px 0px 0px">
-	<table class="tborder" cellpadding="$stylevar[cellpadding]" cellspacing="$stylevar[cellspacing]" border="0" width="100%" align="center">
-		<tr>
-			<td class="alt2" width="175">
-                <strong>$votes[post_user_votes]</strong>
-			
-                <if condition="$votes[remove_all_votes_link]">
-					<br /><a href="$votes[remove_all_votes_link]&amp;targetid=$votes[target_id]" rel="nofollow" name="RemoveVote::All::$votes[vote_type]::$votes[target_id]" id="RemoveVote::All::$votes[vote_type]::$votes[target_id]" >$vbphrase[vbv_post_vote_remove_all_votes]</a>
-                </if>
-                <if condition="$votes[remove_vote_link]">
-					<br /><a href="$votes[remove_vote_link]&amp;targetid=$votes[target_id]" rel="nofollow" name="RemoveVote::$votes[vote_type]::$votes[target_id]" id="RemoveVote::All::$votes[vote_type]::$votes[target_id]" >$vbphrase[vbv_post_vote_remove_user_vote]</a>
-                </if>
-            </td>
-		<td class="alt1" colspan="3"><div>$votes[vote_list]</div></td></tr>
-	</table>
-</div>
-        ]]></template>
-		<template name="vote_postbit_user" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[<a href="member.php?$session[sessionurl]u=$voted_user[fromuserid]" rel="nofollow">$voted_user[username]</a>]]></template>
-		<template name="vote_profile_stat" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
-<fieldset class="statistics_group">
-	<legend>$vbphrase[vbv_votes_statistic]</legend>
-	<ul class="list_no_decoration">
-        <li><span class="shade">$vbphrase[vbv_received_votes]:</span>
-            <if condition="$userinfo['received_positive_votes'] OR $userinfo['received_negative_votes']">
+		<template name="vote_navbar_toplinks" templatetype="template" date="1279554316" username="varnak" version="0.4"><![CDATA[<vb:if condition="$show['positive']">
+    <li><a href="{vb:raw links.top_positive}">{vb:rawphrase vbv_positive_votes_search, {vb:raw day_limit}}</a></li>
+</vb:if>
+<vb:if condition="$show['negative']">
+    <li><a href="{vb:raw links.top_negative}">{vb:rawphrase vbv_negative_votes_search, {vb:raw day_limit}}</a></li>
+</vb:if>]]></template>
+		<template name="vote_postbit_buttons" templatetype="template" date="1280307082" username="varnak" version="0.4"><![CDATA[            <span class="seperator" id="vote_pos_sep_{vb:raw target_id}" <vb:if condition="$target_buttons_hide">style="display: none;"</vb:if>>&nbsp;</span>
+            <a class="votepos" href="{vb:raw vote_link}&amp;value=1" rel="nofollow" name="PostVote::Positive::{vb:raw target_id}" id="PostVote::Positive::{vb:raw target_id}" <vb:if condition="$target_buttons_hide">style="display: none;"</vb:if> ><img src="{vb:raw vboptions.cleargifurl}" id="voteposimg_{vb:raw target_id}" alt="{vb:rawphrase vbv_positive_vote}" />  {vb:rawphrase vbv_positive_vote_link}</a>
+            <vb:if condition="$show['negative']">
+                <span class="seperator" id="vote_neg_sep_{vb:raw target_id}" <vb:if condition="$target_buttons_hide">style="display: none;"</vb:if> >&nbsp;</span>
+                <a title="{vb:rawphrase vbv_negative_vote}" class="voteneg" href="{vb:raw vote_link}&amp;value=0" rel="nofollow" name="PostVote::Negative::{vb:raw target_id}" id="PostVote::Negative::{vb:raw target_id}" <vb:if condition="$target_buttons_hide">style="display: none;"</vb:if> ><img src="{vb:raw vboptions.cleargifurl}" id="votenegimg_{vb:raw target_id}" alt="{vb:rawphrase vbv_negative_vote}" />&nbsp;</a>
+            </vb:if>]]></template>
+		<template name="vote_postbit_info" templatetype="template" date="1280231787" username="varnak" version="0.4"><![CDATA[<li class="postbitlegacy postbitim postcontainer" id="{vb:raw votes['vote_type']}_votes_post_{vb:raw votes['target_id']}" <vb:if condition="!$votes['vote_list'] OR $show['vote_result_hide']">style="display: none;"</vb:if>>
+    <vb:if condition="$votes['vote_list']">
+    <div class="postdetails">
+        <div class="userinfo">
+            <div class="username guest">
+                <b>
+                    {vb:raw votes['post_user_votes']}
+                </b>
+            </div>
+            <vb:if condition="$votes['remove_all_votes_link'] OR $votes['remove_vote_link']">
+            <ul>
+                <vb:if condition="$votes['remove_all_votes_link']">
+                <li>
+                    <a href="{vb:raw votes['remove_all_votes_link']}&amp;targetid={vb:raw votes['target_id']}" rel="nofollow" name="RemoveVote::All::{vb:raw votes['vote_type']}::{vb:raw votes['target_id']}" id="RemoveVote::All::{vb:raw votes['vote_type']}::{vb:raw votes['target_id']}" >{vb:rawphrase vbv_post_vote_remove_all_votes}</a>
+                </li>
+                </vb:if>
+                <vb:if condition="$votes['remove_vote_link']">
+                <li>
+                    <a href="{vb:raw votes['remove_vote_link']}&amp;targetid={vb:raw votes['target_id']}" rel="nofollow" name="RemoveVote::{vb:raw votes['vote_type']}::{vb:raw votes['target_id']}" id="RemoveVote::{vb:raw votes['vote_type']}::{vb:raw votes['target_id']}" >{vb:rawphrase vbv_post_vote_remove_user_vote}</a>
+                </li>
+                </vb:if>
+            </ul>
+            </vb:if>
+        </div>
+        <div class="postbody" style="padding-bottom:0px;">
+            <div class="postrow">
+                <div class="content hasad">
+                    <div id="post_message_{vb:raw post.postid}">
+                        <blockquote class="postcontent restore">
+                            {vb:raw votes['vote_list']}
+                        </blockquote>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </vb:if>
+</li>]]></template>
+		<template name="vote_postbit_user" templatetype="template" date="1279637258" username="varnak" version="0.4"><![CDATA[<a href="member.php?{vb:raw session['sessionurl']}u={vb:raw voted_user['fromuserid']}" rel="nofollow">{vb:raw voted_user['username']}</a>]]></template>
+		<template name="vote_post_init_js" templatetype="template" date="1280318224" username="varnak" version="0.4"><![CDATA[<script type="text/javascript">
+    <!--
+    //Init target type constant
+    var VOTE_CONTENT_TYPE = "{vb:raw content_type}";
+
+    // initialize vote buttons and votes result table
+    AJAX_PostVote_Init('posts');
+
+    // override PostBit_Init
+    Pre_Votes_PostBit_Init = PostBit_Init;
+    PostBit_Init = function (obj, post_id)
+    {
+        if (typeof AJAX_PostVote_Init != "undefined")
+        {
+            // init vote controls
+            AJAX_PostVote_Init(obj, post_id);
+        }
+
+        Pre_Votes_PostBit_Init(obj, post_id);
+    }
+    //-->
+</script>]]></template>
+		<template name="vote_profile_stat" templatetype="template" date="1279550032" username="varnak" version="0.4"><![CDATA[<h5 class="subsubsectionhead">{vb:rawphrase vbv_votes_statistic}</h5>
+	<dl class="stats">
+		<dt>{vb:rawphrase vbv_received_votes}</dt>
+		<dd> <vb:if condition="$userinfo['received_positive_votes'] OR $userinfo['received_negative_votes']">
             
-                <if condition="$userinfo['received_positive_votes']">
-                    + <a href="$userinfo[received_votes_search_url]&amp;value=1">$userinfo[received_positive_votes]</a>
-                </if>
-                <if condition="$userinfo['received_positive_votes'] AND $userinfo['received_negative_votes']"> / </if>
-                <if condition="$userinfo['received_negative_votes']">
-                    - <a href="$userinfo[received_votes_search_url]&amp;value=-1">$userinfo[received_negative_votes]</a>
-                </if>
-            <else />
+                <vb:if condition="$userinfo['received_positive_votes']">
+                    + <a href="{vb:raw userinfo['received_votes_search_url']}&amp;value=1">{vb:raw userinfo['received_positive_votes']}</a>
+                </vb:if>
+                <vb:if condition="$userinfo['received_positive_votes'] AND $userinfo['received_negative_votes']"> / </vb:if>
+                <vb:if condition="$userinfo['received_negative_votes']">
+                    - <a href="{vb:raw userinfo['received_votes_search_url']}&amp;value=-1">{vb:raw userinfo['received_negative_votes']}</a>
+                </vb:if>
+            <vb:else />
                 0
-            </if>
-        </li>
-        <li><span class="shade">$vbphrase[vbv_given_votes]:</span>
-            <if condition="$userinfo['given_positive_votes'] OR $userinfo['given_negative_votes']">
-                <if condition="$userinfo['given_positive_votes']">
-                    + <a href="$userinfo[given_votes_search_url]&amp;value=1">$userinfo[given_positive_votes]</a>
-                </if>
-                <if condition="$userinfo['given_positive_votes'] AND $userinfo['given_negative_votes']"> / </if>
-                <if condition="$userinfo['given_negative_votes']">
-                    - <a href="$userinfo[given_votes_search_url]&amp;value=-1">$userinfo[given_negative_votes]</a>
-                </if>
-            <else />
+            </vb:if></dd>
+	</dl>
+	<dl class="stats">
+		<dt>{vb:rawphrase vbv_given_votes}</dt>
+		<dd> <vb:if condition="$userinfo['given_positive_votes'] OR $userinfo['given_negative_votes']">
+                <vb:if condition="$userinfo['given_positive_votes']">
+                    + <a href="{vb:raw userinfo['given_votes_search_url']}&amp;value=1">{vb:raw userinfo['given_positive_votes']}</a>
+                </vb:if>
+                <vb:if condition="$userinfo['given_positive_votes'] AND $userinfo['given_negative_votes']"> / </vb:if>
+                <vb:if condition="$userinfo['given_negative_votes']">
+                    - <a href="{vb:raw userinfo['given_votes_search_url']}&amp;value=-1">{vb:raw userinfo['given_negative_votes']}</a>
+                </vb:if>
+            <vb:else />
                 0
-            </if>
-        </li>
-	</ul>
-</fieldset>]]></template>
-		<template name="vote_searchbit_stat" templatetype="template" date="1258983509" username="e.shkuropat" version=""><![CDATA[
-            <if condition="$post['positive_votes']">+ $post[positive_votes]</if>
-            <if condition="$post['positive_votes'] AND $post['negative_votes']">/</if>
-            <if condition="$post['negative_votes']">- $post[negative_votes]</if>
+            </vb:if></dd>
+	</dl>]]></template>
+		<template name="vote_searchbit_stat" templatetype="template" date="1279541517" username="varnak" version="0.4"><![CDATA[            <vb:if condition="$votes_count['positive_votes']">+ {vb:raw votes_count['positive_votes']}</vb:if>
+            <vb:if condition="$votes_count['positive_votes'] AND $votes_count['negative_votes']">/</vb:if>
+            <vb:if condition="$votes_count['negative_votes']">- {vb:raw votes_count['negative_votes']}</vb:if>
         ]]></template>
 	</templates>
+	<stylevardfns>
+	</stylevardfns>
+	<stylevars>
+	</stylevars>
 	<plugins>
 		<plugin active="1" executionorder="5">
 			<title>Cache templates</title>
 			<hookname>cache_templates</hookname>
-			<phpcode><![CDATA[$globaltemplates[] = 'vote_navbar_toplinks';
+			<phpcode><![CDATA[$cache[] = 'vote_navbar_toplinks';
 if (THIS_SCRIPT == 'member')
 {
-    $globaltemplates[] = 'vote_profile_stat';
+    $cache[] = 'vote_profile_stat';
 }
 if (THIS_SCRIPT == 'search')
 {
-    $globaltemplates[] = 'vote_searchbit_stat';
+    $cache[] = 'vote_searchbit_stat';
 }
-if (THIS_SCRIPT == 'showthread' || THIS_SCRIPT == 'showpost' || THIS_SCRIPT == 'votepost')
+if (THIS_SCRIPT == 'vb_votes')
 {
-    $globaltemplates[] = 'vote_postbit_button';
-    $globaltemplates[] = 'vote_js';
-    $globaltemplates[] = 'vote_postbit_user';
-    $globaltemplates[] = 'vote_postbit_info';
+    $cache[] = 'vote_postbit_buttons';
+    $cache[] = 'vote_postbit_user';
+    $cache[] = 'vote_postbit_info';
+}
+if (THIS_SCRIPT == 'showthread')
+{
+    $cache[] = 'vote_postbit_buttons';
+    $cache[] = 'vote_postbit_user';
+    $cache[] = 'vote_postbit_info';
+    $cache[] = 'vote_buttons_css';
+    $cache[] = 'vote_js';
+    $cache[] = 'vote_post_init_js';
+}
+if (THIS_SCRIPT == 'editpost' || THIS_SCRIPT == 'showpost')
+{
+    $cache[] = 'vote_postbit_button';
 }]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
@@ -141,42 +224,56 @@ if (THIS_SCRIPT == 'showthread' || THIS_SCRIPT == 'showpost' || THIS_SCRIPT == '
 			<hookname>cron_script_cleanup_daily</hookname>
 			<phpcode><![CDATA[if( intval( $vbulletin->options['vbv_neg_votes_expire_days'] ) > 0 )
 {
+    require_once(DIR . '/includes/class_votes.php');
     $date_limit = TIMENOW - 24 * 60 * 60 * $vbulletin->options['vbv_neg_votes_expire_days'];
-
 
     // Delete old votes
     $sql = 'DELETE FROM
                 `' . TABLE_PREFIX . 'votes`
             WHERE
-                `date` < ' . $date_limit AND
-                `vote` = "-1"';
+                `date` < ' . $date_limit . ' AND
+                `vote` = "' . Votes::NEGATIVE . '"';
     $vbulletin->db->query_write($sql);
-}]]></phpcode>
-		</plugin>
-		<plugin active="1" executionorder="5">
-			<title>Fix ajax edit (add votes to response)</title>
-			<hookname>editpost_update_complete</hookname>
-			<phpcode><![CDATA[define ('VOTE_TARGET_TYPE', 'forum');
-require_once(DIR . '/includes/functions_votes.php');
-$post_votes = array();
-if (can_see_results())
-{
-    $post_votes = get_votes_for_post_list(array($postinfo['postid']));
 }]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="20">
 			<title>Add items to search menu</title>
-			<hookname>global_setup_complete</hookname>
-			<phpcode><![CDATA[require_once(DIR . '/includes/functions_votes.php');
-if ($vbulletin->options['vbv_enable_neg_votes'])
+			<hookname>global_bootstrap_complete</hookname>
+			<phpcode><![CDATA[global $show, $vbulletin, $template_hook;
+if ($show['communitylink'])
 {
-    $show['negative'] = true;
-}
-$navbar['day_limit'] = $vbulletin->options['vbv_top_voted_days'];
-if (0 < $navbar['day_limit'])
+    $show['positive'] = true;
+    if ($vbulletin->options['vbv_enable_neg_votes'])
+    {
+        $show['negative'] = true;
+    }
+    $day_limit = $vbulletin->options['vbv_top_voted_days'];
+    if (0 < $day_limit)
+    {
+        require_once(DIR . '/includes/functions_votes.php');
+        $url_params = array('do' => 'topvotes',
+                            'contenttype' => 'Post',
+                            'package'=>'vBForum',
+                            'value' => '1');
+        $links['top_positive'] = create_vote_url($url_params, 'search.php');
+        $url_params['value'] = 0;
+        $links['top_negative'] = create_vote_url($url_params, 'search.php');
+        $rcd_vbv_templater = vB_Template::create('vote_navbar_toplinks');
+        $rcd_vbv_templater->register('links', $links);
+        $rcd_vbv_templater->register('day_limit', $day_limit);
+        $template_hook['navbar_community_menu_end'] .= $rcd_vbv_templater->render();
+    }
+}]]></phpcode>
+		</plugin>
+		<plugin active="1" executionorder="5">
+			<title>Define vote content type</title>
+			<hookname>global_bootstrap_init_complete</hookname>
+			<phpcode><![CDATA[switch (THIS_SCRIPT)
 {
-    $navbar['votes_link'] = create_vote_url(array('do'=>'search', 'top'=>'1'));
-    eval('$template_hook[navbar_search_menu] .= " ' . fetch_template('vote_navbar_toplinks') . '";');
+    case 'showthread':
+    case 'showpost':
+    case 'editpost':
+        define ('VOTE_CONTENT_TYPE', 'vBForum_Post');
 }]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
@@ -186,7 +283,7 @@ if (0 < $navbar['day_limit'])
 if (in_array($destforuminfo['forumid'], $unvoted_forums))
 {
     require_once(DIR . '/includes/functions_votes.php');
-    delete_votes_by_target_id_list($post_id_list, 'forum');
+    delete_votes_by_target_id_list($post_id_list, 'vBForum_Post');
 }]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
@@ -207,7 +304,7 @@ if (in_array($destforuminfo['forumid'], $unvoted_forums))
     if (!empty($post_id_list))
     {
         require_once(DIR . '/includes/functions_votes.php');
-        delete_votes_by_target_id_list($post_id_list, 'forum');
+        delete_votes_by_target_id_list($post_id_list, 'vBForum_Post');
     }
 }]]></phpcode>
 		</plugin>
@@ -216,27 +313,37 @@ if (in_array($destforuminfo['forumid'], $unvoted_forums))
 			<hookname>member_profileblock_fetch_unwrapped</hookname>
 			<phpcode><![CDATA[if ('vB_ProfileBlock_Statistics' == get_class($this))
 {
-    global $db;
+    require_once(DIR . '/includes/class_votes.php');
+    global $vbulletin;
+    $db = $vbulletin->db;
 
-    $target_type = 'forum';
+    $content_type_id = vB_Types::instance()->getContentTypeId('vBForum_Post');
+
+    $url_params = array('do' => 'uservotes',
+                        'contenttype' => 'Post',
+                        'package' => 'vBForum',
+                    );
 
     // received votes
     $sql = 'SELECT
-            `vote` , count( vote ) AS count
-        FROM
-            ' . TABLE_PREFIX . 'votes
-        WHERE
-            `touserid` = ' . $userinfo['userid'] . ' AND `targettype` = "' . $target_type . '"
-        GROUP BY
-            `vote`';
+                `vote` , count( vote ) AS count
+            FROM
+                ' . TABLE_PREFIX . 'votes
+            WHERE
+                `touserid` = ' . $userinfo['userid'] . ' AND 
+                `contenttypeid` = "' . $content_type_id . '"
+            GROUP BY
+                `vote`';
     $db_resource = $db->query_read($sql);
     if ($db_resource)
     {
-        $userinfo['received_votes_search_url'] = create_vote_url(array('do'=>'search', 'touserid'=>$userinfo['userid']));
+        $url_params['touserid'] = $userinfo['userid'];
+        $userinfo['received_votes_search_url'] = create_vote_url($url_params, 'search.php');
+        unset($url_params['touserid']);
     }
     while ($votes_amount = $db->fetch_array($db_resource))
     {
-        if ('1' == $votes_amount['vote'])
+        if (Votes::POSITIVE == $votes_amount['vote'])
         {
             $amount_type = 'received_positive_votes';
         }
@@ -253,17 +360,19 @@ if (in_array($destforuminfo['forumid'], $unvoted_forums))
             FROM
                 ' . TABLE_PREFIX . 'votes
             WHERE
-                `fromuserid` = ' . $userinfo['userid'] . ' AND `targettype` = "' . $target_type . '"
+                `fromuserid` = ' . $userinfo['userid'] . ' AND `contenttypeid` = "' . $content_type_id . '"
             GROUP BY
                 `vote`';
     $db_resource = $db->query_read($sql);
     if ($db_resource)
     {
-        $userinfo['given_votes_search_url'] = create_vote_url(array('do'=>'search', 'fromuserid'=>$userinfo['userid']));
+        $url_params['fromuserid'] = $userinfo['userid'];
+
+        $userinfo['given_votes_search_url'] = create_vote_url($url_params, 'search.php');
     }
     while ($votes_amount = $db->fetch_array($db_resource))
     {
-        if ('1' == $votes_amount['vote'])
+        if (Votes::POSITIVE == $votes_amount['vote'])
         {
             $amount_type = 'given_positive_votes';
         }
@@ -273,39 +382,115 @@ if (in_array($destforuminfo['forumid'], $unvoted_forums))
         }
         $userinfo[$amount_type] = $votes_amount['count'];
     }
-    eval('$template_hook[profile_stats_pregeneral] .= "' . fetch_template('vote_profile_stat') . '";');
+    $rcd_vbv_templater = vB_Template::create('vote_profile_stat');
+    $rcd_vbv_templater->register('userinfo', $userinfo);
+    $template_hook['profile_stats_pregeneral'] .= $rcd_vbv_templater->render();
 }]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
-			<title>Display votes after post</title>
-			<hookname>postbit_display_complete</hookname>
-			<phpcode><![CDATA[if (THIS_SCRIPT == 'showthread' || THIS_SCRIPT == 'showpost' || THIS_SCRIPT == 'votepost')
+			<title>Modify templates</title>
+			<hookname>parse_templates</hookname>
+			<phpcode><![CDATA[// Add vote buttons to postbit
+if (array_key_exists('postbit', $vbulletin->templatecache))
 {
-    if ( 0 < (int)$this->registry->userinfo['userid'])
-    {
-        require_once(DIR . '/includes/functions_votes.php');
-        $votes = $post['votes'];
-        $vote_results = '';
-        if (is_array($votes) AND !empty($votes))
-        {
-            foreach ($votes as $vote_type=>$user_voted_list)
-            {
-                $vote_results .= create_vote_result_bit($vote_type, $user_voted_list, $post, VOTE_TARGET_TYPE);
-            }
-        }
-        $template_hook['postbit_end'] .= $vote_results;
+    $search = 'if ($show[\'multiquote_post\']) {
+					$final_rendered .= \'
+					<a class=\\\'multiquote\\\' href="\' . $post[\'replylink\'] . \'" rel="nofollow" onclick="return false;" id="mq_\' . $post[\'postid\'] . \'"><img id="mq_image_\' . $post[\'postid\'] . \'" src="\' . $vboptions[\'cleargifurl\'] . \'" alt="\' . vB_Template_Runtime::parsePhrase("multi_quote_this_message") . \'" />&nbsp;</a>
+				\';
+				} else {
+			$final_rendered .= \'\';
+		}';
 
-        $show['vote_button_hide'] = true;
-        if (is_user_can_vote_item($post))
+    $replace = $search . '$final_rendered .= $template_hook[\'postbit_buttons_end\'];';
+    $vbulletin->templatecache['postbit'] = str_replace($search, $replace, $vbulletin->templatecache['postbit']);
+}
+
+// Add vote buttons to postbit legacy
+if (array_key_exists('postbit_legacy', $vbulletin->templatecache))
+{
+    $search = 'if ($show[\'multiquote_post\']) {
+					$final_rendered .= \'
+						
+						 <a class="multiquote" href="\' . $post[\'replylink\'] . \'" rel="nofollow" onclick="return false;" id="mq_\' . $post[\'postid\'] . \'"><img id="mq_image_\' . $post[\'postid\'] . \'" src="\' . $vboptions[\'cleargifurl\'] . \'" alt="\' . vB_Template_Runtime::parsePhrase("multi_quote_this_message") . \'" />&nbsp;</a> 
+					\';
+				} else {
+			$final_rendered .= \'\';
+		}';
+
+    $replace = $search . '$final_rendered .= $template_hook[\'postbit_buttons_end\'];';
+    $vbulletin->templatecache['postbit_legacy'] = str_replace($search, $replace, $vbulletin->templatecache['postbit_legacy']);
+}
+
+// Add votes result to posts from ignored users
+if (THIS_SCRIPT == 'showthread')
+{
+    if (array_key_exists('postbit_ignore_global', $vbulletin->templatecache))
+    {
+        $vbulletin->templatecache['postbit_ignore_global'] .= '$final_rendered .= $template_hook[\'postbit_end\'];';
+    }
+    if (array_key_exists('postbit_ignore', $vbulletin->templatecache))
+    {
+        $vbulletin->templatecache['postbit_ignore'] .= '$final_rendered .= $template_hook[\'postbit_end\'];';
+    }
+}
+
+// Add votes to search result postbit template
+if (array_key_exists('search_results_postbit', $vbulletin->templatecache))
+{
+    $search = '<h2>\' . vB_Template_Runtime::parsePhrase("thread") . \':';
+
+    $replace = $search . '\' . $post[\'votes\'] . \'';
+
+    $vbulletin->templatecache['search_results_postbit'] = str_replace($search, $replace, $vbulletin->templatecache['search_results_postbit']);
+}
+
+if ('showthread' == THIS_SCRIPT)
+{
+    // add vote.js file
+    $rcd_vbv_templater = vB_Template::create('vote_js');
+    $rcd_vbv_templater->register('version', VBVOTES_JS_VERSION);
+    $template_hook['headinclude_javascript'] .= $rcd_vbv_templater->render();
+
+    // init votes handlers
+    $rcd_vbv_templater = vB_Template::create('vote_post_init_js');
+    $rcd_vbv_templater->register('content_type', VOTE_CONTENT_TYPE);
+    $template_hook['footer_javascript'] .= $rcd_vbv_templater->render();
+
+    // css for buttons
+    $rcd_vbv_templater = vB_Template::create('vote_buttons_css');
+    $template_hook['headinclude_bottom_css'] .= $rcd_vbv_templater->render();
+}]]></phpcode>
+		</plugin>
+		<plugin active="1" executionorder="5">
+			<title>Display votes result and vote buttons</title>
+			<hookname>postbit_display_complete</hookname>
+			<phpcode><![CDATA[if (in_array(THIS_SCRIPT, array('showthread', 'showpost', 'editpost')))
+{
+    if (0 < (int) $this->registry->userinfo['userid'])
+    {
+        require_once(DIR . '/includes/class_votes.php');
+        $vote_manager = Votes::get_instance(VOTE_CONTENT_TYPE, $post);
+
+        // add votes result
+        if (!$this->registry->GPC['ajax'])
         {
+            $show['vote_result_hide'] = TRUE;
+            if ('postbit' == $this->templatename OR 'postbit_legacy' == $this->templatename)
+            {
+                $show['vote_result_hide'] = FALSE;
+            }
+            $votes = $post['votes'];
+            $vote_results = '';
+            $vote_results .= $vote_manager->render_vote_result_bit(Votes::POSITIVE, $votes[Votes::POSITIVE]);
             if ($this->registry->options['vbv_enable_neg_votes'])
             {
-                $show['negative'] = true;
+                $vote_results .= $vote_manager->render_vote_result_bit(Votes::NEGATIVE, $votes[Votes::NEGATIVE]);
             }
-            $show['vote_button_hide'] = false;
+            $template_hook['postbit_end'] .= $vote_results;
         }
-        $post['vote_link'] = create_vote_url(array('do'=>'vote', 'targetid'=>$post['postid']));
-        eval('$template_hook[postbit_controls] .= " ' . fetch_template('vote_postbit_button') . '";');
+
+        // add buttons
+        $template_hook['postbit_buttons_end'] .= $vote_manager->render_vote_buttons();
     }
 }]]></phpcode>
 		</plugin>
@@ -313,48 +498,105 @@ if (in_array($destforuminfo['forumid'], $unvoted_forums))
 			<title>Clear votes on post delete</title>
 			<hookname>postdata_delete</hookname>
 			<phpcode><![CDATA[require_once(DIR . '/includes/functions_votes.php');
-delete_votes_by_target_id_list(array($postid), 'forum');]]></phpcode>
+delete_votes_by_target_id_list(array($postid), 'vBForum_Post');]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
-			<title>Add votes to search result. Part 2.</title>
+			<title>Add votes to search result. Part 2</title>
+			<hookname>search_complete</hookname>
+			<phpcode><![CDATA[global $search_result_ids;
+if (!empty($search_result_ids) AND is_array($search_result_ids))
+{
+    require_once(DIR . '/includes/class_votes.php');
+    $searchbits = $this->template->unregister('searchbits');
+    $vote_type = NULL;
+    if (!$vbulletin->options['vbv_enable_neg_votes'])
+    {
+        $vote_type = Votes::POSITIVE;
+    }
+
+    $post_votes = array();
+    if (can_see_results ())
+    {
+        $search_result_ids[] = '0';
+        $post_votes = get_votes_for_post_list($search_result_ids, 'vBForum_Post', $vote_type);
+        
+    }
+
+    $votes_result_search = $votes_result_replace = array();
+    foreach ($search_result_ids as $post_id)
+    {
+        $votes_result_search[$post_id] = 'VOTES_RESULT_' . $post_id;
+        $votes_result_replace[$post_id] = '';
+        if (array_key_exists($post_id, $post_votes))
+        {
+            $votes = $post_votes[$post_id];
+            if ($votes[Votes::POSITIVE])
+            {
+                $votes_count['positive_votes'] = count($votes[Votes::POSITIVE]);
+            }
+            if ($votes[Votes::NEGATIVE])
+            {
+                $votes_count['negative_votes'] = count($votes[Votes::NEGATIVE]);
+            }
+            $rcd_vbv_templater = vB_Template::create('vote_searchbit_stat');
+            $rcd_vbv_templater->register('votes_count', $votes_count);
+            $votes_result_replace[$post_id] = $rcd_vbv_templater->render();
+        }
+    }
+    $searchbits = str_replace($votes_result_search, $votes_result_replace, $searchbits);
+    $this->template->register('searchbits', $searchbits);
+}]]></phpcode>
+		</plugin>
+		<plugin active="1" executionorder="5">
+			<title>Add votes to search result. Part 1</title>
 			<hookname>search_results_postbit</hookname>
-			<phpcode><![CDATA[eval('$post[\'typeprefix\'] = "' . fetch_template('vote_searchbit_stat') . '" . $post[\'typeprefix\'];');]]></phpcode>
+			<phpcode><![CDATA[if ('search_results_postbit' == $template_name)
+{
+    global $search_result_ids;
+    $search_result_ids[] = $post['postid'];
+    $post['votes'] = 'VOTES_RESULT_' . $post['postid'];
+}]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
-			<title>Add votes to search result. Part 1.</title>
-			<hookname>search_results_prebits</hookname>
-			<phpcode><![CDATA[define ('VOTE_TARGET_TYPE', 'forum');
-require_once(DIR . '/includes/functions_votes.php');
-
-// Collect votes info fro all searchbits
-$post_votes = array();
-if (can_see_results())
+			<title>Search Top and User votes</title>
+			<hookname>search_start</hookname>
+			<phpcode><![CDATA[// #############################################################################
+if ('topvotes' == $_REQUEST['do'] OR 'uservotes' == $_REQUEST['do'])
 {
-    $target_id_list = explode(',' , '0' . $ids);
-    if (! $vbulletin->options['vbv_enable_neg_votes'])
-    {
-        $vote_type = '1';
-    }
-    $post_votes = get_votes_for_post_list($target_id_list, $vote_type);
-    foreach ($post_votes as $post_id=>$votes)
-    {
-        if ($votes['1'])
-        {
-            $itemids[$post_id]['positive_votes'] = count($votes['1']);
-        }
-        if ($votes['-1'])
-        {
-            $itemids[$post_id]['negative_votes'] = count($votes['-1']);
-        }
-    }
-}
+    require_once(DIR . '/includes/class_votes.php');
+    $vbulletin->input->clean_array_gpc('r', array(
+        'package' => TYPE_STR,
+        'contenttype' => TYPE_STR,
+        'value' => TYPE_BOOL,
+    ));
 
-// Add title to votes search results:
-// - for "top"
-// - for user stat
-if (isset($display['votes']))
-{
-    if ('1' == $display['votes']['value'])
+    if ($vbulletin->GPC_exists['package'])
+    {
+        $package = $vbulletin->GPC['package'];
+    }
+    else
+    {
+        $package = 'vBForum';
+    }
+    if ($vbulletin->GPC_exists['contenttype'])
+    {
+        $type = $vbulletin->GPC['contenttype'];
+    }
+    else
+    {
+        //default to post to preserve existing links
+        $type = 'Post';
+    }
+
+    $result_type = vB_Types::instance()->getContentTypeId($package . '_' . $type);
+    if (!$result_type)
+    {
+        //todo, do we need a seperate error for this?
+        eval(standard_error(fetch_error('searchnoresults', ''), '', false));
+    }
+
+    $vote_value = ($vbulletin->GPC['value'] ? Votes::POSITIVE : Votes::NEGATIVE);
+    if (Votes::POSITIVE == $vote_value)
     {
         $votes_type = 'positive';
     }
@@ -362,53 +604,139 @@ if (isset($display['votes']))
     {
         $votes_type = 'negative';
     }
-    switch ($display['votes']['title_type'])
+}
+if ('topvotes' == $_REQUEST['do'])
+{
+    $criteria = $search_core->create_criteria('top_votes');
+
+    $criteria->add_filter('value', vB_Search_Core::OP_EQ, $vote_value, true);
+    $criteria->add_filter('contenttype', vB_Search_Core::OP_EQ, $result_type);
+    $criteria->set_grouped(vB_Search_Core::GROUP_NO);
+
+    $day_limit = $vbulletin->options['vbv_top_voted_days'];
+    $title_phrase = construct_phrase($vbphrase['vbv_' . $votes_type .'_votes_search'], $day_limit);
+
+    $criteria->add_display_strings('UserName', $title_phrase);
+    //check for any errors
+    $errors = $criteria->get_errors();
+
+    if ($errors)
     {
-        case 'top':
-            $display['tag'] = construct_phrase($vbphrase['vbv_' . $votes_type .'_votes_search'], $vbulletin->options['vbv_top_voted_days']);
-            break;
+        standard_error(fetch_error($errors[0]));
+    }
+
+    try
+    {
+        $class_name = 'TopVotes';
+        include_once(DIR . '/packages/votes/search/searchcontroller/' . strtolower($class_name) . '.php');
+        $search_controller = $search_core->get_search_controller($package, $class_name);
+    }
+    catch (Exception $e)
+    {
+        eval(standard_error(fetch_error('searchnoresults', ''), '', false));
+    }
+
+    $results = vB_Search_Results::create_from_criteria($current_user, $criteria, $search_controller);
+
+    //get a page with one result to check if we actually have any.
+    $first_result = $results->get_page(1, 1, 1);
+
+    if (!$first_result)
+    {
+        eval(standard_error(fetch_error('searchnoresults', ''), '', false));
+    }
+
+    $vbulletin->url = 'search.php?' . $vbulletin->session->vars['sessionurl'] .
+        "&searchid=" . $results->get_searchid();
+    eval(print_standard_redirect('search'));
+    exit;
+}
+
+if ('uservotes' == $_REQUEST['do'])
+{
+    $vbulletin->input->clean_array_gpc('r', array(
+        'fromuserid' => TYPE_UINT,
+        'touserid' => TYPE_UINT,
+    ));
+    if ($vbulletin->GPC['fromuserid'])
+    {
+        // search by vote user
+        $type = 'fromuserid';
+        $search_user_id = $vbulletin->GPC['fromuserid'];
+        $title = 'fromuser';
+    }
+    else
+    {
+        // search by voted post author
+        $type = 'touserid';
+        $search_user_id = $vbulletin->GPC['touserid'];
+        $title = 'touser';
+    }
+
+    // get user info
+    if ($user = $db->query_first("SELECT userid, username FROM " . TABLE_PREFIX . "user WHERE userid = " . $search_user_id))
+    {
+        $search_user = & $user['username'];
+    }
+    else
+    {
+        // could not find specified user
+        eval(standard_error(fetch_error('invalidid', $vbphrase['user'], $vbulletin->options['contactuslink'])));
+    }
+    $criteria = $search_core->create_criteria($title);
+    $criteria->add_filter('value', vB_Search_Core::OP_EQ, $vote_value, true);
+    $criteria->add_filter('type', vB_Search_Core::OP_EQ, $type, true);
+    $criteria->add_filter('userid', vB_Search_Core::OP_EQ, $search_user_id, true);
+    $criteria->add_filter('contenttype', vB_Search_Core::OP_EQ, $result_type);
+//    $criteria->add_contenttype_filter($result_type);
+    $criteria->set_grouped(vB_Search_Core::GROUP_NO);
+
+    switch ($title)
+    {
         case 'fromuser':
             $vote_phrase_name = 'vbv_user_given_' . $votes_type .'_votes';
-            $display['tag'] = construct_phrase($vbphrase[$vote_phrase_name], $display['votes']['username']);
+            $title_phrase = construct_phrase($vbphrase[$vote_phrase_name], $search_user);
             break;
         case 'touser':
             $vote_phrase_name = 'vbv_user_received_' . $votes_type .'_votes';
-            $display['tag'] = construct_phrase($vbphrase[$vote_phrase_name], $display['votes']['username']);
+            $title_phrase = construct_phrase($vbphrase[$vote_phrase_name], $search_user);
             break;
     }
+
+    $criteria->add_display_strings('UserName', $title_phrase);
+
+    if ($errors)
+    {
+        standard_error(fetch_error($errors[0]));
+    }
+
+    try
+    {
+        $class_name = 'UserVotes';
+
+        include_once(DIR . '/packages/votes/search/searchcontroller/' . strtolower($class_name) . '.php');
+        $search_controller = $search_core->get_search_controller($package, $class_name);
+    }
+    catch (Exception $e)
+    {
+        eval(standard_error(fetch_error('searchnoresults', ''), '', false));
+    }
+
+    $results = vB_Search_Results::create_from_criteria($current_user, $criteria, $search_controller);
+
+    //get a page with one result to check if we actually have any.
+    $first_result = $results->get_page(1, 1, 1);
+
+    if (!$first_result)
+    {
+        eval(standard_error(fetch_error('searchnoresults', ''), '', false));
+    }
+
+    $vbulletin->url = 'search.php?' . $vbulletin->session->vars['sessionurl'] .
+        "&searchid=" . $results->get_searchid();
+    eval(print_standard_redirect('search'));
+    exit;
 }]]></phpcode>
-		</plugin>
-		<plugin active="1" executionorder="5">
-			<title>Add init js into show post page</title>
-			<hookname>showpost_complete</hookname>
-			<phpcode><![CDATA[$show['datepicker'] = true; // stub
-if (TRUE == $show['datepicker'])
-{
-    eval('$headinclude .= "' . fetch_template('vote_js') . '";');
-    $postbits .= '<script type="text/javascript">
-                    <!--
-                        // initialize vote buttons
-                        AJAX_PostVote_Init(\'post'. $postid .'\');
-                        AJAX_PostVote_Init(\'votes_result_'. $postid .'\');
-                    //-->
-                </script>';
-}]]></phpcode>
-		</plugin>
-		<plugin active="1" executionorder="5">
-			<title>Add init js into show thread page</title>
-			<hookname>showthread_complete</hookname>
-			<phpcode><![CDATA[$show['datepicker'] = true; // stub
-if (TRUE == $show['datepicker'])
-{
-    eval('$headinclude .= "' . fetch_template('vote_js') . '";');
-    $template_hook[showthread_after_activeusers] .= '<script type="text/javascript">
-            <!--
-                // initialize vote buttons and votes resulut table
-                AJAX_PostVote_Init(\'posts\');
-            //-->
-        </script>';
-}
-        ]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
 			<title>Add votes to showthread. Part 2.</title>
@@ -421,13 +749,13 @@ if (TRUE == $show['datepicker'])
 		<plugin active="1" executionorder="5">
 			<title>Add votes to showthread. Part 1.</title>
 			<hookname>showthread_query</hookname>
-			<phpcode><![CDATA[define ('VOTE_TARGET_TYPE', 'forum');
-require_once(DIR . '/includes/functions_votes.php');
+			<phpcode><![CDATA[require_once(DIR . '/includes/functions_votes.php');
 $post_votes = array();
 if (can_see_results())
 {
-    $target_id_list = explode(',' , '0' . $ids);
-    $post_votes = get_votes_for_post_list($target_id_list);
+    $target_id_list = $ids;
+    $target_id_list[] = '0';
+    $post_votes = get_votes_for_post_list($target_id_list, VOTE_CONTENT_TYPE);
 }]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
@@ -445,7 +773,7 @@ while ($post = $this->dbobject->fetch_array($posts))
 if (!empty($post_id_list))
 {
     require_once(DIR . '/includes/functions_votes.php');
-    delete_votes_by_target_id_list($post_id_list, 'forum');
+    delete_votes_by_target_id_list($post_id_list, 'vBForum_Post');
 }]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
@@ -466,7 +794,7 @@ if (in_array($destforuminfo['forumid'], $unvoted_forums))
     if (!empty($post_id_list))
     {
         require_once(DIR . '/includes/functions_votes.php');
-        delete_votes_by_target_id_list($post_id_list, 'forum');
+        delete_votes_by_target_id_list($post_id_list, 'vBForum_Post');
     }
 }]]></phpcode>
 		</plugin>
@@ -475,10 +803,10 @@ if (in_array($destforuminfo['forumid'], $unvoted_forums))
 			<hookname>useradmin_merge</hookname>
 			<phpcode><![CDATA[// note: votes for old account will be remove into "Clear votes(user delete)" hook (userdata_delete)
 $sql = 'INSERT IGNORE INTO
-                `' . TABLE_PREFIX . 'votes`
+                ' . TABLE_PREFIX . 'votes
             SELECT
                 `targetid` ,
-                `targettype` ,
+                `contenttypeid` ,
                 `vote` ,
                 ' . $destinfo['userid'] . ' ,
                 `touserid` ,
@@ -487,6 +815,19 @@ $sql = 'INSERT IGNORE INTO
                 ' . TABLE_PREFIX . 'votes
             WHERE
                 `fromuserid` = '. $sourceinfo['userid'];
+$db->query_write($sql);
+
+$sql = 'UPDATE
+            ' . TABLE_PREFIX . 'votes
+        SET
+            `touserid` = ' . $destinfo['userid'] . '
+        WHERE `touserid` = '. $sourceinfo['userid'];
+$db->query_write($sql);
+
+$sql = 'DELETE FROM
+            ' . TABLE_PREFIX . 'votes
+        WHERE
+            `fromuserid` = `touserid`';
 $db->query_write($sql);]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
@@ -536,6 +877,8 @@ clear_votes_by_user_id($this->existing['userid']);]]></phpcode>
 			<phrase name="vbv_post_old" date="1267730189" username="Vitaly" version=""><![CDATA[This post is too old to be voted]]></phrase>
 			<phrase name="vbv_post_voted" date="1267730229" username="Vitaly" version=""><![CDATA[You've already voted this post]]></phrase>
 			<phrase name="vbv_to_many_votes_per_day" date="1267730287" username="Vitaly" version=""><![CDATA[Your daily voting limit exceeded]]></phrase>
+			<phrase name="vbv_unsupported_type" date="1279808441" username="varnak" version=""><![CDATA[This content unsupported by Vb Votes system.
+If you see this message, please contact the <a href="{1}">administrator</a>.]]></phrase>
 			<phrase name="vbv_your_post" date="1267730343" username="Vitaly" version=""><![CDATA[You can't vote yourself]]></phrase>
 		</phrasetype>
 		<phrasetype name="GLOBAL" fieldname="global">
@@ -551,10 +894,13 @@ clear_votes_by_user_id($this->existing['userid']);]]></phpcode>
 			<phrase name="vbv_votes_statistic" date="1267728754" username="Vitaly" version=""><![CDATA[Votes]]></phrase>
 		</phrasetype>
 		<phrasetype name="Postbit" fieldname="postbit">
+			<phrase name="vbv_neg_auto_report_msg" date="1280225519" username="Vitaly" version=""><![CDATA[(auto) This post got too many negative votes.
+]]></phrase>
 			<phrase name="vbv_negative_user_votes" date="1267729658" username="Vitaly" version=""><![CDATA[Thrown tomato:]]></phrase>
 			<phrase name="vbv_negative_vote" date="1267729831" username="Vitaly" version=""><![CDATA[Throw tomato]]></phrase>
 			<phrase name="vbv_positive_user_votes" date="1267729680" username="Vitaly" version=""><![CDATA[Thanked:]]></phrase>
 			<phrase name="vbv_positive_vote" date="1267729882" username="Vitaly" version=""><![CDATA[Thank author]]></phrase>
+			<phrase name="vbv_positive_vote_link" date="1280213280" username="Vitaly" version=""><![CDATA[Thanks!]]></phrase>
 			<phrase name="vbv_post_vote_remove_all_votes" date="1267729548" username="Vitaly" version=""><![CDATA[Remove all votes]]></phrase>
 			<phrase name="vbv_post_vote_remove_user_vote" date="1267729592" username="Vitaly" version=""><![CDATA[Remove your vote]]></phrase>
 		</phrasetype>
@@ -571,17 +917,20 @@ clear_votes_by_user_id($this->existing['userid']);]]></phpcode>
 			<phrase name="setting_vbv_grp_read_only_title" date="1262987099" username="Vitaly" version="0.1"><![CDATA[Read Only Groups]]></phrase>
 			<phrase name="setting_vbv_grp_unvoteable_desc" date="1262987067" username="Vitaly" version="0.1"><![CDATA[Users from this groups can't get votes.]]></phrase>
 			<phrase name="setting_vbv_grp_unvoteable_title" date="1262987067" username="Vitaly" version="0.1"><![CDATA[Unvoteable groups]]></phrase>
+			<phrase name="setting_vbv_ignore_forum_childs_desc" date="1280225104" username="Vitaly" version="0.4"><![CDATA[If set YES, then ignored forum IDs will be autocompleted with their childs. It will be enougth to set only forum categories above.]]></phrase>
+			<phrase name="setting_vbv_ignore_forum_childs_title" date="1280225104" username="Vitaly" version="0.4"><![CDATA[Ignore forums with childs]]></phrase>
 			<phrase name="setting_vbv_ignored_forums_desc" date="1262985915" username="Vitaly" version="0.1"><![CDATA[Votes will be disabled for this forums. Place forum IDs, separated by ",". For example "1,2,3"]]></phrase>
 			<phrase name="setting_vbv_ignored_forums_title" date="1262985915" username="Vitaly" version="0.1"><![CDATA[Ignored forums]]></phrase>
-			<phrase name="setting_vbv_max_votes_daily_desc" date="1262982578" username="Vitaly" version="0.1"><![CDATA[How many votes user can give per day]]></phrase>
-			<phrase name="setting_vbv_max_votes_daily_title" date="1262982578" username="Vitaly" version="0.1"><![CDATA[Max votes per day]]></phrase>
+			<phrase name="setting_vbv_max_votes_daily_desc" date="1280212173" username="Vitaly" version="0.4"><![CDATA[How many votes user can give per day.]]></phrase>
+			<phrase name="setting_vbv_max_votes_daily_title" date="1280212173" username="Vitaly" version="0.4"><![CDATA[Max votes per day]]></phrase>
+			<phrase name="setting_vbv_neg_auto_report_desc" date="1280212664" username="Vitaly" version="0.4"><![CDATA[When post get too many negative votes, report to moderators is generated automatically. Set 0 to disable.]]></phrase>
+			<phrase name="setting_vbv_neg_auto_report_title" date="1280212664" username="Vitaly" version="0.4"><![CDATA[Report after X negative votes]]></phrase>
 			<phrase name="setting_vbv_neg_votes_expire_days_desc" date="1262985223" username="Vitaly" version="0.1"><![CDATA[After X days all negative votes are completely cleared. Set 0 to keep forever.]]></phrase>
 			<phrase name="setting_vbv_neg_votes_expire_days_title" date="1262985223" username="Vitaly" version="0.1"><![CDATA[Negative votes expiration time (days)]]></phrase>
-			<phrase name="setting_vbv_post_days_old_desc" date="1268136687" username="Vitaly" version=""><![CDATA[This option allows to disable voting for posts, which are older XX days. So, only new posts can be voted.<br /><br />
-<b>Note:</b>Set '0' to disable limits.]]></phrase>
-			<phrase name="setting_vbv_post_days_old_title" date="1267194929" username="varnak" version="0.1"><![CDATA[Disable voting if post is X days old]]></phrase>
-			<phrase name="setting_vbv_top_voted_days_desc" date="1268235098" username="Vitaly" version=""><![CDATA[Limit (in days) fot top voted search. Set 0 disable top links at all.]]></phrase>
-			<phrase name="setting_vbv_top_voted_days_title" date="1262985570" username="Vitaly" version="0.1"><![CDATA["Top Voted" days limit]]></phrase>
+			<phrase name="setting_vbv_post_days_old_desc" date="1280212785" username="Vitaly" version="0.4"><![CDATA[This option allows to disable voting for posts, which are older XX days. So, only new posts can be voted. Set '0' to disable limits.]]></phrase>
+			<phrase name="setting_vbv_post_days_old_title" date="1280212785" username="Vitaly" version="0.4"><![CDATA[Disable voting if post is X days old]]></phrase>
+			<phrase name="setting_vbv_top_voted_days_desc" date="1280212702" username="Vitaly" version="0.4"><![CDATA[Limit (in days) for "top voted" search. Set 0 disable top links at all.]]></phrase>
+			<phrase name="setting_vbv_top_voted_days_title" date="1280212702" username="Vitaly" version="0.4"><![CDATA["Top Voted" days limit]]></phrase>
 			<phrase name="settinggroup_vb_votes" date="1262979865" username="Vitaly" version="0.1"><![CDATA[vb Votes]]></phrase>
 		</phrasetype>
 	</phrases>
@@ -590,6 +939,10 @@ clear_votes_by_user_id($this->existing['userid']);]]></phpcode>
 			<setting varname="vbv_max_votes_daily" displayorder="10">
 				<datatype>number</datatype>
 				<defaultvalue>10</defaultvalue>
+			</setting>
+			<setting varname="vbv_post_days_old" displayorder="15">
+				<datatype>free</datatype>
+				<defaultvalue>7</defaultvalue>
 			</setting>
 			<setting varname="vbv_grp_disable" displayorder="20">
 				<datatype>free</datatype>
@@ -625,6 +978,10 @@ clear_votes_by_user_id($this->existing['userid']);]]></phpcode>
 				<datatype>number</datatype>
 				<defaultvalue>30</defaultvalue>
 			</setting>
+			<setting varname="vbv_neg_auto_report" displayorder="85">
+				<datatype>posint</datatype>
+				<defaultvalue>5</defaultvalue>
+			</setting>
 			<setting varname="vbv_top_voted_days" displayorder="90">
 				<datatype>number</datatype>
 				<defaultvalue>7</defaultvalue>
@@ -632,9 +989,10 @@ clear_votes_by_user_id($this->existing['userid']);]]></phpcode>
 			<setting varname="vbv_ignored_forums" displayorder="100">
 				<datatype>free</datatype>
 			</setting>
-			<setting varname="vbv_post_days_old" displayorder="110">
-				<datatype>free</datatype>
-				<defaultvalue>7</defaultvalue>
+			<setting varname="vbv_ignore_forum_childs" displayorder="110">
+				<datatype>boolean</datatype>
+				<optioncode>yesno</optioncode>
+				<defaultvalue>1</defaultvalue>
 			</setting>
 		</settinggroup>
 	</options>

@@ -3,22 +3,91 @@
  * Adds onclick events to voting buttons and delete links
  *
  * @param	string	The ID of the form that contains the rating options
+ * @param   int     Post id [optional]
  */
-function AJAX_PostVote_Init(posts_list){
+function AJAX_PostVote_Init(posts_container, post_id){
     if(AJAX_Compatible){
-        if(typeof posts_list=="string"){
-            posts_list = fetch_object(posts_list)
+        if(typeof posts_container=="string"){
+            posts_container = fetch_object(posts_container)
         }
-        var post_elements = fetch_tags(posts_list, "a");
-        for(var i=0; i<post_elements.length; i++){
-            // vote buttons
-            if(post_elements[i].name && post_elements[i].name.indexOf("PostVote::")!=-1){
-                post_elements[i].onclick = AJAX_PostVote.prototype.vote_click;
-            }
+        if (typeof post_id != "undefined")
+        {
+            PostVoteBit_Init(post_id);
+            return true;
+        }
+        var post_id;
+        if ('li' == posts_container.tagName)
+        {
+            post_id = post_elements[i].id.substr(5);
+            PostVoteBit_Init(post_id);
+        }
+        else
+        {
+            var post_elements = fetch_tags(posts_container, "li");
+            for(var i=0; i<post_elements.length; i++){
+                // vote buttons
 
-            // "remove vote" links
-            if(post_elements[i].name && post_elements[i].name.indexOf("RemoveVote::")!=-1){
-                post_elements[i].onclick = AJAX_PostVote.prototype.remove_vote_click;
+                if(post_elements[i].id && post_elements[i].id.indexOf("post_") == 0){
+                    post_id = post_elements[i].id.substr(5);
+                    PostVoteBit_Init(post_id);
+                }
+
+            }
+        }
+    }
+    return true;
+}
+
+PostVoteBit_Init = function (post_id)
+{
+    button_link = YAHOO.util.Dom.get('PostVote::Positive::' + post_id);
+    if (button_link)
+    {
+        button_link.onclick = AJAX_PostVote.prototype.vote_click;
+    }
+    button_link = YAHOO.util.Dom.get('PostVote::Negative::' + post_id);
+    if (button_link)
+    {
+        button_link.onclick = AJAX_PostVote.prototype.vote_click;
+    }
+    var patterns = new Array(
+        'RemoveVote::All::Positive::',
+        'RemoveVote::Positive::',
+        'RemoveVote::All::Negative::',
+        'RemoveVote::Negative::'
+    );
+    for(var i=0; i<patterns.length; i++)
+    {
+        remove_link = YAHOO.util.Dom.get(patterns[i] + post_id);
+        if (remove_link)
+        {
+            remove_link.onclick = AJAX_PostVote.prototype.remove_vote_click;
+        }
+    }
+
+    PostVoteBit_results_show(post_id)
+}
+
+PostVoteBit_results_show = function(post_id)
+{
+    var current_result_block = false;
+    var post_elem = YAHOO.util.Dom.get('post_' + post_id);
+    if (post_elem.getAttribute("class").indexOf("ignore") == -1)
+    {
+        current_result_block = YAHOO.util.Dom.get('Positive_votes_post_' + post_id);
+        if (current_result_block)
+        {
+            if (current_result_block.childNodes.length > 1)
+            {
+                current_result_block.style.display = '';
+            }
+        }
+        current_result_block = YAHOO.util.Dom.get('Negative_votes_post_' + post_id);
+        if (current_result_block)
+        {
+            if (current_result_block.childNodes.length > 1)
+            {
+                current_result_block.style.display = '';
             }
         }
     }
@@ -33,14 +102,16 @@ function AJAX_PostVote(post_id, action_name)
 {
     this.post_id = post_id;
 
-    this.url = "votes.php?do=" + action_name;
+    this.url = "vb_votes.php?do=" + action_name;
 
     // vB_Hidden_Form object to handle form variables
-    this.pseudoform = new vB_Hidden_Form('votes.php');
+    this.pseudoform = new vB_Hidden_Form('vb_votes.php');
     this.pseudoform.add_variable('ajax', 1);
     this.pseudoform.add_variable('s', fetch_sessionhash());
     this.pseudoform.add_variable('securitytoken', SECURITYTOKEN);
     this.pseudoform.add_variable('targetid', post_id);
+    // const VOTE_CONTENT_TYPE, defined in templates
+    this.pseudoform.add_variable('contenttype', VOTE_CONTENT_TYPE);
 
     // Output object
     this.output_element_id = 'voted_' + post_id;
@@ -133,15 +204,13 @@ AJAX_PostVote.prototype.handle_ajax_response = function(ajax)
         }
         else
         {
-            var vote_response = ajax.responseXML.getElementsByTagName('voted_div');
-            var votes_html = '';
-            if (vote_response[0].hasChildNodes())
-            {
-                votes_html = vote_response[0].firstChild.nodeValue;
-            }
-            this.remove_votes_result();
-            var edit_div = YAHOO.util.Dom.get('edit' + this.post_id);
-            edit_div.innerHTML = edit_div.innerHTML + votes_html;
+
+            var positive_votes = ajax.responseXML.getElementsByTagName('positive_votes');
+            this.update_votes_result('Positive', positive_votes);
+
+            var negative_votes = ajax.responseXML.getElementsByTagName('negative_votes');
+            this.update_votes_result('Negative', negative_votes);
+
             // enable/disable vote buttons
             var vote_button_style = '';
             var vote_button_style_response = ajax.responseXML.getElementsByTagName('vote_button_style');
@@ -152,47 +221,44 @@ AJAX_PostVote.prototype.handle_ajax_response = function(ajax)
                     vote_button_style = vote_button_style_response[0].firstChild.nodeValue;
                 }
             }
-            this.handle_vote_button_div(vote_button_style);
-            //AJAX_PostVote_Init('post' + this.post_id);
-            AJAX_PostVote_Init('edit' + this.post_id);
+            this.handle_vote_buttons(vote_button_style);
+
+            PostVoteBit_Init(this.post_id)
         }
     }
 }
 
-/**
- * Hide/show vote buttons
- */
-AJAX_PostVote.prototype.handle_vote_button_div = function(vote_button_style)
+
+AJAX_PostVote.prototype.update_votes_result = function(vote_type, vote_result)
 {
-    var b_positive = YAHOO.util.Dom.get("PostVote::Positive::"+this.post_id);
-    if (b_positive)
+    if (vote_result)
     {
-        b_positive.style.display = vote_button_style;
-    }
-    var b_negative = YAHOO.util.Dom.get("PostVote::Negative::"+this.post_id);
-    if (b_negative)
-    {
-        b_negative.style.display = vote_button_style;
+        var current_result_block = YAHOO.util.Dom.get(vote_type + '_votes_post_' + this.post_id);
+        var votes_result = string_to_node(vote_result[0].firstChild.nodeValue);
+        current_result_block.parentNode.replaceChild(votes_result, current_result_block);
     }
 }
 
 /**
- * Remove votes results
- * Hotfix for "remove div-container" bug
- * TODO: refactor client and server side
+ * Hide/show vote buttons (with separators)
+ * ToDo refactor
  */
-AJAX_PostVote.prototype.remove_votes_result = function()
+AJAX_PostVote.prototype.handle_vote_buttons = function(vote_button_style)
 {
-    var edit_div = YAHOO.util.Dom.get('edit' + this.post_id);
-    var result_positive = YAHOO.util.Dom.get('PostVotesResult::Positive::' + this.post_id);
-    if (result_positive)
+    // buttons
+    this.set_button_style("PostVote::Positive::", vote_button_style);
+    this.set_button_style("PostVote::Negative::", vote_button_style);
+
+    // separators
+    this.set_button_style("vote_pos_sep_", vote_button_style);
+    this.set_button_style("vote_neg_sep_", vote_button_style);
+}
+
+AJAX_PostVote.prototype.set_button_style = function(prefix, vote_button_style)
+{
+    var elem = YAHOO.util.Dom.get(prefix+this.post_id);
+    if (elem)
     {
-        edit_div.removeChild(result_positive);
+        elem.style.display = vote_button_style;
     }
-    var result_negative = YAHOO.util.Dom.get('PostVotesResult::Negative::' + this.post_id);
-    if (result_negative)
-    {
-        edit_div.removeChild(result_negative);
-    }
-    return true;
 }

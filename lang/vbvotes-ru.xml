@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 
-<language name="Russian (RU)" vbversion="3.8.4" product="vbvotes" type="custom">
+<language name="Russian (RU)" vbversion="4.0.4" product="vbvotes" type="custom">
 	<settings>
 		<options><![CDATA[1]]></options>
 		<languagecode><![CDATA[ru]]></languagecode>
@@ -9,8 +9,8 @@
 		<dateoverride><![CDATA[d.m.Y]]></dateoverride>
 		<timeoverride><![CDATA[H:i]]></timeoverride>
 		<registereddateoverride><![CDATA[d.m.Y]]></registereddateoverride>
-		<calformat1override><![CDATA[j F Y]]></calformat1override>
-		<calformat2override><![CDATA[j F]]></calformat2override>
+		<calformat1override><![CDATA[d.m.Y]]></calformat1override>
+		<calformat2override><![CDATA[d.m]]></calformat2override>
 		<logdateoverride><![CDATA[H:i, d.m.Y]]></logdateoverride>
 		<locale />
 		<decimalsep><![CDATA[.]]></decimalsep>
@@ -36,10 +36,12 @@
 		<phrase name="vbv_votes_statistic" date="1267728754" username="Vitaly"><![CDATA[Голоса]]></phrase>
 	</phrasetype>
 	<phrasetype name="Postbit" fieldname="postbit">
+		<phrase name="vbv_neg_auto_report_msg" date="1280225519" username="Vitaly"><![CDATA[(авто) Этот пост получил слишком много отрицательных голосов.]]></phrase>
 		<phrase name="vbv_negative_user_votes" date="1267729658" username="Vitaly"><![CDATA[Запомидорили:]]></phrase>
 		<phrase name="vbv_negative_vote" date="1267729831" username="Vitaly"><![CDATA[Кинуть помидором]]></phrase>
 		<phrase name="vbv_positive_user_votes" date="1267729680" username="Vitaly"><![CDATA[Сказали спасибо:]]></phrase>
 		<phrase name="vbv_positive_vote" date="1267729882" username="Vitaly"><![CDATA[Поблагодарить автора]]></phrase>
+		<phrase name="vbv_positive_vote_link" date="1280213280" username="Vitaly"><![CDATA[Спасибо!]]></phrase>
 		<phrase name="vbv_post_vote_remove_all_votes" date="1267729548" username="Vitaly"><![CDATA[Удалить все голоса]]></phrase>
 		<phrase name="vbv_post_vote_remove_user_vote" date="1267729592" username="Vitaly"><![CDATA[Удалить ваш голос]]></phrase>
 	</phrasetype>
