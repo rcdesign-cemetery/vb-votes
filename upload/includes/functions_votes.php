@@ -1,5 +1,8 @@
 <?php
 
+require_once(DIR . '/includes/class_bootstrap_framework.php');
+vB_Bootstrap_Framework::init();
+
 // product version
 define('VBVOTES_VERSION', '0.4');
 
