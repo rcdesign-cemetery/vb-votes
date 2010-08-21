@@ -2,7 +2,7 @@
 /**
  * Adds onclick events to voting buttons and delete links
  *
- * @param	string	The ID of the form that contains the rating options
+ * @param   string  The ID of the form that contains the rating options
  * @param   int     Post id [optional]
  */
 function AJAX_PostVote_Init(posts_container, post_id){
@@ -96,7 +96,7 @@ PostVoteBit_results_show = function(post_id)
 /**
  * Class to handle thread rating
  *
- * @param	object	The form object containing the vote options
+ * @param   object  The form object containing the vote options
  */
 function AJAX_PostVote(post_id, action_name)
 {
@@ -121,8 +121,8 @@ function AJAX_PostVote(post_id, action_name)
 /**
  * Add parameter to request pseudo form
  *
- * @param	string	name
- * @param	string	value
+ * @param   string  name
+ * @param   string  value
  */
 AJAX_PostVote.prototype.add_variable_to_request = function (name, value)
 {
@@ -213,7 +213,7 @@ AJAX_PostVote.prototype.handle_ajax_response = function(ajax)
 
             // enable/disable vote buttons
             var vote_button_style = '';
-            var vote_button_style_response = ajax.responseXML.getElementsByTagName('vote_button_style');
+            var vote_button_style_response = ajax.responseXML.getElementsByTagName('vote_buttons_visibility');
             if (vote_button_style_response)
             {
                 if (vote_button_style_response[0].hasChildNodes())

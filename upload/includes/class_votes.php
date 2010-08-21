@@ -1,81 +1,295 @@
 <?php
 
-require_once(DIR . '/includes/functions_votes.php');
 require_once(DIR . '/includes/class_bootstrap_framework.php');
 vB_Bootstrap_Framework::init();
+
+// product version
+define('VBVOTES_VERSION', '0.4');
+
+// votes.js version
+$version = (!$vbulletin->debug) ? VBVOTES_VERSION : TIMENOW;
+define('VBVOTES_JS_VERSION', $version);
+
+/**
+ * Class describing user permissions and status
+ *
+ */
+class vtUserStatus
+{    
+    protected $registry = NULL;
+
+    /**
+     *
+     * @global vB_Registry $vbulletin
+     */
+    public function __construct()
+    {
+        global $vbulletin;
+        $this->registry = $vbulletin;
+    }
+
+    /**
+     * Check if user is able to vote/remove votes
+     *
+     * @return bool
+     */
+    public function has_vote_permission()
+    {
+        $banned_group = unserialize($this->registry->options['vbv_grp_banned']);
+        $disabled_group = unserialize($this->registry->options['vbv_grp_disable']);
+        $readonly_group = unserialize($this->registry->options['vbv_grp_read_only']);
+        if (is_member_of($this->registry->userinfo, $banned_group) OR
+            is_member_of($this->registry->userinfo, $disabled_group) OR
+            is_member_of($this->registry->userinfo, $readonly_group))
+        {
+            return false;
+        }
+        return true;
+    }
+    
+    /**
+     * Check if user has already voted. Search within votes list (to speed up the process)
+     * Note: The input shall have the following format:
+     * [item_id]
+     *     [vote_type] (1 / -1)
+     *         [fromuserid]
+     *         [username]
+     * @param array $votes_list
+     * @return bool
+     */
+    public function is_user_vote_exists($votes_list)
+    {
+        if (is_array($votes_list))
+        {
+            foreach ($votes_list as $vote_type)
+            {
+                foreach ($vote_type as $vote)
+                {
+                    if ($vote['fromuserid'] == $this->registry->userinfo['userid'])
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+    
+    /**
+     * Check if day votes limit exceeded
+     *
+     * @return bool
+     */
+    public function can_vote_today()
+    {
+        if (0 == $this->registry->options['vbv_max_votes_daily'])
+        {
+            return true;
+        }
+
+        $user_id = $this->registry->userinfo['userid'];
+
+        $time_line = TIMENOW - (24 * 60 * 60 * 1);
+        $sql = 'SELECT
+                    count(`fromuserid`) as today_amount
+                FROM
+                    `' . TABLE_PREFIX . 'votes`
+                WHERE
+                    `fromuserid` = ' . $user_id . ' AND
+                    `date` >= ' . $time_line;
+        $user_post_vote_amount = $this->registry->db->query_first($sql);
+
+        if ($user_post_vote_amount['today_amount'] >= $this->registry->options['vbv_max_votes_daily'])
+        {
+            return false;
+        }
+        return true;
+    }
+}
 
 /**
  * User votes manager
  *
  */
-abstract class Votes
+abstract class vtVotes
 {
     const POSITIVE = 1;
     const NEGATIVE = -1;
 
     private static $_instances = NULL;
-    public $error_msg = '';
-    protected $_target;
-    protected $_target_id;
+    protected $error_msg = '';
+    protected $item;
     protected $registry = NULL;
-    protected $_content_type_id;
+    private $_content_type_id;
+    protected $userVotes_manager = NULL;
+    protected $item_votes = NULL;
+
+    /**
+     * Item properties 
+     */
+    protected $item_id;
+    protected $item_author_id;
+    protected $is_item_deleted;
+    protected $item_age;
+
+    /**
+     * Template names 
+     */
+    protected $voted_user_link_template = '';
+    protected $votes_block_template = '';
+    protected $vote_buttons_template = '';
 
     /**
      * Return vote instance or Null object
      * @todo extend types of $content_type
      *
      * @param string    $content_type
-     * @param array     $target
+     * @param array     $item
      * @return object   instance of specified vote class
      */
-    static function get_instance($content_type, $target = null)
+    static function get_instance($content_type, $item = null)
     {
-        $class_name = 'Votes' . '_' . $content_type;
+        $class_name = 'vtVotes' . '_' . $content_type;
         if (!self::$_instances[$content_type])
         {
             if (!class_exists($class_name))
             {
-                return new Votes_Null();
+                standard_error(fetch_error('vbv_unsupported_type', $vbulletin->options['contactuslink']));
             }
             self::$_instances[$content_type] = new $class_name($content_type);
         }
-        if (!is_null($target))
+        if (!is_null($item))
         {
-            self::$_instances[$content_type]->set_target($target);
+            self::$_instances[$content_type]->set_item($item);
         }
-        self::$_instances[$content_type]->init();
         return self::$_instances[$content_type];
-    }
-
-    public function __construct($content_type)
-    {
-        $this->_content_type_id = vB_Types::instance()->getContentTypeId($content_type);
     }
 
     /**
      *
      * @global vB_Registry $vbulletin
      */
-    public function init()
+    public function __construct($content_type)
     {
         global $vbulletin;
         $this->registry = $vbulletin;
-    }
-
-    public function set_target($target)
-    {
-        $this->_target = $target;
-        $this->set_target_id();
+        if ($this->userVotes_manager == NULL) {
+            $this->userVotes_manager = new vtUserStatus();
+        }
+        $this->_content_type_id = vB_Types::instance()->getContentTypeId($content_type);
     }
 
     /**
-     * Getting id from target object
-     * Must by specified in chaild class
+     * Sets the item data. Takes an array which consists of the different item parameters and assigns it the local array
+     * @param array $item
      */
-    abstract public function set_target_id();
+    public function set_item($item)
+    {
+        $this->item = $item;
+        $this->set_item_data();
+        $this->error_msg = '';
+    }
 
     /**
-     * Create votes result html output
+     * Set item data in child class: item parameteres and template names
+     */
+    abstract public function set_item_data();
+
+    /**
+     * If item gets too many negative votes, report it
+     */
+    abstract public function report_item($reason);
+
+    /**
+     * Check if this item is too old to be voted
+     *
+     * @return bool
+     */
+    public function is_item_old()
+    {
+        if ((int) $this->registry->options['vbv_post_days_old'] > 0)
+        {
+            $date_limit = TIMENOW - 24 * 60 * 60 * (int) $this->registry->options['vbv_post_days_old'];
+            return ($this->item_age < $date_limit);
+        }
+        return false;
+    }
+    
+    /**
+     * Get votes for item list
+     * Note: The result will have the following format:
+     * [item_id]
+     *     [vote_type] (1 / -1)
+     *         [fromuserid]
+     *         [username]
+     *
+     * @param array $item_id_list
+     * @param string $vote_type
+     * @return array
+     */
+    public function get_items_list_votes($items_id_list, $vote_type = NULL)
+    {
+        if (!empty($this->item_votes) AND is_array($this->item_votes))
+        {
+            foreach ($items_id_list as $post_id)
+            {
+                if (isset($items_id_list[$post_id]))
+                {
+                    $result[$post_id] = $this->item_votes[$post_id];
+                    unset($items_id_list[$post_id]);
+                }
+            }
+        }
+        if (!empty($items_id_list))
+        {
+            $vote_type_condition = '';
+            if (!is_null($vote_type))
+            {
+                $vote_type_condition = ' AND pv.`vote` = "' . $vote_type . '"';
+            }
+
+            $sql = 'SELECT
+                        pv.`targetid`, pv.`contenttypeid`, pv.`vote`, pv.`fromuserid`, u.`username`
+                    FROM
+                        ' . TABLE_PREFIX . 'votes AS pv
+                    LEFT JOIN
+                        `user` AS u ON u.`userid` = pv.`fromuserid`
+                    WHERE
+                        pv.`targetid` IN (' . implode($items_id_list, ', ') . ') AND pv.`contenttypeid` = "' . $this->_content_type_id . '" ' . $vote_type_condition;
+            $db_resource = $this->registry->db->query_read($sql);
+            $this->item_votes = array();
+            while ($vote = $this->registry->db->fetch_array($db_resource))
+            {
+                $this->item_votes[$vote['targetid']][$vote['vote']][] = array('fromuserid' => $vote['fromuserid'], 'username' => $vote['username']);
+                $result[$vote['targetid']][$vote['vote']][] = array('fromuserid' => $vote['fromuserid'], 'username' => $vote['username']);
+            }
+        }
+        if (is_null($result))
+        {
+            $result = array();
+        }
+        return $result;
+    }
+
+    /**
+     * Get votes for item
+     * Note: The result will have the following format:
+     * [vote_type] (1 / -1)
+     *     [fromuserid]
+     *     [username]
+     *
+     * @param string $vote_type
+     * @return array
+     */
+    public function get_item_votes($vote_type = NULL)
+    {
+        $item_id_list[] = $this->item_id;
+        $result = $this->get_items_list_votes($item_id_list, $vote_type);
+        return $result[$this->item_id];
+    }
+
+    /**
+     * Create html output for votes block (positive or negative)
      *
      * @global array    $vbphrase
      * @global array    $stylevar
@@ -83,14 +297,14 @@ abstract class Votes
      * @param array     $list_of_voted_users
      * @return string   HTML
      */
-    public function render_vote_result_bit($vote_type, $list_of_voted_users)
+    public function render_votes_block($vote_type, $list_of_voted_users)
     {
         global $vbphrase, $stylevar;
 
-        $votes['target_id'] = $this->_target_id;
+        $votes['target_id'] = $this->item_id;
         $votes['vote_type'] = 'Positive';
         $votes['post_user_votes'] = $vbphrase['vbv_positive_user_votes'];
-        if (Votes::NEGATIVE == $vote_type)
+        if (vtVotes::NEGATIVE == $vote_type)
         {
             $votes['vote_type'] = 'Negative';
             $votes['post_user_votes'] = $vbphrase['vbv_negative_user_votes'];
@@ -105,7 +319,7 @@ abstract class Votes
             $bits = array();
             foreach ($list_of_voted_users as $voted_user)
             {
-                $rcd_vbv_templater = vB_Template::create('vote_postbit_user');
+                $rcd_vbv_templater = vB_Template::create($this->voted_user_link_template);
                 $rcd_vbv_templater->register('voted_user', $voted_user);
                 $user_vote_bit = $rcd_vbv_templater->render();
 
@@ -119,10 +333,10 @@ abstract class Votes
             $votes['vote_list'] = implode(', ', $bits);
 
             // add link remove own user vote
-            if ($is_own_vote AND $this->registry->options['vbv_delete_own_votes'] AND !$this->is_post_old($this->_target['dateline']))
+            if ($is_own_vote AND $this->registry->options['vbv_delete_own_votes'] AND !$this->is_item_old())
             {
                 // replace then class will support extend types of $content_type
-                $votes['remove_vote_link'] = create_vote_url(array('do' => 'remove'));
+                $votes['remove_vote_link'] = $this->create_vote_url(array('do' => 'remove'));
                 // $votes['remove_vote_link'] = create_vote_url(array('do' => 'remove', 'contenttype'=> $this->_content_type_id,));
             }
 
@@ -132,10 +346,10 @@ abstract class Votes
                 // replace then class will support extend types of $content_type
                 $url_options = array('do' => 'remove', 'all' => 1, 'value' => (string) $vote_type);
                 // $url_options = array('do' => 'remove', 'contenttype'=> $this->_content_type_id, 'all' => 1, 'value' => (string) $vote_type);
-                $votes['remove_all_votes_link'] = create_vote_url($url_options);
+                $votes['remove_all_votes_link'] = $this->create_vote_url($url_options);
             }
         }
-        $rcd_vbv_templater = vB_Template::create('vote_postbit_info');
+        $rcd_vbv_templater = vB_Template::create($this->votes_block_template);
         $rcd_vbv_templater->register('votes', $votes);
         return $rcd_vbv_templater->render();
     }
@@ -150,7 +364,7 @@ abstract class Votes
     {
         global $show;
 
-        $target_buttons_hide = ($show['vote_button_hide'] OR $this->_is_vote_button_hide());
+        $item_buttons_hide = ($show['vote_button_hide'] OR !$this->is_vote_buttons_enabled());
         if (!$show['vote_button_hide'])
         {
             if ($this->registry->options['vbv_enable_neg_votes'])
@@ -159,247 +373,72 @@ abstract class Votes
             }
         }
 
-        $vote_link = create_vote_url(array('do' => 'vote', 'targetid' => $this->_target_id));
-        $rcd_vbv_templater = vB_Template::create('vote_postbit_buttons');
+        $vote_link = $this->create_vote_url(array('do' => 'vote', 'targetid' => $this->item_id));
+        $rcd_vbv_templater = vB_Template::create($this->vote_buttons_template);
         $rcd_vbv_templater->register('vote_link', $vote_link);
-        $rcd_vbv_templater->register('target_id', $this->_target_id);
-        $rcd_vbv_templater->register('target_buttons_hide', $target_buttons_hide);
+        $rcd_vbv_templater->register('target_id', $this->item_id);
+        $rcd_vbv_templater->register('target_buttons_hide', $item_buttons_hide);
         return $rcd_vbv_templater->render();
     }
 
-    /**
-     * Get votes for single post
-     * Note: The result will have the following format:
-     * [vote_type] (1 / -1)
-     *     [fromuserid]
-     *     [username]
-     *
-     * @param int $target_id
-     * @param string $vote_type
-     * @return array
-     */
-    public function get_votes_for_post($vote_type = NULL)
-    {
-        $target_id_list[] = $this->_target_id;
-        $result = get_votes_for_post_list($target_id_list, $this->_content_type_id, $vote_type);
-        return $result[$this->_target_id];
-    }
 
     /**
-     * Check permissions. User is not in banned, "disabled mod" or read only group
+     * Should we show vote buttons or not, check 
      *
      * @return bool
      */
-    protected function _has_user_permission()
-    {
-        $bann_groups = unserialize($this->registry->options['vbv_grp_banned']);
-        if (
-            is_member_of($this->registry->userinfo, $bann_groups) OR
-            $this->_is_user_in_disable_mod_groups() OR
-            $this->_is_user_in_read_only_group()
-        )
-        {
-            throw new Exception('nopermission_loggedin');
-        }
-        return true;
-    }
-
-    /**
-     *  User is not in read only group
-     *
-     * @return bool
-     */
-    protected function _is_user_in_read_only_group()
-    {
-        $read_only_groups = unserialize($this->registry->options['vbv_grp_read_only']);
-        if (is_member_of($this->registry->userinfo, $read_only_groups))
-        {
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     *  User is not author of target topic
-     *
-     * @return bool
-     */
-    protected function _is_author()
-    {
-        if ($this->registry->userinfo['userid'] == $this->_target['userid'])
-        {
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Check, post is deleted or author in ignore list
-     *
-     * @return bool
-     */
-    protected function _is_post_prohibited_for_voting()
+    protected function is_vote_buttons_enabled()
     {
         $ignorelist = preg_split('/( )+/', trim($this->registry->userinfo['ignorelist']), -1, PREG_SPLIT_NO_EMPTY);
-        if ($this->_target['isdeleted'] OR in_array($this->_target['userid'], $ignorelist))
+
+        if ($this->is_item_deleted OR
+            in_array($this->item_author_id, $ignorelist) OR 
+            $this->registry->userinfo['userid'] == $this->item_author_id)
         {
-            throw new Exception('vbv_post_can_not_be_voted');
-        }
-        return false;
-    }
-
-    /**
-     * User didn't vote for this post
-     *
-     * @return bool
-     */
-    protected function _is_already_voted()
-    {
-        $votes_list = $this->get_votes_for_post();
-        if (is_array($votes_list))
-        {
-            foreach ($votes_list as $vote_type)
-            {
-                foreach ($vote_type as $vote)
-                {
-                    if ($vote['fromuserid'] == $this->registry->userinfo['userid'])
-                    {
-                        throw new Exception('vbv_post_voted');
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Can user vote. All checks, except day votes limit.
-     *
-     * @return bool
-     */
-    protected function _vote_access_checks()
-    {
-        $this->_is_post_prohibited_for_voting();
-
-        $this->_has_user_permission();
-
-        if ($this->_is_author())
-        {
-            throw new Exception('vbv_post_can_not_be_voted');
+            $this->error_msg = 'vbv_post_can_not_be_voted';
         }
 
-        // is this post old
-        if ($this->is_post_old())
+        if (!$this->userVotes_manager->has_vote_permission())
         {
-            throw new Exception('vbv_post_old');
+            $this->error_msg = 'nopermission_loggedin';
         }
 
-        $this->_is_already_voted();
-
-        return true;
-    }
-
-    /**
-     * Check day votes limit exceeded?
-     *
-     * @staticvar array $result
-     * @return bool
-     */
-    protected function _can_vote_today()
-    {
-        if (0 == $this->registry->options['vbv_max_votes_daily'])
+        if ($this->is_item_old())
         {
-            return true;
+            $this->error_msg = 'vbv_post_old';
         }
 
-        $user_id = $this->registry->userinfo['userid'];
-
-
-        $time_line = TIMENOW - (24 * 60 * 60 * 1);
-        $sql = 'SELECT
-                    count(`fromuserid`) as today_amount
-                FROM
-                    `' . TABLE_PREFIX . 'votes`
-                WHERE
-                    `fromuserid` = ' . $user_id . ' AND
-                    `date` >= ' . $time_line;
-        $user_post_vote_amount = $this->registry->db->query_first($sql);
-
-        if ((int) $user_post_vote_amount['today_amount'] >= (int) $this->registry->options['vbv_max_votes_daily'])
+        if ($this->userVotes_manager->is_user_vote_exists($this->get_item_votes()))
         {
-            throw new Exception('vbv_to_many_votes_per_day');
+            $this->error_msg = 'vbv_post_voted';
         }
-        return true;
-    }
 
-    /**
-     * User is not in "disabled mod" group
-     *
-     * @return true
-     */
-    protected function _is_user_in_disable_mod_groups()
-    {
-        $disable_mod_groups = unserialize($this->registry->options['vbv_grp_disable']);
-        if (is_member_of($this->registry->userinfo, $disable_mod_groups))
-        {
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Check, is this post too old to be voted?
-     *
-     * @global vb_Registry $vbulletin
-     * @return bool
-     */
-    public function is_post_old()
-    {
-        global $vbulletin;
-        if ((int) $this->registry->options['vbv_post_days_old'] > 0)
-        {
-            $date_limit = TIMENOW - 24 * 60 * 60 * (int) $vbulletin->options['vbv_post_days_old'];
-            return ($this->_target['dateline'] < $date_limit);
-        }
-        return false;
-    }
-
-    /**
-     * Check if user can vote for particular item?
-     *
-     * @return bool
-     */
-    public function is_user_can_vote_item()
-    {
-        try
-        {
-            $this->_vote_access_checks();
-            $this->_can_vote_today();
-        }
-        catch (Exception $e)
-        {
-            $this->error_msg = $e->getMessage();
+        if (!empty($this->error_msg)) {
             return false;
         }
+
         return true;
     }
 
     /**
-     *  Check is need show buttons for target
+     * Check if voting possible for today
      *
      * @return bool
      */
-    protected function _is_vote_button_hide()
+    public function can_add_vote()
     {
-        try
+        $this->is_vote_buttons_enabled();
+            
+        if (!$this->userVotes_manager->can_vote_today())
         {
-            $this->_vote_access_checks();
+            $this->error_msg = 'vbv_to_many_votes_per_day';
         }
-        catch (Exception $e)
-        {
-            return true;
+        
+        if (!empty($this->error_msg)) {
+            return false;
         }
-        return false;
+
+        return true;
     }
 
     /**
@@ -407,7 +446,7 @@ abstract class Votes
      *
      * @return bool
      */
-    public function throw_error()
+    public function show_error()
     {
         if (!empty($this->error_msg))
         {
@@ -421,75 +460,23 @@ abstract class Votes
     }
 
     /**
-     * Voting
+     * Generate URL-encoded query string
      *
-     * @param int $user_id
-     * @param int $vote_type
-     * @return bool
+     * @param array $options
+     * @param string $script
+     * @return string
      */
-    public function add_user_vote($user_id, $vote_type)
+    static function create_vote_url($options, $script = 'vb_votes.php')
     {
-        $sql = 'INSERT INTO `' . TABLE_PREFIX . 'votes` (
-                    `targetid` ,
-                    `contenttypeid` ,
-                    `vote` ,
-                    `fromuserid` ,
-                    `touserid` ,
-                    `date`
-            )
-            VALUES (
-                    ' . $this->_target_id . ',
-                    "' . $this->_content_type_id . '",
-                    "' . $vote_type . '",
-                    ' . $user_id . ',
-                    ' . $this->_target['userid'] . ',
-                    ' . TIMENOW .
-            ')';
-        $this->registry->db->query_write($sql);
-        return true;
+        if (is_null($options) OR !is_array($options))
+        {
+            return false;
+        }
+        return $script . '?' . http_build_query($options, '', '&amp;');
     }
 
     /**
-     *  Remove vote
-     *
-     * @param int $user_id
-     * @return bool
-     */
-    public function remove_user_vote($user_id)
-    {
-        $sql = 'DELETE FROM
-                    `' . TABLE_PREFIX . 'votes`
-                WHERE
-                    `targetid` = ' . $this->_target_id . '  AND
-                    `contenttypeid` = "' . $this->_content_type_id . '" AND
-                    `fromuserid` = ' . $user_id;
-
-
-        $this->registry->db->query_write($sql);
-        return true;
-    }
-
-    /**
-     *  Clear votes for target
-     *
-     * @param int $vote_type
-     * @return bool
-     */
-    public function remove_all_user_votes($vote_type)
-    {
-        $sql = 'DELETE FROM
-                    `' . TABLE_PREFIX . 'votes`
-                WHERE
-                    `targetid` = ' . $this->_target_id . '  AND
-                    `contenttypeid` = "' . $this->_content_type_id . '" AND
-                    `vote` = "' . $vote_type . '"';
-
-        $this->registry->db->query_write($sql);
-        return true;
-    }
-
-    /**
-     * Get votes counn all or by vote type
+     * Get votes count by vote_type
      *
      * @param int $vote_type
      * @return bool
@@ -507,53 +494,147 @@ abstract class Votes
                 LEFT JOIN
                     `user` AS u ON u.`userid` = pv.`fromuserid`
                 WHERE
-                    pv.`targetid` = ' . $this->_target_id . ' AND pv.`contenttypeid` = "' . $this->_content_type_id . '" ' . $vote_type_condition;
+                    pv.`targetid` = ' . $this->item_id . ' AND pv.`contenttypeid` = "' . $this->_content_type_id . '" ' . $vote_type_condition;
         $query_result = $this->registry->db->query_first($sql);
         return $query_result['vote_cont'];
     }
 
-}
 
-/**
- * Null object for non-acceptied voting type
- */
-class Votes_Null
-{
-
-    /**
-     * Overloading all methods
+     /**
+     * Voting
      *
-     * @global vb_Registry  $vbulletin
-     * @param string        $name
-     * @param array         $arguments
-     * @return mixed        bool|string
+     * @param int $vote_type
+     * @return bool
      */
-    public function __call($name, $arguments)
+    public function add_vote($vote_type)
     {
-        switch ($name)
-        {
-            case 'throw_error':
-                global $vbulletin;
-                standard_error(fetch_error('vbv_unsupported_type', $vbulletin->options['contactuslink']));
-            case 'render_vote_result_bit':
-            case 'render_vote_buttons':
-                return '';
-            default:
-                return false;
-        }
+        $sql = 'INSERT INTO `' . TABLE_PREFIX . 'votes` (
+                    `targetid` ,
+                    `contenttypeid` ,
+                    `vote` ,
+                    `fromuserid` ,
+                    `touserid` ,
+                    `date`
+            )
+            VALUES (
+                    ' . $this->item_id . ',
+                    "' . $this->_content_type_id . '",
+                    "' . $vote_type . '",
+                    ' . $this->registry->userinfo['userid'] . ',
+                    ' . $this->item_author_id . ',
+                    ' . TIMENOW .
+            ')';
+        $this->registry->db->query_write($sql);
+        return true;
+    }    
+    
+     /**
+     *  Clear votes for item by vote type
+     *
+     * @param int $vote_type
+     * @return bool
+     */
+    public function remove_all_votes($vote_type)
+    {
+        $sql = 'DELETE FROM
+                    `' . TABLE_PREFIX . 'votes`
+                WHERE
+                    `targetid` = ' . $this->item_id . '  AND
+                    `contenttypeid` = "' . $this->_content_type_id . '" AND
+                    `vote` = "' . $vote_type . '"';
+
+        $this->registry->db->query_write($sql);
+        return true;
     }
 
+    /**
+     *  Removes only votes posted by current user
+     *
+     * @return bool
+     */
+    public function remove_vote()
+    {
+        $sql = 'DELETE FROM
+                    `' . TABLE_PREFIX . 'votes`
+                WHERE
+                    `targetid` = ' . $this->item_id . '  AND
+                    `contenttypeid` = "' . $this->_content_type_id . '" AND
+                    `fromuserid` = ' . $this->registry->userinfo['userid'];
+
+
+        $this->registry->db->query_write($sql);
+        return true;
+    }
+
+    /**
+     * Delete all votes for selected user
+     *
+     * @global vB_Database $db
+     * @param int $user_id
+     * @return bool
+     */
+    static function remove_votes_by_user_id($user_id)
+    {
+        global $vbulletin;
+        $db = $vbulletin->db;
+        $sql = 'DELETE FROM
+                    `' . TABLE_PREFIX . 'votes`
+                WHERE
+                    `fromuserid` = ' . $user_id;
+        $db->query_write($sql);
+        return true;
+    }
+
+    /**
+     * Delete votes for id list of target objects
+     *
+     * @global vB_Database $db
+     * @param array $target_id_list
+     * @param string $target_type
+     * @return bool
+     */
+    static function remove_votes_by_target_id_list($items_id_list, $content_type)
+    {
+        global $vbulletin;
+        $db = $vbulletin->db;
+
+        $content_type_id = vB_Types::instance()->getContentTypeID($content_type);
+        $sql = 'DELETE FROM
+                    ' . TABLE_PREFIX . 'votes
+                WHERE
+                    `targetid` IN(' . implode(', ', $items_id_list) . ') AND
+                    `contenttypeid` = "' . $content_type_id . '"';
+        $db->query_write($sql);
+        return true;
+    }
 }
 
 /**
  * Vote for vBForum Post
  */
-class Votes_vBForum_Post extends Votes
+class vtVotes_vBForum_Post extends vtVotes
 {
-
-    public function set_target_id()
+    public function set_item_data()
     {
-        $this->_target_id = $this->_target['postid'];
+        $this->item_id = $this->item['postid'];
+        $this->item_author_id = $this->item['userid'];
+        $this->is_item_deleted = $this->item['isdeleted'];
+        $this->item_age = $this->item['dateline'];
+        
+        $this->voted_user_link_template = 'vote_postbit_user';
+        $this->votes_block_template = 'vote_postbit_info';
+        $this->vote_buttons_template = 'vote_postbit_buttons';
+    }
+    
+    public function report_item($reason)
+    {
+        require_once(DIR . '/includes/class_reportitem.php');
+        $threadinfo = verify_id('thread', $this->item['threadid'], 0, 1);
+        $foruminfo = fetch_foruminfo($threadinfo['forumid']);
+        $reportobj = new vB_ReportItem_Post($this->registry);
+        $reportobj->set_extrainfo('forum', $foruminfo);
+        $reportobj->set_extrainfo('thread', $threadinfo);
+        $reportobj->do_report($reason, $this->item);
     }
 
     /**
@@ -562,10 +643,18 @@ class Votes_vBForum_Post extends Votes
      *
      * @return bool
      */
-    protected function _vote_access_checks()
+    protected function is_vote_buttons_enabled()
     {
-        parent::_vote_access_checks();
-        $this->_is_forum_closed();
+        parent::is_vote_buttons_enabled();
+        if ($this->_is_forum_closed())
+        {
+            $this->error_msg = 'vbv_post_can_not_be_voted';
+        }
+        
+        if (!empty($this->error_msg)) {
+            return false;
+        }
+
         return true;
     }
 
@@ -574,9 +663,9 @@ class Votes_vBForum_Post extends Votes
      *
      * @return bool
      */
-    protected function _is_forum_closed()
+    private function _is_forum_closed()
     {
-        $threadinfo = fetch_threadinfo($this->_target['threadid']);
+        $threadinfo = fetch_threadinfo($this->item['threadid']);
         $ignored_forums = explode(',', $this->registry->options['vbv_ignored_forums']);
         if ($this->registry->options['vbv_ignore_forum_childs'])
         {
@@ -585,7 +674,7 @@ class Votes_vBForum_Post extends Votes
             {
                 if (in_array(intval($ignored_forum_id), explode(',', $foruminfo['parentlist'])))
                 {
-                    throw new Exception('vbv_post_can_not_be_voted');
+                    return true;
                 }
             }
         }
@@ -593,11 +682,35 @@ class Votes_vBForum_Post extends Votes
         {
             if (in_array($threadinfo['forumid'], $ignored_forums))
             {
-                throw new Exception('vbv_post_can_not_be_voted');
+                return true;
             }
         }
         return false;
     }
 
+}
+
+class vtVotes_vBForum_SocialGroupMessage extends vtVotes
+{
+    public function set_item_data()
+    {
+        $this->item_id = $this->item['gmid'];
+        $this->item_author_id = $this->item['postuserid'];
+        $this->is_item_deleted = false;
+        if ($this->item['state'] == 'deleted')
+        {
+            $this->is_item_deleted = true;
+        }
+        $this->item_age = $this->item['dateline'];
+
+        $this->voted_user_link_template = '';
+        $this->votes_block_template = '';
+        $this->vote_buttons_template = '';
+    }
+
+    public function report_item($reason)
+    {
+        // TODO
+    }
 }
 ?>

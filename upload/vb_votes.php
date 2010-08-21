@@ -65,7 +65,7 @@ $permitted_actions = array(
 if (in_array($_REQUEST['do'], $permitted_actions))
 {
     // Init vote manager class
-    $vote_manager = Votes::get_instance(VOTE_CONTENT_TYPE, $target);
+    $vote_manager = vtVotes::get_instance(VOTE_CONTENT_TYPE, $target);
     $need_ajax_response = TRUE;
 }
 
@@ -82,34 +82,23 @@ if ($_REQUEST['do'] == 'vote')
     }
 
     // if user can't vote for this item, throw standart error
-    if (!$vote_manager->is_user_can_vote_item())
+    if (!$vote_manager->can_add_vote())
     {
-        $vote_manager->throw_error();
+        $vote_manager->show_error();
     }
 
     // save vote into db
     $value = ($vbulletin->GPC['value'] ? '1' : '-1');
-    $vote_manager->add_user_vote($vbulletin->userinfo['userid'], $value);
+    $vote_manager->add_vote($value);
 
     // if post has too many negative votes, then send report
     if (!$vbulletin->GPC['value'] AND $vbulletin->options['vbv_neg_auto_report'] > 0)
     {
-        $neg_votes_count = $vote_manager->get_votes_count(Votes::NEGATIVE);
+        $neg_votes_count = $vote_manager->get_votes_count(vtVotes::NEGATIVE);
         if ($neg_votes_count == $vbulletin->options['vbv_neg_auto_report'])
         {
             $reason = $vbphrase['vbv_neg_auto_report_msg'];
-            require_once(DIR . '/includes/class_reportitem.php');
-            switch (VOTE_CONTENT_TYPE)
-            {
-                case 'vBForum_Post':
-                default:
-                    $threadinfo = verify_id('thread', $target['threadid'], 0, 1);
-                    $foruminfo = fetch_foruminfo($threadinfo['forumid']);
-                    $reportobj = new vB_ReportItem_Post($vbulletin);
-                    $reportobj->set_extrainfo('forum', $foruminfo);
-                    $reportobj->set_extrainfo('thread', $threadinfo);
-                    $reportobj->do_report($reason, $target);
-            }
+            $vote_manager->report_item($reason);
         }
     }
 
@@ -129,28 +118,32 @@ if ($_REQUEST['do'] == 'remove')
         'all' => TYPE_BOOL,
         'value' => TYPE_BOOL,
     ));
+
     if ($vbulletin->GPC['all'])
     {
-        if (!can_administer())
+        if (can_administer())
+        {
+            // remove all votes
+            $vote_type =  ($vbulletin->GPC['value'] ? vtVotes::POSITIVE : vtVotes::NEGATIVE);
+            $vote_manager->remove_all_votes($vote_type);
+        }
+        else
         {
             print_no_permission();
         }
     }
-    elseif (!$vbulletin->options['vbv_delete_own_votes'] OR $vote_manager->is_post_old())
-    {
-        print_no_permission();
-    }
-
-    if ($vbulletin->GPC['all'])
-    {
-        // remove all votes
-        $vote_type =  ($vbulletin->GPC['value'] ? Votes::POSITIVE : Votes::NEGATIVE);
-        $vote_manager->remove_all_user_votes($vote_type);
-    }
     else
     {
-        // remove single user vote
-        $vote_manager->remove_user_vote($vbulletin->userinfo['userid']);
+        if ($vbulletin->options['vbv_delete_own_votes'] AND !$vote_manager->is_item_old())
+        {
+            // remove own vote
+            $vote_manager->remove_vote();
+        }
+        else
+        {
+            print_no_permission();
+        }
+        
     }
 
     if (!$vbulletin->GPC['ajax'])
@@ -159,10 +152,10 @@ if ($_REQUEST['do'] == 'remove')
         eval(print_standard_redirect('redirect_' . VOTE_CONTENT_TYPE . '_vote_add'));
     }
 
-    $vote_button_style = 'none';
-    if ($vote_manager->is_user_can_vote_item())
+    $vote_buttons_visibility = 'none';
+    if ($vote_manager->can_add_vote())
     {
-        $vote_button_style = '';
+        $vote_buttons_visibility = '';
     }
 
     $need_ajax_response = TRUE;
@@ -178,26 +171,27 @@ if ($need_ajax_response)
 
     // get votes results
     $vote_results = '';
-    if (can_see_results())
+    $disabled_group = unserialize($vbulletin->options['vbv_grp_disable']);
+    if (!is_member_of($vbulletin->userinfo, $disabled_group))
     {
         $result_vote_type = NULL;
         if (!$vbulletin->options['vbv_enable_neg_votes'])
         {
-            $result_vote_type = Votes::POSITIVE;
+            $result_vote_type = vtVotes::POSITIVE;
         }
-        $votes = $vote_manager->get_votes_for_post($result_vote_type);
+        $votes = $vote_manager->get_item_votes($result_vote_type);
 
-        $vote_results = $vote_manager->render_vote_result_bit(Votes::POSITIVE, $votes[Votes::POSITIVE]);
+        $vote_results = $vote_manager->render_votes_block(vtVotes::POSITIVE, $votes[vtVotes::POSITIVE]);
         $xml->add_tag('positive_votes', $vote_results);
         if ($vbulletin->options['vbv_enable_neg_votes'])
         {
-            $vote_results = $vote_manager->render_vote_result_bit(Votes::NEGATIVE, $votes[Votes::NEGATIVE]);
+            $vote_results = $vote_manager->render_votes_block(vtVotes::NEGATIVE, $votes[vtVotes::NEGATIVE]);
             $xml->add_tag('negative_votes', $vote_results);
         }
     }
 
     // enable/disable vote buttons
-    $xml->add_tag('vote_button_style', $vote_button_style);
+    $xml->add_tag('vote_buttons_visibility', $vote_buttons_visibility);
 
     // return response
     $xml->close_group();
