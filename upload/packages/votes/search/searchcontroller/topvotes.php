@@ -29,37 +29,23 @@ class vBForum_Search_SearchController_TopVotes extends vB_Search_SearchControlle
         $value = $equals_filters['value'];
         $time_line = TIMENOW - 24 * 60 * 60 * $vbulletin->options['vbv_top_voted_days'];
 
-        // get ids for top
-        $sql = 'SELECT
-                    DISTINCT `targetid`
-                FROM
-                    `' . TABLE_PREFIX . 'votes`
-                WHERE
-                    `date` > ' . $time_line . ' AND `vote` = "' . $value . '" AND `contenttypeid` = "' . $content_type_id . '"
-                LIMIT ' . ($vbulletin->options['maxresults']);
-
-        $target_id_list = array();
-        $targets = $db->query_read_slave($sql);
-        while ($target = $db->fetch_array($targets))
-        {
-            $target_id_list[] = $target['targetid'];
-        }
-        // did we get some results?
-        if (empty($target_id_list))
-        {
-            return $results;
-        }
         // sort by vote count
         $sql = 'SELECT
                     `targetid`, count(`vote`) AS vote_count
                 FROM
-                    `' . TABLE_PREFIX . 'votes`
+                    `' . TABLE_PREFIX . 'votes` as `votes`
                 WHERE
-                    `targetid` IN (' . implode($target_id_list, ', ') . ')  AND `contenttypeid` = "' . $content_type_id . '" AND `vote` = "' . $value . '"
+                     `targetid` IN (SELECT DISTINCT `targetid`
+                                    FROM
+                                    `' . TABLE_PREFIX . 'votes`
+                                    WHERE
+                                    `date` > ' . $time_line . ' AND `vote` = "' . $value . '" AND `contenttypeid` = "' . $content_type_id . '") 
+                     AND `contenttypeid` = "' . $content_type_id . '" AND `vote` = "' . $value . '"
                 GROUP BY
                     `targetid`
                 ORDER BY
-                    vote_count DESC';
+                    vote_count DESC
+                LIMIT ' . $vbulletin->options['maxresults'];
 
         
         $posts = $db->query_read($sql);
