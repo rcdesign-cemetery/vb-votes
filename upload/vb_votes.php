@@ -47,14 +47,24 @@ define('VOTE_CONTENT_TYPE', $vbulletin->GPC['contenttype']);
 
 require_once(DIR . '/includes/class_votes.php');
 
+$target_id = 0;
+$target = array();
 $target_id = $vbulletin->GPC['targetid'];
-
 // fetch target
 switch (VOTE_CONTENT_TYPE)
 {
     case 'vBForum_Post':
-    default:
         $target = fetch_postinfo($target_id);
+        break;
+    case 'vBForum_SocialGroupMessage':
+        if ($vbulletin->options['vbv_enable_sg_votes'])
+        {
+            require_once(DIR . '/includes/functions_socialgroup.php');
+            $target = fetch_groupmessageinfo($target_id);
+            break;
+        }
+    default:
+        standard_error(fetch_error('vbv_unsupported_type', $vbulletin->options['contactuslink']));
 }
 
 $permitted_actions = array(
@@ -105,11 +115,15 @@ if ($_REQUEST['do'] == 'vote')
     // response
     if (!$vbulletin->GPC['ajax'])
     {
-        // voted message + redirect
-        $vbulletin->url = 'showthread.php?' . $vbulletin->session->vars['sessionurl_js'] . "p=$target[postid]#post$target[postid]";
+        $url = 'showthread.php?' . $vbulletin->session->vars['sessionurl_js'] . "p=$target[postid]#post$target[postid]";
+        if ('vBForum_SocialGroupMessage' == VOTE_CONTENT_TYPE)
+        {
+            $url = 'group.php?' . $vbulletin->session->vars['sessionurl_js'] . "do=discuss&discussionid=$target[discussionid]";;
+        }
+        $vbulletin->url = $url;
         eval(print_standard_redirect('redirect_' . VOTE_CONTENT_TYPE . '_vote_add'));
     }
-    $vote_button_style = 'none';
+    $vote_buttons_visibility = 'none';
 }
 
 if ($_REQUEST['do'] == 'remove')
@@ -148,7 +162,12 @@ if ($_REQUEST['do'] == 'remove')
 
     if (!$vbulletin->GPC['ajax'])
     {
-        $vbulletin->url = 'showthread.php?' . $vbulletin->session->vars['sessionurl_js'] . "p=$target[postid]#post$target[postid]";
+        $url = 'showthread.php?' . $vbulletin->session->vars['sessionurl_js'] . "p=$target[postid]#post$target[postid]";
+        if ('vBForum_SocialGroupMessage' == VOTE_CONTENT_TYPE)
+        {
+            $url = 'group.php?' . $vbulletin->session->vars['sessionurl_js'] . "do=discuss&discussionid=$target[discussionid]";;
+        }
+        $vbulletin->url = $url;
         eval(print_standard_redirect('redirect_' . VOTE_CONTENT_TYPE . '_vote_add'));
     }
 
@@ -157,8 +176,6 @@ if ($_REQUEST['do'] == 'remove')
     {
         $vote_buttons_visibility = '';
     }
-
-    $need_ajax_response = TRUE;
 }
 
 if ($need_ajax_response)
@@ -181,17 +198,24 @@ if ($need_ajax_response)
         }
         $votes = $vote_manager->get_item_votes($result_vote_type);
 
-        $vote_results = $vote_manager->render_votes_block(vtVotes::POSITIVE, $votes[vtVotes::POSITIVE]);
+        $vote_results = $vote_manager->render_votes_block(vtVotes::POSITIVE, $votes[vtVotes::POSITIVE], $target_id);
         $xml->add_tag('positive_votes', $vote_results);
         if ($vbulletin->options['vbv_enable_neg_votes'])
         {
-            $vote_results = $vote_manager->render_votes_block(vtVotes::NEGATIVE, $votes[vtVotes::NEGATIVE]);
+            $vote_results = $vote_manager->render_votes_block(vtVotes::NEGATIVE, $votes[vtVotes::NEGATIVE], $target_id);
             $xml->add_tag('negative_votes', $vote_results);
         }
     }
 
     // enable/disable vote buttons
     $xml->add_tag('vote_buttons_visibility', $vote_buttons_visibility);
+
+    $item_id_name = 'post_';
+    if (VOTE_CONTENT_TYPE == 'vBForum_SocialGroupMessage')
+    {
+        $item_id_name = 'gmessage_';
+    }
+    $xml->add_tag('item_id_name', $item_id_name);
 
     // return response
     $xml->close_group();

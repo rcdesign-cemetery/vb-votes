@@ -45,31 +45,113 @@ $db->show_errors();]]></installcode>
 		</code>
 	</codes>
 	<templates>
-		<template name="vote_buttons_css" templatetype="template" date="1279867860" username="varnak" version="0.4"><![CDATA[<style type="text/css">
+		<template name="sg_vote_buttons" templatetype="template" date="1283387833" username="admin" version="0.5"><![CDATA[<div id="vote-buttons-container-{vb:raw target_id}" class="vote-buttons-container" <vb:if condition="$target_buttons_hide">style="display: none;"</vb:if>>
+     <span class="vote-buttons-inner-container">
+        <span class="seperator" id="vote_pos_sep_{vb:raw target_id}">&nbsp;</span>
+        <a class="votepos" href="{vb:raw vote_link}&amp;value=1" rel="nofollow" name="PostVote::Positive::{vb:raw target_id}" id="PostVote::Positive::{vb:raw target_id}"><img src="{vb:raw vboptions.cleargifurl}" id="voteposimg_{vb:raw target_id}" alt="{vb:rawphrase vbv_positive_vote}" />  {vb:rawphrase vbv_positive_vote_link}</a>
+        <vb:if condition="$show['negative']">
+            <span class="seperator" id="vote_neg_sep_{vb:raw target_id}">&nbsp;</span>
+            <a title="{vb:rawphrase vbv_negative_vote}" class="voteneg" href="{vb:raw vote_link}&amp;value=0" rel="nofollow" name="PostVote::Negative::{vb:raw target_id}" id="PostVote::Negative::{vb:raw target_id}"><img src="{vb:raw vboptions.cleargifurl}" id="votenegimg_{vb:raw target_id}" alt="{vb:rawphrase vbv_negative_vote}" />&nbsp;</a>
+        </vb:if>
+    </span>
+</div>]]></template>
+		<template name="sg_vote_buttons_css" templatetype="template" date="1283410937" username="admin" version="0.5"><![CDATA[<style type="text/css">
+.vote-buttons-container {
+    text-align:right;
+    width: 100%;
+    font-size:{vb:math {vb:stylevar font.fontSize}-2}px;
+}
+.vote-buttons-container .vote-buttons-inner-container{
+    padding-{vb:stylevar right}: {vb:stylevar padding};
+}
+.vote-buttons-container .vote-buttons-inner-container a {
+    line-height:{vb:math {vb:stylevar font.fontSize}+1}px;
+    height:{vb:math {vb:stylevar font.fontSize}+1}px;
+}
+.vote-buttons-container a.votepos {
+    background: url({vb:stylevar imgdir_button}/vote_pos.png) no-repeat center left;
+    padding: {vb:stylevar postbit_control_padding};
+    padding-{vb:stylevar left}: {vb:math {vb:stylevar postbit_control_padding}+20};
+}
+.vote-buttons-container a.votepos:hover {
+    background: url({vb:stylevar imgdir_button}/vote_pos-hover.png) no-repeat center left;
+    text-decoration: none;
+}
+.vote-buttons-container a.voteneg {
+    background: url({vb:stylevar imgdir_button}/vote_neg.png) no-repeat center left;
+    padding: {vb:stylevar postbit_control_padding};
+    padding-{vb:stylevar left}: {vb:math {vb:stylevar postbit_control_padding}+20};
+}
+.vote-buttons-container a.voteneg:hover {
+    background: url({vb:stylevar imgdir_button}/vote_neg-hover.png) no-repeat center left;
+    text-decoration: none;
+}
+</style>]]></template>
+		<template name="sg_vote_info" templatetype="template" date="1283387637" username="admin" version="0.5"><![CDATA[<div class="vote-info-container" id="{vb:raw votes['vote_type']}_votes_post_{vb:raw votes['target_id']}" <vb:if condition="!$votes['vote_list'] OR $show['vote_result_hide']">style="display: none;"</vb:if>>
+    <vb:if condition="$votes['vote_list']">
+    <div id="post_message_{vb:raw message_id}" style="display:block;">
+        <div class="avatarlink vote_name_container">
+            {vb:raw votes['post_user_votes']}&nbsp;{vb:raw votes['vote_list']}
+        </div>
+        <vb:if condition="$votes['remove_all_votes_link'] OR $votes['remove_vote_link']">
+        <div class="remove-vote-links">
+            <span>
+            <vb:if condition="$votes['remove_vote_link']">
+                <a href="{vb:raw votes['remove_vote_link']}&amp;targetid={vb:raw votes['target_id']}" rel="nofollow" name="RemoveVote::{vb:raw votes['vote_type']}::{vb:raw votes['target_id']}" id="RemoveVote::{vb:raw votes['vote_type']}::{vb:raw votes['target_id']}" >{vb:rawphrase vbv_post_vote_remove_user_vote}</a>
+            </vb:if>
+            <vb:if condition="$votes['remove_all_votes_link']">
+                &nbsp;<a href="{vb:raw votes['remove_all_votes_link']}&amp;targetid={vb:raw votes['target_id']}" rel="nofollow" name="RemoveVote::All::{vb:raw votes['vote_type']}::{vb:raw votes['target_id']}" id="RemoveVote::All::{vb:raw votes['vote_type']}::{vb:raw votes['target_id']}" >{vb:rawphrase vbv_post_vote_remove_all_votes}</a>
+            </vb:if>
+            </span>
+        </div>
+        </vb:if>
+    </div>
+    </vb:if>
+</div>]]></template>
+		<template name="sg_vote_info_css" templatetype="template" date="1283387656" username="admin" version="0.5"><![CDATA[<style type="text/css">
+.postbit-lite .vote_name_container {
+    width: 100%;
+}
+.vote-info-container {
+    font-size: 0.8em;
+    float:none;
+    display:block;
+    padding-{vb:stylevar left}: {vb:stylevar padding};
+}
+.remove-vote-links {
+    font-size: 0.8em;
+    text-align:right;
+    width: 100%;
+}
+.remove-vote-links span{
+    padding-{vb:stylevar right}: {vb:stylevar padding};
+}
+</style> ]]></template>
+		<template name="vote_buttons_css" templatetype="template" date="1282980796" username="admin" version="0.5"><![CDATA[<style type="text/css">
 .postbitlegacy .postfoot .textcontrols a.votepos, .postbit .postfoot .textcontrols a.votepos  {
-	background: url({vb:stylevar imgdir_button}/vote_pos.png) no-repeat {vb:stylevar postbit_control_background} {vb:stylevar left};
-	padding: {vb:stylevar postbit_control_padding};
-	padding-{vb:stylevar left}: {vb:math {vb:stylevar postbit_control_padding}+20};
-	border: {vb:stylevar postbit_control_border};
+    background: url({vb:stylevar imgdir_button}/vote_pos.png) no-repeat {vb:stylevar postbit_control_background} {vb:stylevar left};
+    padding: {vb:stylevar postbit_control_padding};
+    padding-{vb:stylevar left}: {vb:math {vb:stylevar postbit_control_padding}+20};
+    border: {vb:stylevar postbit_control_border};
 }
 .postbitlegacy .postfoot .textcontrols a.votepos:hover, .postbit .postfoot .textcontrols a.votepos:hover  {
-	background: url({vb:stylevar imgdir_button}/vote_pos-hover.png) no-repeat {vb:stylevar postbit_control_hover_background} {vb:stylevar left};
-	padding: {vb:stylevar postbit_control_padding};
-	padding-{vb:stylevar left}: {vb:math {vb:stylevar postbit_control_padding}+20};
-	border: {vb:stylevar postbit_control_hover_border};
+    background: url({vb:stylevar imgdir_button}/vote_pos-hover.png) no-repeat {vb:stylevar postbit_control_hover_background} {vb:stylevar left};
+    padding: {vb:stylevar postbit_control_padding};
+    padding-{vb:stylevar left}: {vb:math {vb:stylevar postbit_control_padding}+20};
+    border: {vb:stylevar postbit_control_hover_border};
 }
 
 .postbitlegacy .postfoot .textcontrols a.voteneg, .postbit .postfoot .textcontrols a.voteneg  {
-	background: url({vb:stylevar imgdir_button}/vote_neg.png) no-repeat {vb:stylevar postbit_control_background} {vb:stylevar left};
-	padding: {vb:stylevar postbit_control_padding};
-	padding-{vb:stylevar left}: {vb:math {vb:stylevar postbit_control_padding}+20};
-	border: {vb:stylevar postbit_control_border};
+    background: url({vb:stylevar imgdir_button}/vote_neg.png) no-repeat {vb:stylevar postbit_control_background} {vb:stylevar left};
+    padding: {vb:stylevar postbit_control_padding};
+    padding-{vb:stylevar left}: {vb:math {vb:stylevar postbit_control_padding}+20};
+    border: {vb:stylevar postbit_control_border};
 }
 .postbitlegacy .postfoot .textcontrols a.voteneg:hover, .postbit .postfoot .textcontrols a.voteneg:hover  {
-	background: url({vb:stylevar imgdir_button}/vote_neg-hover.png) no-repeat {vb:stylevar postbit_control_hover_background} {vb:stylevar left};
-	padding: {vb:stylevar postbit_control_padding};
-	padding-{vb:stylevar left}: {vb:math {vb:stylevar postbit_control_padding}+20};
-	border: {vb:stylevar postbit_control_hover_border};
+    background: url({vb:stylevar imgdir_button}/vote_neg-hover.png) no-repeat {vb:stylevar postbit_control_hover_background} {vb:stylevar left};
+    padding: {vb:stylevar postbit_control_padding};
+    padding-{vb:stylevar left}: {vb:math {vb:stylevar postbit_control_padding}+20};
+    border: {vb:stylevar postbit_control_hover_border};
 }
 </style>]]></template>
 		<template name="vote_js" templatetype="template" date="1279025348" username="varnak" version="0.4"><![CDATA[<script type="text/javascript" src="clientscript/votes.js?v={vb:raw version}"></script>
@@ -86,7 +168,7 @@ $db->show_errors();]]></installcode>
                 <span class="seperator" id="vote_neg_sep_{vb:raw target_id}" <vb:if condition="$target_buttons_hide">style="display: none;"</vb:if> >&nbsp;</span>
                 <a title="{vb:rawphrase vbv_negative_vote}" class="voteneg" href="{vb:raw vote_link}&amp;value=0" rel="nofollow" name="PostVote::Negative::{vb:raw target_id}" id="PostVote::Negative::{vb:raw target_id}" <vb:if condition="$target_buttons_hide">style="display: none;"</vb:if> ><img src="{vb:raw vboptions.cleargifurl}" id="votenegimg_{vb:raw target_id}" alt="{vb:rawphrase vbv_negative_vote}" />&nbsp;</a>
             </vb:if>]]></template>
-		<template name="vote_postbit_info" templatetype="template" date="1280231787" username="varnak" version="0.4"><![CDATA[<li class="postbitlegacy postbitim postcontainer" id="{vb:raw votes['vote_type']}_votes_post_{vb:raw votes['target_id']}" <vb:if condition="!$votes['vote_list'] OR $show['vote_result_hide']">style="display: none;"</vb:if>>
+		<template name="vote_postbit_info" templatetype="template" date="1282980416" username="admin" version="0.5"><![CDATA[<li class="postbitlegacy postbitim postcontainer" id="{vb:raw votes['vote_type']}_votes_post_{vb:raw votes['target_id']}" <vb:if condition="!$votes['vote_list'] OR $show['vote_result_hide']">style="display: none;"</vb:if>>
     <vb:if condition="$votes['vote_list']">
     <div class="postdetails">
         <div class="userinfo">
@@ -112,8 +194,8 @@ $db->show_errors();]]></installcode>
         </div>
         <div class="postbody" style="padding-bottom:0px;">
             <div class="postrow">
-                <div class="content hasad">
-                    <div id="post_message_{vb:raw post.postid}">
+                <div class="content hasad" style="float:none;">
+                    <div id="post_message_{vb:raw votes['target_id']}">
                         <blockquote class="postcontent restore">
                             {vb:raw votes['vote_list']}
                         </blockquote>
@@ -125,25 +207,28 @@ $db->show_errors();]]></installcode>
     </vb:if>
 </li>]]></template>
 		<template name="vote_postbit_user" templatetype="template" date="1279637258" username="varnak" version="0.4"><![CDATA[<a href="member.php?{vb:raw session['sessionurl']}u={vb:raw voted_user['fromuserid']}" rel="nofollow">{vb:raw voted_user['username']}</a>]]></template>
-		<template name="vote_post_init_js" templatetype="template" date="1280318224" username="varnak" version="0.4"><![CDATA[<script type="text/javascript">
+		<template name="vote_post_init_js" templatetype="template" date="1283412656" username="admin" version="0.5"><![CDATA[<script type="text/javascript">
     <!--
     //Init target type constant
     var VOTE_CONTENT_TYPE = "{vb:raw content_type}";
 
     // initialize vote buttons and votes result table
-    AJAX_PostVote_Init('posts');
+    AJAX_ItemVote_Init("{vb:raw message_container}","{vb:raw item_id_name}");
 
-    // override PostBit_Init
-    Pre_Votes_PostBit_Init = PostBit_Init;
-    PostBit_Init = function (obj, post_id)
+    if ("{vb:raw message_container}" == "posts")
     {
-        if (typeof AJAX_PostVote_Init != "undefined")
+        // override PostBit_Init
+        Pre_Votes_PostBit_Init = PostBit_Init;
+        PostBit_Init = function (obj, post_id)
         {
-            // init vote controls
-            AJAX_PostVote_Init(obj, post_id);
-        }
+            if (typeof AJAX_ItemVote_Init != "undefined")
+            {
+                // init vote controls
+                AJAX_ItemVote_Init(obj, "{vb:raw item_id_name}", post_id);
+            }
 
-        Pre_Votes_PostBit_Init(obj, post_id);
+            Pre_Votes_PostBit_Init(obj, post_id);
+        }
     }
     //-->
 </script>]]></template>
@@ -181,6 +266,11 @@ $db->show_errors();]]></installcode>
             <vb:if condition="$votes_count['positive_votes'] AND $votes_count['negative_votes']">/</vb:if>
             <vb:if condition="$votes_count['negative_votes']">- {vb:raw votes_count['negative_votes']}</vb:if>
         ]]></template>
+		<template name="vote_sg_init_js" templatetype="template" date="1283412620" username="admin" version="0.5"><![CDATA[<script type="text/javascript">
+<!--
+    AJAX_ItemVote_Init("{vb:raw message_container}","{vb:raw item_id_name}","{vb:raw item_id}");
+//-->
+</script>]]></template>
 	</templates>
 	<stylevardfns>
 	</stylevardfns>
@@ -214,6 +304,17 @@ if (THIS_SCRIPT == 'showthread')
     $cache[] = 'vote_js';
     $cache[] = 'vote_post_init_js';
 }
+if (THIS_SCRIPT == 'group' && $vbulletin->options['vbv_enable_sg_votes'])
+{
+    $cache[] = 'sg_vote_buttons';
+    $cache[] = 'vote_postbit_user';
+    $cache[] = 'sg_vote_info';
+    $cache[] = 'sg_vote_buttons_css';
+    $cache[] = 'sg_vote_info_css';
+    $cache[] = 'vote_js';
+    $cache[] = 'vote_sg_init_js';
+    $cache[] = 'vote_post_init_js';
+}
 if (THIS_SCRIPT == 'editpost' || THIS_SCRIPT == 'showpost')
 {
     $cache[] = 'vote_postbit_button';
@@ -234,6 +335,30 @@ if (THIS_SCRIPT == 'editpost' || THIS_SCRIPT == 'showpost')
                 `date` < ' . $date_limit . ' AND
                 `vote` = "' . vtVotes::NEGATIVE . '"';
     $vbulletin->db->query_write($sql);
+}]]></phpcode>
+		</plugin>
+		<plugin active="1" executionorder="5">
+			<title>Clear votes on discussion deletion</title>
+			<hookname>discussiondata_start</hookname>
+			<phpcode><![CDATA[if ($_POST['do'] == 'doinlinedelete')
+{
+    global $vbulletin;
+    global $discussion;
+    $db = $vbulletin->db;
+    $sql = 'SELECT `gmid`
+            FROM `' . TABLE_PREFIX . 'groupmessage`
+            WHERE `discussionid` = '.$discussion['discussionid'];
+    $gmids = $db->query_read($sql);
+    $gmid_list = array();
+    while ($gmid = $db->fetch_array($gmids))
+    {
+        $gmid_list[] = $gmid['gmid'];
+    }
+    if (!empty($gmid_list))
+    {
+        require_once(DIR . '/includes/class_votes.php');
+        vtVotes::remove_votes_by_target_id_list($gmid_list, 'vBForum_SocialGroupMessage');
+    }
 }]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="20">
@@ -274,6 +399,80 @@ if ($show['communitylink'])
     case 'showpost':
     case 'editpost':
         define ('VOTE_CONTENT_TYPE', 'vBForum_Post');
+        break;
+    case 'group':
+        define('VOTE_CONTENT_TYPE', 'vBForum_SocialGroupMessage');
+        break;
+}]]></phpcode>
+		</plugin>
+		<plugin active="1" executionorder="5">
+			<title>Remove votes on message deletion</title>
+			<hookname>groupmessagedata_delete</hookname>
+			<phpcode><![CDATA[if (!empty($this->existing['gmid']))
+{
+    require_once(DIR . '/includes/class_votes.php');
+
+    vtVotes::remove_votes_by_target_id_list(array($this->existing['gmid']), 'vBForum_SocialGroupMessage');
+}]]></phpcode>
+		</plugin>
+		<plugin active="1" executionorder="5">
+			<title>Fill votes array</title>
+			<hookname>group_discuss_start</hookname>
+			<phpcode><![CDATA[$disabled_group = unserialize($vbulletin->options['vbv_grp_disable']); 
+if (!is_member_of($vbulletin->userinfo, $disabled_group) && $vbulletin->options['vbv_enable_sg_votes']) 
+{
+    require_once(DIR . '/includes/class_votes.php');
+    $discussionid = $vbulletin->GPC['discussionid'];
+    $db_resource = $vbulletin->db->query_read("SELECT gmid FROM groupmessage WHERE discussionid=".$discussionid);
+    while ($vote = $vbulletin->db->fetch_array($db_resource))
+    {
+        $target_id_list[] = $vote['gmid'];
+    }
+    $target_id_list[] = '0'; 
+    $vote_manager = vtVotes::get_instance(VOTE_CONTENT_TYPE); 
+    $discussion['votes'] = $vote_manager->get_items_list_votes($target_id_list);
+}]]></phpcode>
+		</plugin>
+		<plugin active="1" executionorder="5">
+			<title>Add vote info and buttons to group message</title>
+			<hookname>group_messagebit_display_complete</hookname>
+			<phpcode><![CDATA[global $vbulletin;
+if ($vbulletin->options['vbv_enable_sg_votes'])
+{
+    if (0 < (int) $vbulletin->userinfo['userid'])
+    {
+        require_once(DIR . '/includes/class_votes.php');
+        $vote_manager = vtVotes::get_instance(VOTE_CONTENT_TYPE, $this->item);
+
+        // add votes result
+        global $discussion;
+        $show['vote_result_hide'] = FALSE;
+        $votes = $discussion['votes'][$this->item['gmid']];
+        if ($vbulletin->GPC['ajax'] && empty($votes))
+        {
+            $votes = $vote_manager->get_item_votes();
+        }
+        $vote_results = '';
+        $vote_results .= $vote_manager->render_votes_block(vtVotes::POSITIVE, $votes[vtVotes::POSITIVE], $this->item['gmid']);
+        if ($this->registry->options['vbv_enable_neg_votes'])
+        {
+            $vote_results .= $vote_manager->render_votes_block(vtVotes::NEGATIVE, $votes[vtVotes::NEGATIVE],$this->item['gmid']);
+        }
+        $template_hook['postbit_votes_end'] .= $vote_results;
+
+        // add buttons
+        $template_hook['postbit_buttons_end'] .= $vote_manager->render_vote_buttons();
+
+        if ($vbulletin->GPC['ajax'])
+        {
+            $rcd_vbv_templater = vB_Template::create('vote_sg_init_js');
+            $rcd_vbv_templater->register('content_type', VOTE_CONTENT_TYPE);
+            $rcd_vbv_templater->register('message_container', 'message_list');
+            $rcd_vbv_templater->register('post_id_name', 'gmessage_');
+            $rcd_vbv_templater->register('post_id', $this->item['gmid']);
+            $template_hook['postbit_buttons_end'] .= $rcd_vbv_templater->render();
+        }
+    }
 }]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
@@ -434,6 +633,12 @@ if (THIS_SCRIPT == 'showthread')
     }
 }
 
+if (array_key_exists('socialgroups_message', $vbulletin->templatecache) && $vbulletin->options['vbv_enable_sg_votes']) 
+{
+    $search = '<script type="text/javascript">';
+    $replace = '\';$final_rendered .= $template_hook[\'postbit_buttons_end\'];$final_rendered .= $template_hook[\'postbit_votes_end\'];$final_rendered .= \'' . $search;
+    $vbulletin->templatecache['socialgroups_message'] = str_replace($search, $replace, $vbulletin->templatecache['socialgroups_message']);
+}
 // Add votes to search result postbit template
 if (array_key_exists('search_results_postbit', $vbulletin->templatecache))
 {
@@ -444,21 +649,43 @@ if (array_key_exists('search_results_postbit', $vbulletin->templatecache))
     $vbulletin->templatecache['search_results_postbit'] = str_replace($search, $replace, $vbulletin->templatecache['search_results_postbit']);
 }
 
-if ('showthread' == THIS_SCRIPT)
+if ('showthread' == THIS_SCRIPT || 'group' == THIS_SCRIPT)
 {
     // add vote.js file
     $rcd_vbv_templater = vB_Template::create('vote_js');
     $rcd_vbv_templater->register('version', VBVOTES_JS_VERSION);
     $template_hook['headinclude_javascript'] .= $rcd_vbv_templater->render();
 
+    $message_container = 'posts';
+    if ('group' == THIS_SCRIPT)
+    {
+        $message_container = 'message_list';
+    }
+
+    $item_id_name = 'post_';
+    if ('group' == THIS_SCRIPT && $vbulletin->options['vbv_enable_sg_votes'])
+    {
+        $item_id_name = 'gmessage_';
+    }
     // init votes handlers
     $rcd_vbv_templater = vB_Template::create('vote_post_init_js');
     $rcd_vbv_templater->register('content_type', VOTE_CONTENT_TYPE);
+    $rcd_vbv_templater->register('message_container', $message_container);
+    $rcd_vbv_templater->register('item_id_name', $item_id_name);
     $template_hook['footer_javascript'] .= $rcd_vbv_templater->render();
 
-    // css for buttons
-    $rcd_vbv_templater = vB_Template::create('vote_buttons_css');
-    $template_hook['headinclude_bottom_css'] .= $rcd_vbv_templater->render();
+    if ('group' == THIS_SCRIPT && $vbulletin->options['vbv_enable_sg_votes'])
+    {
+        $rcd_vbv_templater = vB_Template::create('sg_vote_buttons_css');
+        $template_hook['headinclude_bottom_css'] .= $rcd_vbv_templater->render();
+        $rcd_vbv_templater = vB_Template::create('sg_vote_info_css');
+        $template_hook['headinclude_bottom_css'] .= $rcd_vbv_templater->render();
+    }
+    else if ('showthread' == THIS_SCRIPT)
+    {
+        $rcd_vbv_templater = vB_Template::create('vote_buttons_css');
+        $template_hook['headinclude_bottom_css'] .= $rcd_vbv_templater->render();
+    }
 }]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
@@ -762,6 +989,30 @@ if (!is_member_of($vbulletin->userinfo, $disabled_group))
 }]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
+			<title>Clear votes on group delete</title>
+			<hookname>socgroupdata_start</hookname>
+			<phpcode><![CDATA[if ($_POST['do'] == 'dodelete')
+{
+    global $vbulletin;
+    global $group;
+    $db = $vbulletin->db;
+    $sql = 'SELECT `gmid`
+            FROM `' . TABLE_PREFIX . 'groupmessage`
+            WHERE `discussionid` IN (SELECT `discussionid` FROM `' . TABLE_PREFIX . 'discussion` WHERE `groupid`='.$group['groupid'].')';
+    $gmids = $db->query_read($sql);
+    $gmid_list = array();
+    while ($gmid = $db->fetch_array($gmids))
+    {
+        $gmid_list[] = $gmid['gmid'];
+    }
+    if (!empty($gmid_list))
+    {
+        require_once(DIR . '/includes/class_votes.php');
+        vtVotes::remove_votes_by_target_id_list($gmid_list, 'vBForum_SocialGroupMessage');
+    }
+}]]></phpcode>
+		</plugin>
+		<plugin active="1" executionorder="5">
 			<title>Clear votes on thread delete</title>
 			<hookname>threaddata_delete</hookname>
 			<phpcode><![CDATA[$sql = 'SELECT `postid`
@@ -887,8 +1138,17 @@ If you see this message, please contact the <a href="{1}">administrator</a>.]]><
 		<phrasetype name="GLOBAL" fieldname="global">
 			<phrase name="vbv_given_votes" date="1267728837" username="Vitaly" version=""><![CDATA[Given at forum]]></phrase>
 			<phrase name="vbv_navbar_section" date="1267728997" username="Vitaly" version=""><![CDATA[Top votes]]></phrase>
+			<phrase name="vbv_neg_auto_report_msg" date="1282541496" username="admin" version=""><![CDATA[(auto) This post got too many negative votes.
+]]></phrase>
+			<phrase name="vbv_negative_user_votes" date="1282541524" username="admin" version=""><![CDATA[Thrown tomato:]]></phrase>
+			<phrase name="vbv_negative_vote" date="1282541538" username="admin" version=""><![CDATA[Throw tomato]]></phrase>
 			<phrase name="vbv_negative_votes_search" date="1267728969" username="Vitaly" version=""><![CDATA[Top negative votes for {1} days]]></phrase>
+			<phrase name="vbv_positive_user_votes" date="1282541558" username="admin" version=""><![CDATA[Thanked:]]></phrase>
+			<phrase name="vbv_positive_vote" date="1282541571" username="admin" version=""><![CDATA[Thank author]]></phrase>
+			<phrase name="vbv_positive_vote_link" date="1282541585" username="admin" version=""><![CDATA[Thanks!]]></phrase>
 			<phrase name="vbv_positive_votes_search" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[Top positive votes for {1} days]]></phrase>
+			<phrase name="vbv_post_vote_remove_all_votes" date="1282541596" username="admin" version=""><![CDATA[Remove all votes]]></phrase>
+			<phrase name="vbv_post_vote_remove_user_vote" date="1282541608" username="admin" version=""><![CDATA[Remove your vote]]></phrase>
 			<phrase name="vbv_received_votes" date="1267728923" username="Vitaly" version=""><![CDATA[Received at forum]]></phrase>
 			<phrase name="vbv_user_given_negative_votes" date="1268461940" username="Vitaly" version=""><![CDATA[{1} - gave negative votes]]></phrase>
 			<phrase name="vbv_user_given_positive_votes" date="1268461965" username="Vitaly" version=""><![CDATA[{1} - gave positive votes]]></phrase>
@@ -896,22 +1156,13 @@ If you see this message, please contact the <a href="{1}">administrator</a>.]]><
 			<phrase name="vbv_user_received_positive_votes" date="1268462010" username="Vitaly" version=""><![CDATA[{1} - received positive votes]]></phrase>
 			<phrase name="vbv_votes_statistic" date="1267728754" username="Vitaly" version=""><![CDATA[Votes]]></phrase>
 		</phrasetype>
-		<phrasetype name="Postbit" fieldname="postbit">
-			<phrase name="vbv_neg_auto_report_msg" date="1280225519" username="Vitaly" version=""><![CDATA[(auto) This post got too many negative votes.
-]]></phrase>
-			<phrase name="vbv_negative_user_votes" date="1267729658" username="Vitaly" version=""><![CDATA[Thrown tomato:]]></phrase>
-			<phrase name="vbv_negative_vote" date="1267729831" username="Vitaly" version=""><![CDATA[Throw tomato]]></phrase>
-			<phrase name="vbv_positive_user_votes" date="1267729680" username="Vitaly" version=""><![CDATA[Thanked:]]></phrase>
-			<phrase name="vbv_positive_vote" date="1267729882" username="Vitaly" version=""><![CDATA[Thank author]]></phrase>
-			<phrase name="vbv_positive_vote_link" date="1280213280" username="Vitaly" version=""><![CDATA[Thanks!]]></phrase>
-			<phrase name="vbv_post_vote_remove_all_votes" date="1267729548" username="Vitaly" version=""><![CDATA[Remove all votes]]></phrase>
-			<phrase name="vbv_post_vote_remove_user_vote" date="1267729592" username="Vitaly" version=""><![CDATA[Remove your vote]]></phrase>
-		</phrasetype>
 		<phrasetype name="vBulletin Settings" fieldname="vbsettings">
 			<phrase name="setting_vbv_delete_own_votes_desc" date="1262984341" username="Vitaly" version="0.1"><![CDATA[Allow user to delete his own votes.]]></phrase>
 			<phrase name="setting_vbv_delete_own_votes_title" date="1262984341" username="Vitaly" version="0.1"><![CDATA[Can delete own votes]]></phrase>
 			<phrase name="setting_vbv_enable_neg_votes_desc" date="1262985014" username="Vitaly" version="0.1"><![CDATA[If disabled, only positive voting is allowed.]]></phrase>
 			<phrase name="setting_vbv_enable_neg_votes_title" date="1262985014" username="Vitaly" version="0.1"><![CDATA[Enable Negative Votes]]></phrase>
+			<phrase name="setting_vbv_enable_sg_votes_desc" date="1282974317" username="admin" version="0.5"><![CDATA[Enable/disable voting in group discussions]]></phrase>
+			<phrase name="setting_vbv_enable_sg_votes_title" date="1282974317" username="admin" version="0.5"><![CDATA[Group discussions votes]]></phrase>
 			<phrase name="setting_vbv_grp_banned_desc" date="1262987050" username="Vitaly" version="0.1"><![CDATA[When user goes to this group, all his votes are cleared.]]></phrase>
 			<phrase name="setting_vbv_grp_banned_title" date="1262987050" username="Vitaly" version="0.1"><![CDATA[Banned user groups]]></phrase>
 			<phrase name="setting_vbv_grp_disable_desc" date="1262983113" username="Vitaly" version="0.1"><![CDATA[User groups to completely disable mod. Recommended for guests, to keep good SEO rank.]]></phrase>
@@ -993,6 +1244,11 @@ If you see this message, please contact the <a href="{1}">administrator</a>.]]><
 				<datatype>free</datatype>
 			</setting>
 			<setting varname="vbv_ignore_forum_childs" displayorder="110">
+				<datatype>boolean</datatype>
+				<optioncode>yesno</optioncode>
+				<defaultvalue>1</defaultvalue>
+			</setting>
+			<setting varname="vbv_enable_sg_votes" displayorder="120">
 				<datatype>boolean</datatype>
 				<optioncode>yesno</optioncode>
 				<defaultvalue>1</defaultvalue>

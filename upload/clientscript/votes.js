@@ -3,33 +3,39 @@
  * Adds onclick events to voting buttons and delete links
  *
  * @param   string  The ID of the form that contains the rating options
- * @param   int     Post id [optional]
+ * @param   int     item id [optional]
  */
-function AJAX_PostVote_Init(posts_container, post_id){
+function AJAX_ItemVote_Init(items_container, item_id_name, item_id){
     if(AJAX_Compatible){
-        if(typeof posts_container=="string"){
-            posts_container = fetch_object(posts_container)
+        if(typeof items_container=="string"){
+            items_container = fetch_object(items_container)
         }
-        if (typeof post_id != "undefined")
+        if (typeof item_id != "undefined")
         {
-            PostVoteBit_Init(post_id);
+            ItemVoteBit_Init(item_id_name, item_id);
             return true;
         }
-        var post_id;
-        if ('li' == posts_container.tagName)
+        var item_id;
+        if ('li' == items_container.tagName)
         {
-            post_id = post_elements[i].id.substr(5);
-            PostVoteBit_Init(post_id);
+            var index = item_elements[i].id.indexOf('_');
+            if (index > 0) {
+                item_id = item_elements[i].id.substr(index+1);
+                ItemVoteBit_Init(item_id_name, item_id);
+            }
         }
         else
         {
-            var post_elements = fetch_tags(posts_container, "li");
-            for(var i=0; i<post_elements.length; i++){
+            var item_elements = fetch_tags(items_container, "li");
+            for(var i=0; i<item_elements.length; i++){
                 // vote buttons
 
-                if(post_elements[i].id && post_elements[i].id.indexOf("post_") == 0){
-                    post_id = post_elements[i].id.substr(5);
-                    PostVoteBit_Init(post_id);
+                if(item_elements[i].id && item_elements[i].id.indexOf(item_id_name) == 0){
+                    var index = item_elements[i].id.indexOf('_');
+                    if (index > 0) {
+                        item_id = item_elements[i].id.substr(index+1);
+                        ItemVoteBit_Init(item_id_name, item_id);
+                    }
                 }
 
             }
@@ -38,17 +44,17 @@ function AJAX_PostVote_Init(posts_container, post_id){
     return true;
 }
 
-PostVoteBit_Init = function (post_id)
+ItemVoteBit_Init = function (item_id_name, item_id)
 {
-    button_link = YAHOO.util.Dom.get('PostVote::Positive::' + post_id);
+    button_link = YAHOO.util.Dom.get('PostVote::Positive::' + item_id);
     if (button_link)
     {
-        button_link.onclick = AJAX_PostVote.prototype.vote_click;
+        button_link.onclick = AJAX_ItemVote.prototype.vote_click;
     }
-    button_link = YAHOO.util.Dom.get('PostVote::Negative::' + post_id);
+    button_link = YAHOO.util.Dom.get('PostVote::Negative::' + item_id);
     if (button_link)
     {
-        button_link.onclick = AJAX_PostVote.prototype.vote_click;
+        button_link.onclick = AJAX_ItemVote.prototype.vote_click;
     }
     var patterns = new Array(
         'RemoveVote::All::Positive::',
@@ -58,23 +64,23 @@ PostVoteBit_Init = function (post_id)
     );
     for(var i=0; i<patterns.length; i++)
     {
-        remove_link = YAHOO.util.Dom.get(patterns[i] + post_id);
+        remove_link = YAHOO.util.Dom.get(patterns[i] + item_id);
         if (remove_link)
         {
-            remove_link.onclick = AJAX_PostVote.prototype.remove_vote_click;
+            remove_link.onclick = AJAX_ItemVote.prototype.remove_vote_click;
         }
     }
 
-    PostVoteBit_results_show(post_id)
+    ItemVoteBit_results_show(item_id_name, item_id)
 }
 
-PostVoteBit_results_show = function(post_id)
+ItemVoteBit_results_show = function(item_id_name, item_id)
 {
     var current_result_block = false;
-    var post_elem = YAHOO.util.Dom.get('post_' + post_id);
-    if (post_elem.getAttribute("class").indexOf("ignore") == -1)
+    var item_elem = YAHOO.util.Dom.get(item_id_name + item_id);
+    if (item_elem.className.indexOf("ignore") == -1)
     {
-        current_result_block = YAHOO.util.Dom.get('Positive_votes_post_' + post_id);
+        current_result_block = YAHOO.util.Dom.get('Positive_votes_post_' + item_id);
         if (current_result_block)
         {
             if (current_result_block.childNodes.length > 1)
@@ -82,7 +88,7 @@ PostVoteBit_results_show = function(post_id)
                 current_result_block.style.display = '';
             }
         }
-        current_result_block = YAHOO.util.Dom.get('Negative_votes_post_' + post_id);
+        current_result_block = YAHOO.util.Dom.get('Negative_votes_post_' + item_id);
         if (current_result_block)
         {
             if (current_result_block.childNodes.length > 1)
@@ -98,9 +104,9 @@ PostVoteBit_results_show = function(post_id)
  *
  * @param   object  The form object containing the vote options
  */
-function AJAX_PostVote(post_id, action_name)
+function AJAX_ItemVote(item_id, action_name)
 {
-    this.post_id = post_id;
+    this.item_id = item_id;
 
     this.url = "vb_votes.php?do=" + action_name;
 
@@ -109,12 +115,12 @@ function AJAX_PostVote(post_id, action_name)
     this.pseudoform.add_variable('ajax', 1);
     this.pseudoform.add_variable('s', fetch_sessionhash());
     this.pseudoform.add_variable('securitytoken', SECURITYTOKEN);
-    this.pseudoform.add_variable('targetid', post_id);
+    this.pseudoform.add_variable('targetid', item_id);
     // const VOTE_CONTENT_TYPE, defined in templates
     this.pseudoform.add_variable('contenttype', VOTE_CONTENT_TYPE);
 
     // Output object
-    this.output_element_id = 'voted_' + post_id;
+    this.output_element_id = 'voted_' + item_id;
 
 }
 
@@ -124,7 +130,7 @@ function AJAX_PostVote(post_id, action_name)
  * @param   string  name
  * @param   string  value
  */
-AJAX_PostVote.prototype.add_variable_to_request = function (name, value)
+AJAX_ItemVote.prototype.add_variable_to_request = function (name, value)
 {
     this.pseudoform.add_variable(name, value);
 }
@@ -133,18 +139,18 @@ AJAX_PostVote.prototype.add_variable_to_request = function (name, value)
  * Handler function for vote buttons
  *
  */
-AJAX_PostVote.prototype.vote_click = function()
+AJAX_ItemVote.prototype.vote_click = function()
 {
-    var post_id = this.name.substr(this.name.lastIndexOf("::")+2);
-    var post_vote = new AJAX_PostVote(post_id, 'vote');
+    var item_id = this.name.substr(this.name.lastIndexOf("::")+2);
+    var item_vote = new AJAX_ItemVote(item_id, 'vote');
 
     var vote_value = "-1";
     if(this.name.indexOf("Positive::")!=-1){
         vote_value = "1";
     }
-    post_vote.add_variable_to_request('value', vote_value);
+    item_vote.add_variable_to_request('value', vote_value);
 
-    post_vote.send_request();
+    item_vote.send_request();
     return false;
     
 }
@@ -152,11 +158,11 @@ AJAX_PostVote.prototype.vote_click = function()
 /**
  * Handler function for remove vote(s) links
  */
-AJAX_PostVote.prototype.remove_vote_click = function()
+AJAX_ItemVote.prototype.remove_vote_click = function()
 {
 
-    var post_id = this.name.substr(this.name.lastIndexOf("::")+2);
-    var post_vote = new AJAX_PostVote(post_id, 'remove');
+    var item_id = this.name.substr(this.name.lastIndexOf("::")+2);
+    var item_vote = new AJAX_ItemVote(item_id, 'remove');
 
     if(this.name.indexOf("All::")!=-1){
         // we need type of voite only for mass remove
@@ -164,11 +170,11 @@ AJAX_PostVote.prototype.remove_vote_click = function()
         if(this.name.indexOf("Positive::")!=-1){
             vote_value = "1";
         }
-        post_vote.add_variable_to_request('value', vote_value);
-        post_vote.add_variable_to_request('all', '1');
+        item_vote.add_variable_to_request('value', vote_value);
+        item_vote.add_variable_to_request('all', '1');
     }
 
-    post_vote.send_request();
+    item_vote.send_request();
 
     return false;
 }
@@ -176,7 +182,7 @@ AJAX_PostVote.prototype.remove_vote_click = function()
 /**
  * Send ajax request to vote.php
  */
-AJAX_PostVote.prototype.send_request = function()
+AJAX_ItemVote.prototype.send_request = function()
 {
 
     YAHOO.util.Connect.asyncRequest("POST", this.url, {
@@ -192,7 +198,7 @@ AJAX_PostVote.prototype.send_request = function()
 /**
  * Handler for ajax response
  */
-AJAX_PostVote.prototype.handle_ajax_response = function(ajax)
+AJAX_ItemVote.prototype.handle_ajax_response = function(ajax)
 {
     if (ajax.responseXML)
     {
@@ -223,17 +229,24 @@ AJAX_PostVote.prototype.handle_ajax_response = function(ajax)
             }
             this.handle_vote_buttons(vote_button_style);
 
-            PostVoteBit_Init(this.post_id)
+            var item_id_name_response = ajax.responseXML.getElementsByTagName('item_id_name');
+            var item_id_name= '';
+            if (item_id_name_response && item_id_name_response[0].hasChildNodes())
+            {
+                item_id_name = item_id_name_response[0].firstChild.nodeValue;
+            }
+
+            ItemVoteBit_Init(item_id_name, this.item_id)
         }
     }
 }
 
 
-AJAX_PostVote.prototype.update_votes_result = function(vote_type, vote_result)
+AJAX_ItemVote.prototype.update_votes_result = function(vote_type, vote_result)
 {
     if (vote_result)
     {
-        var current_result_block = YAHOO.util.Dom.get(vote_type + '_votes_post_' + this.post_id);
+        var current_result_block = YAHOO.util.Dom.get(vote_type + '_votes_post_' + this.item_id);
         var votes_result = string_to_node(vote_result[0].firstChild.nodeValue);
         current_result_block.parentNode.replaceChild(votes_result, current_result_block);
     }
@@ -243,22 +256,28 @@ AJAX_PostVote.prototype.update_votes_result = function(vote_type, vote_result)
  * Hide/show vote buttons (with separators)
  * ToDo refactor
  */
-AJAX_PostVote.prototype.handle_vote_buttons = function(vote_button_style)
+AJAX_ItemVote.prototype.handle_vote_buttons = function(vote_button_style)
 {
-    // buttons
-    this.set_button_style("PostVote::Positive::", vote_button_style);
-    this.set_button_style("PostVote::Negative::", vote_button_style);
+    //sg buttons container
+    if (!this.set_button_style("vote-buttons-container-", vote_button_style))
+    {
+        // buttons
+        this.set_button_style("PostVote::Positive::", vote_button_style);
+        this.set_button_style("PostVote::Negative::", vote_button_style);
 
-    // separators
-    this.set_button_style("vote_pos_sep_", vote_button_style);
-    this.set_button_style("vote_neg_sep_", vote_button_style);
+        // separators
+        this.set_button_style("vote_pos_sep_", vote_button_style);
+        this.set_button_style("vote_neg_sep_", vote_button_style);
+    }
 }
 
-AJAX_PostVote.prototype.set_button_style = function(prefix, vote_button_style)
+AJAX_ItemVote.prototype.set_button_style = function(prefix, vote_button_style)
 {
-    var elem = YAHOO.util.Dom.get(prefix+this.post_id);
+    var elem = YAHOO.util.Dom.get(prefix+this.item_id);
     if (elem)
     {
         elem.style.display = vote_button_style;
+        return true;
     }
+    return false;
 }

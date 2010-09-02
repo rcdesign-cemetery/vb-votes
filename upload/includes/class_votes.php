@@ -297,7 +297,7 @@ abstract class vtVotes
      * @param array     $list_of_voted_users
      * @return string   HTML
      */
-    public function render_votes_block($vote_type, $list_of_voted_users)
+    public function render_votes_block($vote_type, $list_of_voted_users, $message_id = 0)
     {
         global $vbphrase, $stylevar;
 
@@ -351,6 +351,9 @@ abstract class vtVotes
         }
         $rcd_vbv_templater = vB_Template::create($this->votes_block_template);
         $rcd_vbv_templater->register('votes', $votes);
+        if ($message_id > 0) {
+            $rcd_vbv_templater->register('message_id', $message_id);
+        }
         return $rcd_vbv_templater->render();
     }
 
@@ -602,7 +605,7 @@ abstract class vtVotes
         $sql = 'DELETE FROM
                     ' . TABLE_PREFIX . 'votes
                 WHERE
-                    `targetid` IN(' . implode(', ', $items_id_list) . ') AND
+                    `targetid` IN(' . implode(',',$items_id_list) . ') AND
                     `contenttypeid` = "' . $content_type_id . '"';
         $db->query_write($sql);
         return true;
@@ -650,7 +653,7 @@ class vtVotes_vBForum_Post extends vtVotes
         {
             $this->error_msg = 'vbv_post_can_not_be_voted';
         }
-        
+
         if (!empty($this->error_msg)) {
             return false;
         }
@@ -703,14 +706,44 @@ class vtVotes_vBForum_SocialGroupMessage extends vtVotes
         }
         $this->item_age = $this->item['dateline'];
 
-        $this->voted_user_link_template = '';
-        $this->votes_block_template = '';
-        $this->vote_buttons_template = '';
+        $this->voted_user_link_template = 'vote_postbit_user';
+        $this->votes_block_template = 'sg_vote_info';
+        $this->vote_buttons_template = 'sg_vote_buttons';
+    }
+
+    /**
+     * Override parent method
+     *
+     * @return bool
+     */
+    protected function is_vote_buttons_enabled()
+    {
+        parent::is_vote_buttons_enabled();
+        require_once(DIR . '/includes/functions_socialgroup.php');
+        $discussion = fetch_socialdiscussioninfo($this->item['discussionid']);
+        $group = fetch_socialgroupinfo($discussion['groupid']);
+        if (can_post_new_message($group))
+        {
+            
+        } else {$this->error_msg = 'vbv_post_can_not_be_voted';}
+
+        if (!empty($this->error_msg)) {
+            return false;
+        }
+
+        return true;
     }
 
     public function report_item($reason)
     {
-        // TODO
+        require_once(DIR . '/includes/functions_socialgroup.php');
+        $discussion = fetch_socialdiscussioninfo($this->item['discussionid']);
+        $group = fetch_socialgroupinfo($discussion['groupid']);
+        require_once(DIR . '/includes/class_reportitem.php');
+        $reportobj = new vB_ReportItem_GroupMessage($vbulletin);
+        $reportobj->set_extrainfo('group', $group);
+        $reportobj->set_extrainfo('discussion', $discussion);
+        $reportobj->do_report($reason, $this->item);
     }
 }
 ?>

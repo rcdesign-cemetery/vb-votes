@@ -34,8 +34,6 @@
 		<phrase name="vbv_user_received_negative_votes" date="1268461987" username="Vitaly"><![CDATA[{1} - полученные отрицательные оценки]]></phrase>
 		<phrase name="vbv_user_received_positive_votes" date="1268462010" username="Vitaly"><![CDATA[{1} - полученные положительные оценки]]></phrase>
 		<phrase name="vbv_votes_statistic" date="1267728754" username="Vitaly"><![CDATA[Голоса]]></phrase>
-	</phrasetype>
-	<phrasetype name="Postbit" fieldname="postbit">
 		<phrase name="vbv_neg_auto_report_msg" date="1280225519" username="Vitaly"><![CDATA[(авто) Этот пост получил слишком много отрицательных голосов.]]></phrase>
 		<phrase name="vbv_negative_user_votes" date="1267729658" username="Vitaly"><![CDATA[Запомидорили:]]></phrase>
 		<phrase name="vbv_negative_vote" date="1267729831" username="Vitaly"><![CDATA[Кинуть помидором]]></phrase>
