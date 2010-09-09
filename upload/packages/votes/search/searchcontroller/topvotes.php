@@ -19,10 +19,8 @@ class vBForum_Search_SearchController_TopVotes extends vB_Search_SearchControlle
     {
         global $vbulletin;
         $db = $vbulletin->db;
-        
-        $results = array();
 
-        $content_type_id = $criteria->get_contenttypeid();
+        $results = array();
 
         // vote value
         $equals_filters = $criteria->get_equals_filters();
@@ -31,29 +29,33 @@ class vBForum_Search_SearchController_TopVotes extends vB_Search_SearchControlle
 
         // sort by vote count
         $sql = 'SELECT
-                    `targetid`, count(`vote`) AS vote_count
+                    votes.contenttypeid, votes.targetid, CASE WHEN p.threadid IS NOT NULL THEN p.threadid 
+                    WHEN gm.discussionid IS NOT NULL THEN gm.discussionid END as parentid
                 FROM
-                    `' . TABLE_PREFIX . 'votes` as `votes`
+                    ' . TABLE_PREFIX . 'votes as votes
+                LEFT OUTER JOIN ' . TABLE_PREFIX . 'post as p ON postid = votes.targetid AND votes.contenttypeid=1
+                LEFT OUTER JOIN ' . TABLE_PREFIX . 'groupmessage as gm ON gmid = votes.targetid  AND votes.contenttypeid=5
                 WHERE
-                     `targetid` IN (SELECT DISTINCT `targetid`
+                     targetid IN (SELECT DISTINCT targetid
                                     FROM
-                                    `' . TABLE_PREFIX . 'votes`
+                                    ' . TABLE_PREFIX . 'votes
                                     WHERE
-                                    `date` > ' . $time_line . ' AND `vote` = "' . $value . '" AND `contenttypeid` = "' . $content_type_id . '") 
-                     AND `contenttypeid` = "' . $content_type_id . '" AND `vote` = "' . $value . '"
+                                    date > ' . $time_line . ' AND vote = "' . $value . '") 
+                      AND vote = "' . $value . '"
                 GROUP BY
-                    `targetid`
+                    targetid,contenttypeid
                 ORDER BY
-                    vote_count DESC
+                    count(vote) DESC
                 LIMIT ' . $vbulletin->options['maxresults'];
-
-        
-        $posts = $db->query_read($sql);
-        while ($post = $db->fetch_array($posts))
+ 
+        $set = $vbulletin->db->query_read_slave($sql);
+        while ($row = $vbulletin->db->fetch_row($set))
         {
-            $results[] = array($content_type_id, $post['targetid']);
+            $results[] = $row;
         }
-        return $results;
+        $vbulletin->db->free_result($set);
+
+        return array_values($results);
     }
 
 }

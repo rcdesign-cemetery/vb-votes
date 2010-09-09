@@ -288,6 +288,8 @@ if (THIS_SCRIPT == 'member')
 if (THIS_SCRIPT == 'search')
 {
     $cache[] = 'vote_searchbit_stat';
+    // workaround for VB not caching this template
+    $cache[] = 'search_results_socialgroup_message';
 }
 if (THIS_SCRIPT == 'vb_votes')
 {
@@ -377,7 +379,7 @@ if ($show['communitylink'])
     {
         require_once(DIR . '/includes/class_votes.php');
         $url_params = array('do' => 'topvotes',
-                            'contenttype' => 'Post',
+                            'type' => array(1,5),
                             'package'=>'vBForum',
                             'value' => '1');
         $links['top_positive'] = vtVotes::create_vote_url($url_params, 'search.php');
@@ -434,12 +436,12 @@ if (!is_member_of($vbulletin->userinfo, $disabled_group) && $vbulletin->options[
 }]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
-			<title>Add vote info and buttons to group message</title>
+			<title>Add vote info and buttons to group message and search results</title>
 			<hookname>group_messagebit_display_complete</hookname>
 			<phpcode><![CDATA[global $vbulletin;
 if ($vbulletin->options['vbv_enable_sg_votes'])
 {
-    if (0 < (int) $vbulletin->userinfo['userid'])
+    if (0 < (int) $vbulletin->userinfo['userid'] && $this->template == 'socialgroups_message')
     {
         require_once(DIR . '/includes/class_votes.php');
         $vote_manager = vtVotes::get_instance(VOTE_CONTENT_TYPE, $this->item);
@@ -472,6 +474,13 @@ if ($vbulletin->options['vbv_enable_sg_votes'])
             $rcd_vbv_templater->register('post_id', $this->item['gmid']);
             $template_hook['postbit_buttons_end'] .= $rcd_vbv_templater->render();
         }
+    }
+    if ('search_results_socialgroup_message' == $this->template)
+    {
+        global $search_result_ids;
+        $search_result_ids['vBForum_SocialGroupMessage'][] = $this->item['gmid'];
+        $ctypeid = vB_Types::instance()->getContentTypeId('vBForum_SocialGroupMessage');
+        $this->item['votes'] = 'VOTES_RESULT_' . $ctypeid . '_' . $this->item['gmid'];
     }
 }]]></phpcode>
 		</plugin>
@@ -516,10 +525,8 @@ if (in_array($destforuminfo['forumid'], $unvoted_forums))
     global $vbulletin;
     $db = $vbulletin->db;
 
-    $content_type_id = vB_Types::instance()->getContentTypeId('vBForum_Post');
-
     $url_params = array('do' => 'uservotes',
-                        'contenttype' => 'Post',
+                        'type' => array(1,5),
                         'package' => 'vBForum',
                     );
 
@@ -529,8 +536,7 @@ if (in_array($destforuminfo['forumid'], $unvoted_forums))
             FROM
                 ' . TABLE_PREFIX . 'votes
             WHERE
-                `touserid` = ' . $userinfo['userid'] . ' AND 
-                `contenttypeid` = "' . $content_type_id . '"
+                `touserid` = ' . $userinfo['userid'] . '
             GROUP BY
                 `vote`';
     $db_resource = $db->query_read($sql);
@@ -559,7 +565,7 @@ if (in_array($destforuminfo['forumid'], $unvoted_forums))
             FROM
                 ' . TABLE_PREFIX . 'votes
             WHERE
-                `fromuserid` = ' . $userinfo['userid'] . ' AND `contenttypeid` = "' . $content_type_id . '"
+                `fromuserid` = ' . $userinfo['userid'] . '
             GROUP BY
                 `vote`';
     $db_resource = $db->query_read($sql);
@@ -639,14 +645,23 @@ if (array_key_exists('socialgroups_message', $vbulletin->templatecache) && $vbul
     $replace = '\';$final_rendered .= $template_hook[\'postbit_buttons_end\'];$final_rendered .= $template_hook[\'postbit_votes_end\'];$final_rendered .= \'' . $search;
     $vbulletin->templatecache['socialgroups_message'] = str_replace($search, $replace, $vbulletin->templatecache['socialgroups_message']);
 }
-// Add votes to search result postbit template
+
 if (array_key_exists('search_results_postbit', $vbulletin->templatecache))
 {
-    $search = '<h2>\' . vB_Template_Runtime::parsePhrase("thread") . \':';
+    $search = '\'">\' . $post[\'threadtitle\'] . \'</a>';
 
     $replace = $search . '\' . $post[\'votes\'] . \'';
 
     $vbulletin->templatecache['search_results_postbit'] = str_replace($search, $replace, $vbulletin->templatecache['search_results_postbit']);
+}
+
+if (array_key_exists('search_results_socialgroup_message', $vbulletin->templatecache))
+{
+    $search = '>\' . $message[\'discussiontitle\'] . \'</a>';
+
+    $replace = $search . '\' . $message[\'votes\'] . \'';
+
+    $vbulletin->templatecache['search_results_socialgroup_message'] = str_replace($search, $replace, $vbulletin->templatecache['search_results_socialgroup_message']);
 }
 
 if ('showthread' == THIS_SCRIPT || 'group' == THIS_SCRIPT)
@@ -741,34 +756,40 @@ if (!empty($search_result_ids) AND is_array($search_result_ids))
         $vote_type = vtVotes::POSITIVE;
     }
 
-    $post_votes = array();
+    $item_votes = array();
     $disabled_group = unserialize($vbulletin->options['vbv_grp_disable']);
     if (!is_member_of($vbulletin->userinfo, $disabled_group))
     {
-        $search_result_ids[] = '0';
-        $vote_manager = vtVotes::get_instance('vBForum_Post');
-        $post_votes = $vote_manager->get_items_list_votes($search_result_ids, $vote_type);
+        foreach ($search_result_ids as $contenttype => $votes_array)
+        {
+            $vote_manager = vtVotes::get_instance($contenttype);
+            $item_votes[$contenttype] = $vote_manager->get_items_list_votes($votes_array, $vote_type);
+        }
     }
 
     $votes_result_search = $votes_result_replace = array();
-    foreach ($search_result_ids as $post_id)
+    foreach ($search_result_ids as $contenttype => $votes_array)
     {
-        $votes_result_search[$post_id] = 'VOTES_RESULT_' . $post_id;
-        $votes_result_replace[$post_id] = '';
-        if (array_key_exists($post_id, $post_votes))
+        $ctype = vB_Types::instance()->getContentTypeId($contenttype);
+        foreach ($votes_array as $item_id)
         {
-            $votes = $post_votes[$post_id];
-            if ($votes[vtVotes::POSITIVE])
+            $votes_result_search[$ctype . '_' .$item_id] = 'VOTES_RESULT_' . $ctype . '_' . $item_id;
+            $votes_result_replace[$ctype . '_' .$item_id] = '';
+            if (array_key_exists($item_id, $item_votes[$contenttype]))
             {
-                $votes_count['positive_votes'] = count($votes[vtVotes::POSITIVE]);
+                $votes = $item_votes[$contenttype][$item_id];
+                if ($votes[vtVotes::POSITIVE])
+                {
+                    $votes_count['positive_votes'] = count($votes[vtVotes::POSITIVE]);
+                }
+                if ($votes[vtVotes::NEGATIVE])
+                {
+                    $votes_count['negative_votes'] = count($votes[vtVotes::NEGATIVE]);
+                }
+                $rcd_vbv_templater = vB_Template::create('vote_searchbit_stat');
+                $rcd_vbv_templater->register('votes_count', $votes_count);
+                $votes_result_replace[$ctype . '_' .$item_id] = $rcd_vbv_templater->render();
             }
-            if ($votes[vtVotes::NEGATIVE])
-            {
-                $votes_count['negative_votes'] = count($votes[vtVotes::NEGATIVE]);
-            }
-            $rcd_vbv_templater = vB_Template::create('vote_searchbit_stat');
-            $rcd_vbv_templater->register('votes_count', $votes_count);
-            $votes_result_replace[$post_id] = $rcd_vbv_templater->render();
         }
     }
     $searchbits = str_replace($votes_result_search, $votes_result_replace, $searchbits);
@@ -781,8 +802,9 @@ if (!empty($search_result_ids) AND is_array($search_result_ids))
 			<phpcode><![CDATA[if ('search_results_postbit' == $template_name)
 {
     global $search_result_ids;
-    $search_result_ids[] = $post['postid'];
-    $post['votes'] = 'VOTES_RESULT_' . $post['postid'];
+    $search_result_ids['vBForum_Post'][] = $post['postid'];
+    $ctypeid = vB_Types::instance()->getContentTypeId('vBForum_Post');
+    $post['votes'] = 'VOTES_RESULT_' . $ctypeid . '_' . $post['postid'];
 }]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
@@ -794,7 +816,7 @@ if ('topvotes' == $_REQUEST['do'] OR 'uservotes' == $_REQUEST['do'])
     require_once(DIR . '/includes/class_votes.php');
     $vbulletin->input->clean_array_gpc('r', array(
         'package' => TYPE_STR,
-        'contenttype' => TYPE_STR,
+        'contenttypeid' => TYPE_UINT,
         'value' => TYPE_BOOL,
     ));
 
@@ -806,18 +828,23 @@ if ('topvotes' == $_REQUEST['do'] OR 'uservotes' == $_REQUEST['do'])
     {
         $package = 'vBForum';
     }
-    if ($vbulletin->GPC_exists['contenttype'])
+    $type = array();
+    if ($vbulletin->GPC_exists['contenttypeid'])
     {
-        $type = $vbulletin->GPC['contenttype'];
+        if (is_array($vbulletin->GPC['contenttypeid']))
+        {
+            foreach ($vbulletin->GPC['contenttypeid'] as $contenttype)
+            {
+                $type[] = $contenttype;
+            }
+        }
     }
     else
     {
-        //default to post to preserve existing links
-        $type = 'Post';
+        eval(standard_error(fetch_error('searchnoresults', ''), '', false));
     }
 
-    $result_type = vB_Types::instance()->getContentTypeId($package . '_' . $type);
-    if (!$result_type)
+    if (!$type)
     {
         //todo, do we need a seperate error for this?
         eval(standard_error(fetch_error('searchnoresults', ''), '', false));
@@ -835,19 +862,18 @@ if ('topvotes' == $_REQUEST['do'] OR 'uservotes' == $_REQUEST['do'])
 }
 if ('topvotes' == $_REQUEST['do'])
 {
-    $criteria = $search_core->create_criteria('top_votes');
+    $criteria = $search_core->create_criteria(vB_Search_Core::SEARCH_COMMON);
 
     $criteria->add_filter('value', vB_Search_Core::OP_EQ, $vote_value, true);
-    $criteria->add_filter('contenttype', vB_Search_Core::OP_EQ, $result_type);
+    $criteria->add_contenttype_filter($type);
     $criteria->set_grouped(vB_Search_Core::GROUP_NO);
 
     $day_limit = $vbulletin->options['vbv_top_voted_days'];
     $title_phrase = construct_phrase($vbphrase['vbv_' . $votes_type .'_votes_search'], $day_limit);
 
-    $criteria->add_display_strings('UserName', $title_phrase);
-    //check for any errors
-    $errors = $criteria->get_errors();
+    $criteria->add_display_strings('TopVotes', $title_phrase);
 
+    $errors = $criteria->get_errors();
     if ($errors)
     {
         standard_error(fetch_error($errors[0]));
@@ -915,8 +941,7 @@ if ('uservotes' == $_REQUEST['do'])
     $criteria->add_filter('value', vB_Search_Core::OP_EQ, $vote_value, true);
     $criteria->add_filter('type', vB_Search_Core::OP_EQ, $type, true);
     $criteria->add_filter('userid', vB_Search_Core::OP_EQ, $search_user_id, true);
-    $criteria->add_filter('contenttype', vB_Search_Core::OP_EQ, $result_type);
-//    $criteria->add_contenttype_filter($result_type);
+    $criteria->add_contenttype_filter($type);
     $criteria->set_grouped(vB_Search_Core::GROUP_NO);
 
     switch ($title)
@@ -933,6 +958,7 @@ if ('uservotes' == $_REQUEST['do'])
 
     $criteria->add_display_strings('UserName', $title_phrase);
 
+    $errors = $criteria->get_errors();
     if ($errors)
     {
         standard_error(fetch_error($errors[0]));

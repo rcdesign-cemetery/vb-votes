@@ -22,8 +22,6 @@ class vBForum_Search_SearchController_UserVotes extends vB_Search_SearchControll
         
         $results = array();
 
-        $content_type_id = $criteria->get_contenttypeid();
-
         // vote value
         $equals_filters = $criteria->get_equals_filters();
 
@@ -42,26 +40,28 @@ class vBForum_Search_SearchController_UserVotes extends vB_Search_SearchControll
         }
         $search_user_id = $equals_filters['userid'];
         
-        $sql = 'SELECT ' . ($need_distinct ? 'DISTINCT' : '') . '
-                    `targetid`, `contenttypeid`
+        $sql = 'SELECT ' . ($need_distinct ? 'DISTINCT' : '') . ' votes.contenttypeid, votes.targetid,
+                    CASE WHEN p.threadid IS NOT NULL THEN p.threadid 
+                    WHEN gm.discussionid IS NOT NULL THEN gm.discussionid END as parentid,
+                    CASE WHEN p.dateline IS NOT NULL THEN p.dateline
+                    WHEN gm.dateline IS NOT NULL THEN gm.dateline END as orderdate
                 FROM
-                    `' . TABLE_PREFIX . 'votes`
+                    ' . TABLE_PREFIX . 'votes as votes
+                LEFT OUTER JOIN ' . TABLE_PREFIX . 'post as p ON postid = votes.targetid AND votes.contenttypeid=1
+                LEFT OUTER JOIN ' . TABLE_PREFIX . 'groupmessage as gm ON gmid = votes.targetid AND votes.contenttypeid=5
                 WHERE
-                    `' . $type . '` = ' . $search_user_id . ' AND `vote` = "' . $value . '" AND `contenttypeid` = "' . $content_type_id . '"
-                LIMIT ' . ($vbulletin->options['maxresults']);
+                    ' . $type . ' = ' . $search_user_id . ' AND vote = "' . $value . '"
+                ORDER BY orderdate DESC';
 
-        $posts = $db->query_read($sql);
-        while ($post = $db->fetch_array($posts))
+        $unset_id = 3;
+        $set = $vbulletin->db->query_read_slave($sql);
+        while ($row = $vbulletin->db->fetch_row($set))
         {
-            $target_id_list[] = $post['targetid'];
+            $results[] = $row;
+            unset($results[$row[$unset_id]][$unset_id]);
         }
-        rsort($target_id_list, SORT_NUMERIC);
-        
-        foreach ($target_id_list as $target_id)
-        {
-            $results[] = array($content_type_id, $target_id);
-        }
-        return $results;
+        $vbulletin->db->free_result($set);
+        return array_values($results);
     }
 
 }
