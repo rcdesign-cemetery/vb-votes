@@ -45,7 +45,7 @@ $db->show_errors();]]></installcode>
 		</code>
 	</codes>
 	<templates>
-		<template name="sg_vote_buttons" templatetype="template" date="1283387833" username="admin" version="0.5"><![CDATA[<div id="vote-buttons-container-{vb:raw target_id}" class="vote-buttons-container" <vb:if condition="$target_buttons_hide">style="display: none;"</vb:if>>
+		<template name="sg_vote_buttons" templatetype="template" date="1283387833" username="jpatuk" version="0.5"><![CDATA[<div id="vote-buttons-container-{vb:raw target_id}" class="vote-buttons-container" <vb:if condition="$target_buttons_hide">style="display: none;"</vb:if>>
      <span class="vote-buttons-inner-container">
         <span class="seperator" id="vote_pos_sep_{vb:raw target_id}">&nbsp;</span>
         <a class="votepos" href="{vb:raw vote_link}&amp;value=1" rel="nofollow" name="PostVote::Positive::{vb:raw target_id}" id="PostVote::Positive::{vb:raw target_id}"><img src="{vb:raw vboptions.cleargifurl}" id="voteposimg_{vb:raw target_id}" alt="{vb:rawphrase vbv_positive_vote}" />  {vb:rawphrase vbv_positive_vote_link}</a>
@@ -55,7 +55,7 @@ $db->show_errors();]]></installcode>
         </vb:if>
     </span>
 </div>]]></template>
-		<template name="sg_vote_buttons_css" templatetype="template" date="1283410937" username="admin" version="0.5"><![CDATA[<style type="text/css">
+		<template name="sg_vote_buttons_css" templatetype="template" date="1283410937" username="jpatuk" version="0.5"><![CDATA[<style type="text/css">
 .vote-buttons-container {
     text-align:right;
     width: 100%;
@@ -87,7 +87,7 @@ $db->show_errors();]]></installcode>
     text-decoration: none;
 }
 </style>]]></template>
-		<template name="sg_vote_info" templatetype="template" date="1283387637" username="admin" version="0.5"><![CDATA[<div class="vote-info-container" id="{vb:raw votes['vote_type']}_votes_post_{vb:raw votes['target_id']}" <vb:if condition="!$votes['vote_list'] OR $show['vote_result_hide']">style="display: none;"</vb:if>>
+		<template name="sg_vote_info" templatetype="template" date="1284632836" username="jpatuk" version="0.5"><![CDATA[<div class="vote-info-container" id="{vb:raw votes['vote_type']}_votes_message_{vb:raw votes['target_id']}" <vb:if condition="!$votes['vote_list'] OR $show['vote_result_hide']">style="display: none;"</vb:if>>
     <vb:if condition="$votes['vote_list']">
     <div id="post_message_{vb:raw message_id}" style="display:block;">
         <div class="avatarlink vote_name_container">
@@ -108,7 +108,7 @@ $db->show_errors();]]></installcode>
     </div>
     </vb:if>
 </div>]]></template>
-		<template name="sg_vote_info_css" templatetype="template" date="1283387656" username="admin" version="0.5"><![CDATA[<style type="text/css">
+		<template name="sg_vote_info_css" templatetype="template" date="1283387656" username="jpatuk" version="0.5"><![CDATA[<style type="text/css">
 .postbit-lite .vote_name_container {
     width: 100%;
 }
@@ -127,7 +127,7 @@ $db->show_errors();]]></installcode>
     padding-{vb:stylevar right}: {vb:stylevar padding};
 }
 </style> ]]></template>
-		<template name="vote_buttons_css" templatetype="template" date="1282980796" username="admin" version="0.5"><![CDATA[<style type="text/css">
+		<template name="vote_buttons_css" templatetype="template" date="1282980796" username="jpatuk" version="0.5"><![CDATA[<style type="text/css">
 .postbitlegacy .postfoot .textcontrols a.votepos, .postbit .postfoot .textcontrols a.votepos  {
     background: url({vb:stylevar imgdir_button}/vote_pos.png) no-repeat {vb:stylevar postbit_control_background} {vb:stylevar left};
     padding: {vb:stylevar postbit_control_padding};
@@ -168,7 +168,7 @@ $db->show_errors();]]></installcode>
                 <span class="seperator" id="vote_neg_sep_{vb:raw target_id}" <vb:if condition="$target_buttons_hide">style="display: none;"</vb:if> >&nbsp;</span>
                 <a title="{vb:rawphrase vbv_negative_vote}" class="voteneg" href="{vb:raw vote_link}&amp;value=0" rel="nofollow" name="PostVote::Negative::{vb:raw target_id}" id="PostVote::Negative::{vb:raw target_id}" <vb:if condition="$target_buttons_hide">style="display: none;"</vb:if> ><img src="{vb:raw vboptions.cleargifurl}" id="votenegimg_{vb:raw target_id}" alt="{vb:rawphrase vbv_negative_vote}" />&nbsp;</a>
             </vb:if>]]></template>
-		<template name="vote_postbit_info" templatetype="template" date="1282980416" username="admin" version="0.5"><![CDATA[<li class="postbitlegacy postbitim postcontainer" id="{vb:raw votes['vote_type']}_votes_post_{vb:raw votes['target_id']}" <vb:if condition="!$votes['vote_list'] OR $show['vote_result_hide']">style="display: none;"</vb:if>>
+		<template name="vote_postbit_info" templatetype="template" date="1284632588" username="jpatuk" version="0.5"><![CDATA[<li class="postbitlegacy postcontainer" id="{vb:raw votes['vote_type']}_votes_message_{vb:raw votes['target_id']}" <vb:if condition="!$votes['vote_list'] OR $show['vote_result_hide']">style="display: none;"</vb:if>>
     <vb:if condition="$votes['vote_list']">
     <div class="postdetails">
         <div class="userinfo">
@@ -194,7 +194,7 @@ $db->show_errors();]]></installcode>
         </div>
         <div class="postbody" style="padding-bottom:0px;">
             <div class="postrow">
-                <div class="content hasad" style="float:none;">
+                <div class="content">
                     <div id="post_message_{vb:raw votes['target_id']}">
                         <blockquote class="postcontent restore">
                             {vb:raw votes['vote_list']}
@@ -207,7 +207,7 @@ $db->show_errors();]]></installcode>
     </vb:if>
 </li>]]></template>
 		<template name="vote_postbit_user" templatetype="template" date="1279637258" username="varnak" version="0.4"><![CDATA[<a href="member.php?{vb:raw session['sessionurl']}u={vb:raw voted_user['fromuserid']}" rel="nofollow">{vb:raw voted_user['username']}</a>]]></template>
-		<template name="vote_post_init_js" templatetype="template" date="1283412656" username="admin" version="0.5"><![CDATA[<script type="text/javascript">
+		<template name="vote_post_init_js" templatetype="template" date="1283412656" username="jpatuk" version="0.5"><![CDATA[<script type="text/javascript">
     <!--
     //Init target type constant
     var VOTE_CONTENT_TYPE = "{vb:raw content_type}";
@@ -266,7 +266,7 @@ $db->show_errors();]]></installcode>
             <vb:if condition="$votes_count['positive_votes'] AND $votes_count['negative_votes']">/</vb:if>
             <vb:if condition="$votes_count['negative_votes']">- {vb:raw votes_count['negative_votes']}</vb:if>
         ]]></template>
-		<template name="vote_sg_init_js" templatetype="template" date="1283412620" username="admin" version="0.5"><![CDATA[<script type="text/javascript">
+		<template name="vote_sg_init_js" templatetype="template" date="1283412620" username="jpatuk" version="0.5"><![CDATA[<script type="text/javascript">
 <!--
     AJAX_ItemVote_Init("{vb:raw message_container}","{vb:raw item_id_name}","{vb:raw item_id}");
 //-->
@@ -280,46 +280,51 @@ $db->show_errors();]]></installcode>
 		<plugin active="1" executionorder="5">
 			<title>Cache templates</title>
 			<hookname>cache_templates</hookname>
-			<phpcode><![CDATA[$cache[] = 'vote_navbar_toplinks';
-if (THIS_SCRIPT == 'member')
+			<phpcode><![CDATA[global $vbulletin;
+$disabled_group = unserialize($vbulletin->options['vbv_grp_disable']);
+if (!is_member_of($vbulletin->userinfo, $disabled_group))
 {
-    $cache[] = 'vote_profile_stat';
-}
-if (THIS_SCRIPT == 'search')
-{
-    $cache[] = 'vote_searchbit_stat';
-    // workaround for VB not caching this template
-    $cache[] = 'search_results_socialgroup_message';
-}
-if (THIS_SCRIPT == 'vb_votes')
-{
-    $cache[] = 'vote_postbit_buttons';
-    $cache[] = 'vote_postbit_user';
-    $cache[] = 'vote_postbit_info';
-}
-if (THIS_SCRIPT == 'showthread')
-{
-    $cache[] = 'vote_postbit_buttons';
-    $cache[] = 'vote_postbit_user';
-    $cache[] = 'vote_postbit_info';
-    $cache[] = 'vote_buttons_css';
-    $cache[] = 'vote_js';
-    $cache[] = 'vote_post_init_js';
-}
-if (THIS_SCRIPT == 'group' && $vbulletin->options['vbv_enable_sg_votes'])
-{
-    $cache[] = 'sg_vote_buttons';
-    $cache[] = 'vote_postbit_user';
-    $cache[] = 'sg_vote_info';
-    $cache[] = 'sg_vote_buttons_css';
-    $cache[] = 'sg_vote_info_css';
-    $cache[] = 'vote_js';
-    $cache[] = 'vote_sg_init_js';
-    $cache[] = 'vote_post_init_js';
-}
-if (THIS_SCRIPT == 'editpost' || THIS_SCRIPT == 'showpost')
-{
-    $cache[] = 'vote_postbit_button';
+    $cache[] = 'vote_navbar_toplinks';
+    if (THIS_SCRIPT == 'member')
+    {
+        $cache[] = 'vote_profile_stat';
+    }
+    if (THIS_SCRIPT == 'search')
+    {
+        $cache[] = 'vote_searchbit_stat';
+        // workaround for VB not caching this template
+        $cache[] = 'search_results_socialgroup_message';
+    }
+    if (THIS_SCRIPT == 'vb_votes')
+    {
+        $cache[] = 'vote_postbit_buttons';
+        $cache[] = 'vote_postbit_user';
+        $cache[] = 'vote_postbit_info';
+    }
+    if (THIS_SCRIPT == 'showthread')
+    {
+        $cache[] = 'vote_postbit_buttons';
+        $cache[] = 'vote_postbit_user';
+        $cache[] = 'vote_postbit_info';
+        $cache[] = 'vote_buttons_css';
+        $cache[] = 'vote_js';
+        $cache[] = 'vote_post_init_js';
+    }
+    if (THIS_SCRIPT == 'group' && $vbulletin->options['vbv_enable_sg_votes'])
+    {
+        $cache[] = 'sg_vote_buttons';
+        $cache[] = 'vote_postbit_user';
+        $cache[] = 'sg_vote_info';
+        $cache[] = 'sg_vote_buttons_css';
+        $cache[] = 'sg_vote_info_css';
+        $cache[] = 'vote_js';
+        $cache[] = 'vote_sg_init_js';
+        $cache[] = 'vote_post_init_js';
+    }
+    if (THIS_SCRIPT == 'editpost' || THIS_SCRIPT == 'showpost')
+    {
+        $cache[] = 'vote_postbit_button';
+    }
 }]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
@@ -367,7 +372,8 @@ if (THIS_SCRIPT == 'editpost' || THIS_SCRIPT == 'showpost')
 			<title>Add items to search menu</title>
 			<hookname>global_bootstrap_complete</hookname>
 			<phpcode><![CDATA[global $show, $vbulletin, $template_hook;
-if ($show['communitylink'])
+$disabled_group = unserialize($vbulletin->options['vbv_grp_disable']);
+if ($show['communitylink'] && !is_member_of($vbulletin->userinfo, $disabled_group))
 {
     $show['positive'] = true;
     if ($vbulletin->options['vbv_enable_neg_votes'])
@@ -379,7 +385,6 @@ if ($show['communitylink'])
     {
         require_once(DIR . '/includes/class_votes.php');
         $url_params = array('do' => 'topvotes',
-                            'type' => array(1,5),
                             'package'=>'vBForum',
                             'value' => '1');
         $links['top_positive'] = vtVotes::create_vote_url($url_params, 'search.php');
@@ -519,14 +524,15 @@ if (in_array($destforuminfo['forumid'], $unvoted_forums))
 		<plugin active="1" executionorder="5">
 			<title>Display votes statistics in member profile</title>
 			<hookname>member_profileblock_fetch_unwrapped</hookname>
-			<phpcode><![CDATA[if ('vB_ProfileBlock_Statistics' == get_class($this))
+			<phpcode><![CDATA[global $show, $vbulletin, $template_hook;
+$disabled_group = unserialize($vbulletin->options['vbv_grp_disable']);
+if ('vB_ProfileBlock_Statistics' == get_class($this) && !is_member_of($vbulletin->userinfo, $disabled_group))
 {
     require_once(DIR . '/includes/class_votes.php');
     global $vbulletin;
     $db = $vbulletin->db;
 
     $url_params = array('do' => 'uservotes',
-                        'type' => array(1,5),
                         'package' => 'vBForum',
                     );
 
@@ -595,10 +601,14 @@ if (in_array($destforuminfo['forumid'], $unvoted_forums))
 		<plugin active="1" executionorder="5">
 			<title>Modify templates</title>
 			<hookname>parse_templates</hookname>
-			<phpcode><![CDATA[// Add vote buttons to postbit
-if (array_key_exists('postbit', $vbulletin->templatecache))
+			<phpcode><![CDATA[global $vbulletin;
+$disabled_group = unserialize($vbulletin->options['vbv_grp_disable']);
+if (!is_member_of($vbulletin->userinfo, $disabled_group))
 {
-    $search = 'if ($show[\'multiquote_post\']) {
+    // Add vote buttons to postbit
+    if (array_key_exists('postbit', $vbulletin->templatecache))
+    {
+        $search = 'if ($show[\'multiquote_post\']) {
 					$final_rendered .= \'
 					<a class=\\\'multiquote\\\' href="\' . $post[\'replylink\'] . \'" rel="nofollow" onclick="return false;" id="mq_\' . $post[\'postid\'] . \'"><img id="mq_image_\' . $post[\'postid\'] . \'" src="\' . $vboptions[\'cleargifurl\'] . \'" alt="\' . vB_Template_Runtime::parsePhrase("multi_quote_this_message") . \'" />&nbsp;</a>
 				\';
@@ -606,14 +616,14 @@ if (array_key_exists('postbit', $vbulletin->templatecache))
 			$final_rendered .= \'\';
 		}';
 
-    $replace = $search . '$final_rendered .= $template_hook[\'postbit_buttons_end\'];';
-    $vbulletin->templatecache['postbit'] = str_replace($search, $replace, $vbulletin->templatecache['postbit']);
-}
+        $replace = $search . '$final_rendered .= $template_hook[\'postbit_buttons_end\'];';
+        $vbulletin->templatecache['postbit'] = str_replace($search, $replace, $vbulletin->templatecache['postbit']);
+    }
 
-// Add vote buttons to postbit legacy
-if (array_key_exists('postbit_legacy', $vbulletin->templatecache))
-{
-    $search = 'if ($show[\'multiquote_post\']) {
+    // Add vote buttons to postbit legacy
+    if (array_key_exists('postbit_legacy', $vbulletin->templatecache))
+    {
+        $search = 'if ($show[\'multiquote_post\']) {
 					$final_rendered .= \'
 						
 						 <a class="multiquote" href="\' . $post[\'replylink\'] . \'" rel="nofollow" onclick="return false;" id="mq_\' . $post[\'postid\'] . \'"><img id="mq_image_\' . $post[\'postid\'] . \'" src="\' . $vboptions[\'cleargifurl\'] . \'" alt="\' . vB_Template_Runtime::parsePhrase("multi_quote_this_message") . \'" />&nbsp;</a> 
@@ -622,84 +632,81 @@ if (array_key_exists('postbit_legacy', $vbulletin->templatecache))
 			$final_rendered .= \'\';
 		}';
 
-    $replace = $search . '$final_rendered .= $template_hook[\'postbit_buttons_end\'];';
-    $vbulletin->templatecache['postbit_legacy'] = str_replace($search, $replace, $vbulletin->templatecache['postbit_legacy']);
-}
-
-// Add votes result to posts from ignored users
-if (THIS_SCRIPT == 'showthread')
-{
-    if (array_key_exists('postbit_ignore_global', $vbulletin->templatecache))
-    {
-        $vbulletin->templatecache['postbit_ignore_global'] .= '$final_rendered .= $template_hook[\'postbit_end\'];';
-    }
-    if (array_key_exists('postbit_ignore', $vbulletin->templatecache))
-    {
-        $vbulletin->templatecache['postbit_ignore'] .= '$final_rendered .= $template_hook[\'postbit_end\'];';
-    }
-}
-
-if (array_key_exists('socialgroups_message', $vbulletin->templatecache) && $vbulletin->options['vbv_enable_sg_votes']) 
-{
-    $search = '<script type="text/javascript">';
-    $replace = '\';$final_rendered .= $template_hook[\'postbit_buttons_end\'];$final_rendered .= $template_hook[\'postbit_votes_end\'];$final_rendered .= \'' . $search;
-    $vbulletin->templatecache['socialgroups_message'] = str_replace($search, $replace, $vbulletin->templatecache['socialgroups_message']);
-}
-
-if (array_key_exists('search_results_postbit', $vbulletin->templatecache))
-{
-    $search = '\'">\' . $post[\'threadtitle\'] . \'</a>';
-
-    $replace = $search . '\' . $post[\'votes\'] . \'';
-
-    $vbulletin->templatecache['search_results_postbit'] = str_replace($search, $replace, $vbulletin->templatecache['search_results_postbit']);
-}
-
-if (array_key_exists('search_results_socialgroup_message', $vbulletin->templatecache))
-{
-    $search = '>\' . $message[\'discussiontitle\'] . \'</a>';
-
-    $replace = $search . '\' . $message[\'votes\'] . \'';
-
-    $vbulletin->templatecache['search_results_socialgroup_message'] = str_replace($search, $replace, $vbulletin->templatecache['search_results_socialgroup_message']);
-}
-
-if ('showthread' == THIS_SCRIPT || 'group' == THIS_SCRIPT)
-{
-    // add vote.js file
-    $rcd_vbv_templater = vB_Template::create('vote_js');
-    $rcd_vbv_templater->register('version', VBVOTES_JS_VERSION);
-    $template_hook['headinclude_javascript'] .= $rcd_vbv_templater->render();
-
-    $message_container = 'posts';
-    if ('group' == THIS_SCRIPT)
-    {
-        $message_container = 'message_list';
+        $replace = $search . '$final_rendered .= $template_hook[\'postbit_buttons_end\'];';
+        $vbulletin->templatecache['postbit_legacy'] = str_replace($search, $replace, $vbulletin->templatecache['postbit_legacy']);
     }
 
-    $item_id_name = 'post_';
-    if ('group' == THIS_SCRIPT && $vbulletin->options['vbv_enable_sg_votes'])
+    // Add votes result to posts from ignored users
+    if (THIS_SCRIPT == 'showthread')
     {
-        $item_id_name = 'gmessage_';
+        if (array_key_exists('postbit_ignore_global', $vbulletin->templatecache))
+        {
+            $vbulletin->templatecache['postbit_ignore_global'] .= '$final_rendered .= $template_hook[\'postbit_end\'];';
+        }
+        if (array_key_exists('postbit_ignore', $vbulletin->templatecache))
+        {
+            $vbulletin->templatecache['postbit_ignore'] .= '$final_rendered .= $template_hook[\'postbit_end\'];';
+        }
     }
-    // init votes handlers
-    $rcd_vbv_templater = vB_Template::create('vote_post_init_js');
-    $rcd_vbv_templater->register('content_type', VOTE_CONTENT_TYPE);
-    $rcd_vbv_templater->register('message_container', $message_container);
-    $rcd_vbv_templater->register('item_id_name', $item_id_name);
-    $template_hook['footer_javascript'] .= $rcd_vbv_templater->render();
 
-    if ('group' == THIS_SCRIPT && $vbulletin->options['vbv_enable_sg_votes'])
+    if (array_key_exists('socialgroups_message', $vbulletin->templatecache) && $vbulletin->options['vbv_enable_sg_votes']) 
     {
-        $rcd_vbv_templater = vB_Template::create('sg_vote_buttons_css');
-        $template_hook['headinclude_bottom_css'] .= $rcd_vbv_templater->render();
-        $rcd_vbv_templater = vB_Template::create('sg_vote_info_css');
-        $template_hook['headinclude_bottom_css'] .= $rcd_vbv_templater->render();
+        $search = '<script type="text/javascript">';
+        $replace = '\';$final_rendered .= $template_hook[\'postbit_buttons_end\'];$final_rendered .= $template_hook[\'postbit_votes_end\'];$final_rendered .= \'' . $search;
+        $vbulletin->templatecache['socialgroups_message'] = str_replace($search, $replace, $vbulletin->templatecache['socialgroups_message']);
     }
-    else if ('showthread' == THIS_SCRIPT)
+
+    if (array_key_exists('search_results_postbit', $vbulletin->templatecache))
     {
-        $rcd_vbv_templater = vB_Template::create('vote_buttons_css');
-        $template_hook['headinclude_bottom_css'] .= $rcd_vbv_templater->render();
+        $search = '\'">\' . $post[\'threadtitle\'] . \'</a>';
+        $replace = $search . '\' . $post[\'votes\'] . \'';
+        $vbulletin->templatecache['search_results_postbit'] = str_replace($search, $replace, $vbulletin->templatecache['search_results_postbit']);
+    }
+
+    if (array_key_exists('search_results_socialgroup_message', $vbulletin->templatecache))
+    {
+        $search = '>\' . $message[\'discussiontitle\'] . \'</a>';
+        $replace = $search . '\' . $message[\'votes\'] . \'';
+        $vbulletin->templatecache['search_results_socialgroup_message'] = str_replace($search, $replace, $vbulletin->templatecache['search_results_socialgroup_message']);
+    }
+
+    if ('showthread' == THIS_SCRIPT || 'group' == THIS_SCRIPT)
+    {
+        // add vote.js file
+        $rcd_vbv_templater = vB_Template::create('vote_js');
+        $rcd_vbv_templater->register('version', VBVOTES_JS_VERSION);
+        $template_hook['headinclude_javascript'] .= $rcd_vbv_templater->render();
+
+        $message_container = 'posts';
+        if ('group' == THIS_SCRIPT)
+        {
+            $message_container = 'message_list';
+        }
+
+        $item_id_name = 'post_';
+        if ('group' == THIS_SCRIPT && $vbulletin->options['vbv_enable_sg_votes'])
+        {
+            $item_id_name = 'gmessage_';
+        }
+        // init votes handlers
+        $rcd_vbv_templater = vB_Template::create('vote_post_init_js');
+        $rcd_vbv_templater->register('content_type', VOTE_CONTENT_TYPE);
+        $rcd_vbv_templater->register('message_container', $message_container);
+        $rcd_vbv_templater->register('item_id_name', $item_id_name);
+        $template_hook['footer_javascript'] .= $rcd_vbv_templater->render();
+
+        if ('group' == THIS_SCRIPT && $vbulletin->options['vbv_enable_sg_votes'])
+        {
+            $rcd_vbv_templater = vB_Template::create('sg_vote_buttons_css');
+            $template_hook['headinclude_bottom_css'] .= $rcd_vbv_templater->render();
+            $rcd_vbv_templater = vB_Template::create('sg_vote_info_css');
+            $template_hook['headinclude_bottom_css'] .= $rcd_vbv_templater->render();
+        }
+        else if ('showthread' == THIS_SCRIPT)
+        {
+            $rcd_vbv_templater = vB_Template::create('vote_buttons_css');
+            $template_hook['headinclude_bottom_css'] .= $rcd_vbv_templater->render();
+        }
     }
 }]]></phpcode>
 		</plugin>
@@ -828,28 +835,8 @@ if ('topvotes' == $_REQUEST['do'] OR 'uservotes' == $_REQUEST['do'])
     {
         $package = 'vBForum';
     }
-    $type = array();
-    if ($vbulletin->GPC_exists['contenttypeid'])
-    {
-        if (is_array($vbulletin->GPC['contenttypeid']))
-        {
-            foreach ($vbulletin->GPC['contenttypeid'] as $contenttype)
-            {
-                $type[] = $contenttype;
-            }
-        }
-    }
-    else
-    {
-        eval(standard_error(fetch_error('searchnoresults', ''), '', false));
-    }
 
-    if (!$type)
-    {
-        //todo, do we need a seperate error for this?
-        eval(standard_error(fetch_error('searchnoresults', ''), '', false));
-    }
-
+    $type=array(1,5);
     $vote_value = ($vbulletin->GPC['value'] ? vtVotes::POSITIVE : vtVotes::NEGATIVE);
     if (vtVotes::POSITIVE == $vote_value)
     {
@@ -1164,17 +1151,17 @@ If you see this message, please contact the <a href="{1}">administrator</a>.]]><
 		<phrasetype name="GLOBAL" fieldname="global">
 			<phrase name="vbv_given_votes" date="1267728837" username="Vitaly" version=""><![CDATA[Given at forum]]></phrase>
 			<phrase name="vbv_navbar_section" date="1267728997" username="Vitaly" version=""><![CDATA[Top votes]]></phrase>
-			<phrase name="vbv_neg_auto_report_msg" date="1282541496" username="admin" version=""><![CDATA[(auto) This post got too many negative votes.
+			<phrase name="vbv_neg_auto_report_msg" date="1282541496" username="jpatuk" version=""><![CDATA[(auto) This post got too many negative votes.
 ]]></phrase>
-			<phrase name="vbv_negative_user_votes" date="1282541524" username="admin" version=""><![CDATA[Thrown tomato:]]></phrase>
-			<phrase name="vbv_negative_vote" date="1282541538" username="admin" version=""><![CDATA[Throw tomato]]></phrase>
+			<phrase name="vbv_negative_user_votes" date="1282541524" username="jpatuk" version=""><![CDATA[Thrown tomato:]]></phrase>
+			<phrase name="vbv_negative_vote" date="1282541538" username="jpatuk" version=""><![CDATA[Throw tomato]]></phrase>
 			<phrase name="vbv_negative_votes_search" date="1267728969" username="Vitaly" version=""><![CDATA[Top negative votes for {1} days]]></phrase>
-			<phrase name="vbv_positive_user_votes" date="1282541558" username="admin" version=""><![CDATA[Thanked:]]></phrase>
-			<phrase name="vbv_positive_vote" date="1282541571" username="admin" version=""><![CDATA[Thank author]]></phrase>
-			<phrase name="vbv_positive_vote_link" date="1282541585" username="admin" version=""><![CDATA[Thanks!]]></phrase>
+			<phrase name="vbv_positive_user_votes" date="1282541558" username="jpatuk" version=""><![CDATA[Thanked:]]></phrase>
+			<phrase name="vbv_positive_vote" date="1282541571" username="jpatuk" version=""><![CDATA[Thank author]]></phrase>
+			<phrase name="vbv_positive_vote_link" date="1282541585" username="jpatuk" version=""><![CDATA[Thanks!]]></phrase>
 			<phrase name="vbv_positive_votes_search" date="1265905352" username="e.shkuropat" version="0.1"><![CDATA[Top positive votes for {1} days]]></phrase>
-			<phrase name="vbv_post_vote_remove_all_votes" date="1282541596" username="admin" version=""><![CDATA[Remove all votes]]></phrase>
-			<phrase name="vbv_post_vote_remove_user_vote" date="1282541608" username="admin" version=""><![CDATA[Remove your vote]]></phrase>
+			<phrase name="vbv_post_vote_remove_all_votes" date="1282541596" username="jpatuk" version=""><![CDATA[Remove all votes]]></phrase>
+			<phrase name="vbv_post_vote_remove_user_vote" date="1282541608" username="jpatuk" version=""><![CDATA[Remove your vote]]></phrase>
 			<phrase name="vbv_received_votes" date="1267728923" username="Vitaly" version=""><![CDATA[Received at forum]]></phrase>
 			<phrase name="vbv_user_given_negative_votes" date="1268461940" username="Vitaly" version=""><![CDATA[{1} - gave negative votes]]></phrase>
 			<phrase name="vbv_user_given_positive_votes" date="1268461965" username="Vitaly" version=""><![CDATA[{1} - gave positive votes]]></phrase>
@@ -1187,8 +1174,8 @@ If you see this message, please contact the <a href="{1}">administrator</a>.]]><
 			<phrase name="setting_vbv_delete_own_votes_title" date="1262984341" username="Vitaly" version="0.1"><![CDATA[Can delete own votes]]></phrase>
 			<phrase name="setting_vbv_enable_neg_votes_desc" date="1262985014" username="Vitaly" version="0.1"><![CDATA[If disabled, only positive voting is allowed.]]></phrase>
 			<phrase name="setting_vbv_enable_neg_votes_title" date="1262985014" username="Vitaly" version="0.1"><![CDATA[Enable Negative Votes]]></phrase>
-			<phrase name="setting_vbv_enable_sg_votes_desc" date="1282974317" username="admin" version="0.5"><![CDATA[Enable/disable voting in group discussions]]></phrase>
-			<phrase name="setting_vbv_enable_sg_votes_title" date="1282974317" username="admin" version="0.5"><![CDATA[Group discussions votes]]></phrase>
+			<phrase name="setting_vbv_enable_sg_votes_desc" date="1282974317" username="jpatuk" version="0.5"><![CDATA[Enable/disable voting in group discussions]]></phrase>
+			<phrase name="setting_vbv_enable_sg_votes_title" date="1282974317" username="jpatuk" version="0.5"><![CDATA[Group discussions votes]]></phrase>
 			<phrase name="setting_vbv_grp_banned_desc" date="1262987050" username="Vitaly" version="0.1"><![CDATA[When user goes to this group, all his votes are cleared.]]></phrase>
 			<phrase name="setting_vbv_grp_banned_title" date="1262987050" username="Vitaly" version="0.1"><![CDATA[Banned user groups]]></phrase>
 			<phrase name="setting_vbv_grp_disable_desc" date="1262983113" username="Vitaly" version="0.1"><![CDATA[User groups to completely disable mod. Recommended for guests, to keep good SEO rank.]]></phrase>

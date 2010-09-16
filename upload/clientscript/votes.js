@@ -80,7 +80,7 @@ ItemVoteBit_results_show = function(item_id_name, item_id)
     var item_elem = YAHOO.util.Dom.get(item_id_name + item_id);
     if (item_elem.className.indexOf("ignore") == -1)
     {
-        current_result_block = YAHOO.util.Dom.get('Positive_votes_post_' + item_id);
+        current_result_block = YAHOO.util.Dom.get('Positive_votes_message_' + item_id);
         if (current_result_block)
         {
             if (current_result_block.childNodes.length > 1)
@@ -88,7 +88,7 @@ ItemVoteBit_results_show = function(item_id_name, item_id)
                 current_result_block.style.display = '';
             }
         }
-        current_result_block = YAHOO.util.Dom.get('Negative_votes_post_' + item_id);
+        current_result_block = YAHOO.util.Dom.get('Negative_votes_message_' + item_id);
         if (current_result_block)
         {
             if (current_result_block.childNodes.length > 1)
@@ -246,7 +246,7 @@ AJAX_ItemVote.prototype.update_votes_result = function(vote_type, vote_result)
 {
     if (vote_result)
     {
-        var current_result_block = YAHOO.util.Dom.get(vote_type + '_votes_post_' + this.item_id);
+        var current_result_block = YAHOO.util.Dom.get(vote_type + '_votes_message_' + this.item_id);
         var votes_result = string_to_node(vote_result[0].firstChild.nodeValue);
         current_result_block.parentNode.replaceChild(votes_result, current_result_block);
     }
