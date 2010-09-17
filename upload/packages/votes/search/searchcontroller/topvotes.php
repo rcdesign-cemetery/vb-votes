@@ -25,29 +25,32 @@ class vBForum_Search_SearchController_TopVotes extends vB_Search_SearchControlle
         // vote value
         $equals_filters = $criteria->get_equals_filters();
         $value = $equals_filters['value'];
-        $time_line = TIMENOW - 24 * 60 * 60 * $vbulletin->options['vbv_top_voted_days'];
+        $time_line_top = TIMENOW - 24 * 60 * 60 * $vbulletin->options['vbv_top_voted_days'];
+        $time_line_votes = TIMENOW - 24 * 60 * 60 * 
+            ($vbulletin->options['vbv_top_voted_days'] + $vbulletin->options['vbv_post_days_old']);
 
         // sort by vote count
         $sql = 'SELECT
-                    votes.contenttypeid, votes.targetid, CASE WHEN p.threadid IS NOT NULL THEN p.threadid 
+                    contenttypeid, targetid, CASE WHEN p.threadid IS NOT NULL THEN p.threadid 
                     WHEN gm.discussionid IS NOT NULL THEN gm.discussionid END as parentid
-                FROM
-                    ' . TABLE_PREFIX . 'votes as votes
-                LEFT OUTER JOIN ' . TABLE_PREFIX . 'post as p ON postid = votes.targetid AND votes.contenttypeid=1
-                LEFT OUTER JOIN ' . TABLE_PREFIX . 'groupmessage as gm ON gmid = votes.targetid  AND votes.contenttypeid=5
-                WHERE
-                     targetid IN (SELECT DISTINCT targetid
-                                    FROM
-                                    ' . TABLE_PREFIX . 'votes
-                                    WHERE
-                                    date > ' . $time_line . ' AND vote = "' . $value . '") 
-                      AND vote = "' . $value . '"
-                GROUP BY
-                    targetid,contenttypeid
-                ORDER BY
-                    count(vote) DESC
-                LIMIT ' . $vbulletin->options['maxresults'];
- 
+                FROM ( 
+                    SELECT
+                        contenttypeid, targetid, COUNT(vote) AS cnt, MIN(date) AS datecut
+                    FROM
+                        ' . TABLE_PREFIX . 'votes as votes
+                    WHERE
+                        date > ' . $time_line_votes . ' AND vote = "' . $value . '"
+                    GROUP BY
+                        targetid,contenttypeid
+                    HAVING
+                        datecut > ' . $time_line_top . ' AND cnt > 5
+                    ORDER BY
+                        cnt DESC
+                    LIMIT ' . $vbulletin->options['maxresults'] .'
+                    ) res
+                LEFT JOIN ' . TABLE_PREFIX . 'post as p ON postid = targetid AND contenttypeid=1
+                LEFT JOIN ' . TABLE_PREFIX . 'groupmessage as gm ON gmid = targetid  AND contenttypeid=5';
+
         $set = $vbulletin->db->query_read_slave($sql);
         while ($row = $vbulletin->db->fetch_row($set))
         {
