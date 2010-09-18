@@ -3,7 +3,7 @@
 <product productid="vbvotes" active="1">
 	<title>vB Votes</title>
 	<description>User voting for useful content</description>
-	<version>0.5</version>
+	<version>0.7</version>
 	<url />
 	<versioncheckurl />
 	<apm_releasedate>0</apm_releasedate>
@@ -446,13 +446,13 @@ if (!is_member_of($vbulletin->userinfo, $disabled_group) && $vbulletin->options[
 			<phpcode><![CDATA[global $vbulletin;
 if ($vbulletin->options['vbv_enable_sg_votes'])
 {
-    if (0 < (int) $vbulletin->userinfo['userid'] && $this->template == 'socialgroups_message')
+    global $discussion;
+    if (0 < (int) $vbulletin->userinfo['userid'] && $this->template == 'socialgroups_message' && !$discussion['deleted'])
     {
         require_once(DIR . '/includes/class_votes.php');
         $vote_manager = vtVotes::get_instance(VOTE_CONTENT_TYPE, $this->item);
 
         // add votes result
-        global $discussion;
         $show['vote_result_hide'] = FALSE;
         $votes = $discussion['votes'][$this->item['gmid']];
         if ($vbulletin->GPC['ajax'] && empty($votes))
@@ -713,7 +713,7 @@ if (!is_member_of($vbulletin->userinfo, $disabled_group))
 		<plugin active="1" executionorder="5">
 			<title>Display votes result and vote buttons</title>
 			<hookname>postbit_display_complete</hookname>
-			<phpcode><![CDATA[if (in_array(THIS_SCRIPT, array('showthread', 'showpost', 'editpost')))
+			<phpcode><![CDATA[if (in_array(THIS_SCRIPT, array('showthread', 'showpost', 'editpost')) && !$thread['isdeleted'])
 {
     if (0 < (int) $this->registry->userinfo['userid'])
     {
@@ -785,6 +785,7 @@ if (!empty($search_result_ids) AND is_array($search_result_ids))
             if (array_key_exists($item_id, $item_votes[$contenttype]))
             {
                 $votes = $item_votes[$contenttype][$item_id];
+                $votes_count = array();
                 if ($votes[vtVotes::POSITIVE])
                 {
                     $votes_count['positive_votes'] = count($votes[vtVotes::POSITIVE]);
@@ -823,7 +824,6 @@ if ('topvotes' == $_REQUEST['do'] OR 'uservotes' == $_REQUEST['do'])
     require_once(DIR . '/includes/class_votes.php');
     $vbulletin->input->clean_array_gpc('r', array(
         'package' => TYPE_STR,
-        'contenttypeid' => TYPE_UINT,
         'value' => TYPE_BOOL,
     ));
 
@@ -836,7 +836,9 @@ if ('topvotes' == $_REQUEST['do'] OR 'uservotes' == $_REQUEST['do'])
         $package = 'vBForum';
     }
 
-    $type=array(1,5);
+    // init with supported content types
+    $type=array(vB_Types::instance()->getContentTypeId('vBForum_Post'),
+                vB_Types::instance()->getContentTypeId('vBForum_SocialGroupMessage'));
     $vote_value = ($vbulletin->GPC['value'] ? vtVotes::POSITIVE : vtVotes::NEGATIVE);
     if (vtVotes::POSITIVE == $vote_value)
     {
@@ -990,11 +992,11 @@ if ('uservotes' == $_REQUEST['do'])
 		<plugin active="1" executionorder="5">
 			<title>Add votes to showthread. Part 1.</title>
 			<hookname>showthread_query</hookname>
-			<phpcode><![CDATA[require_once(DIR . '/includes/class_votes.php');
-$post_votes = array();
+			<phpcode><![CDATA[$post_votes = array();
 $disabled_group = unserialize($vbulletin->options['vbv_grp_disable']);
 if (!is_member_of($vbulletin->userinfo, $disabled_group))
 {
+    require_once(DIR . '/includes/class_votes.php');
     $target_id_list = $ids;
     $target_id_list[] = '0';
     $vote_manager = vtVotes::get_instance(VOTE_CONTENT_TYPE);
@@ -1196,6 +1198,10 @@ If you see this message, please contact the <a href="{1}">administrator</a>.]]><
 			<phrase name="setting_vbv_neg_votes_expire_days_title" date="1262985223" username="Vitaly" version="0.1"><![CDATA[Negative votes expiration time (days)]]></phrase>
 			<phrase name="setting_vbv_post_days_old_desc" date="1280212785" username="Vitaly" version="0.4"><![CDATA[This option allows to disable voting for posts, which are older XX days. So, only new posts can be voted. Set '0' to disable limits.]]></phrase>
 			<phrase name="setting_vbv_post_days_old_title" date="1280212785" username="Vitaly" version="0.4"><![CDATA[Disable voting if post is X days old]]></phrase>
+			<phrase name="setting_vbv_top_min_negative_count_desc" date="1284781324" username="admin" version="0.5"><![CDATA["Top Voted" minimum negative votes count. Set 0 for unlimited search.]]></phrase>
+			<phrase name="setting_vbv_top_min_negative_count_title" date="1284781324" username="admin" version="0.5"><![CDATA["Top Voted" minimum negativce count]]></phrase>
+			<phrase name="setting_vbv_top_min_positive_count_desc" date="1284781369" username="admin" version="0.5"><![CDATA["Top Voted" minimum positive votes count. Set 0 for unlimited search.]]></phrase>
+			<phrase name="setting_vbv_top_min_positive_count_title" date="1284781369" username="admin" version="0.5"><![CDATA["Top Voted" minimum positive count]]></phrase>
 			<phrase name="setting_vbv_top_voted_days_desc" date="1280212702" username="Vitaly" version="0.4"><![CDATA[Limit (in days) for "top voted" search. Set 0 disable top links at all.]]></phrase>
 			<phrase name="setting_vbv_top_voted_days_title" date="1280212702" username="Vitaly" version="0.4"><![CDATA["Top Voted" days limit]]></phrase>
 			<phrase name="settinggroup_vb_votes" date="1262979865" username="Vitaly" version="0.1"><![CDATA[vb Votes]]></phrase>
@@ -1206,6 +1212,14 @@ If you see this message, please contact the <a href="{1}">administrator</a>.]]><
 			<setting varname="vbv_max_votes_daily" displayorder="10">
 				<datatype>number</datatype>
 				<defaultvalue>10</defaultvalue>
+			</setting>
+			<setting varname="vbv_top_min_negative_count" displayorder="10">
+				<datatype>number</datatype>
+				<defaultvalue>3</defaultvalue>
+			</setting>
+			<setting varname="vbv_top_min_positive_count" displayorder="10">
+				<datatype>number</datatype>
+				<defaultvalue>5</defaultvalue>
 			</setting>
 			<setting varname="vbv_post_days_old" displayorder="15">
 				<datatype>free</datatype>

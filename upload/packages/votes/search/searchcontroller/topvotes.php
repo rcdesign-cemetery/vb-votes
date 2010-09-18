@@ -29,6 +29,16 @@ class vBForum_Search_SearchController_TopVotes extends vB_Search_SearchControlle
         $time_line_votes = TIMENOW - 24 * 60 * 60 * 
             ($vbulletin->options['vbv_top_voted_days'] + $vbulletin->options['vbv_post_days_old']);
 
+        $vote_count_limit = 0;
+        if ($value == 1)
+        {
+            $vote_count_limit = $vbulletin->options['vbv_top_min_positive_count'];
+        }
+        else
+        {
+            $vote_count_limit = $vbulletin->options['vbv_top_min_negative_count'];
+        }
+
         // sort by vote count
         $sql = 'SELECT
                     contenttypeid, targetid, CASE WHEN p.threadid IS NOT NULL THEN p.threadid 
@@ -43,7 +53,7 @@ class vBForum_Search_SearchController_TopVotes extends vB_Search_SearchControlle
                     GROUP BY
                         targetid,contenttypeid
                     HAVING
-                        datecut > ' . $time_line_top . ' AND cnt > 5
+                        datecut > ' . $time_line_top . ' AND cnt > '. $vote_count_limit .'
                     ORDER BY
                         cnt DESC
                     LIMIT ' . $vbulletin->options['maxresults'] .'

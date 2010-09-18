@@ -33,35 +33,45 @@ class vBForum_Search_SearchController_UserVotes extends vB_Search_SearchControll
         {
             throw new Exception('Unsuportied type. See `' . TABLE_PREFIX . 'votes` table');
         }
-        $need_distinct = false;
+
+        $search_user_id = $equals_filters['userid'];
+        $sql = '';
+
         if ($type == 'touserid')
         {
-            $need_distinct = true;
+            $sql = 'SELECT contenttypeid, targetid, CASE WHEN p.threadid IS NOT NULL THEN p.threadid 
+                    WHEN gm.discussionid IS NOT NULL THEN gm.discussionid END as parentid
+                FROM  (SELECT DISTINCT contenttypeid, targetid
+                       FROM ' . TABLE_PREFIX . 'votes
+                       WHERE
+                           touserid = ' . $search_user_id . ' AND vote = "' . $value . '"
+                     ) res
+                LEFT OUTER JOIN ' . TABLE_PREFIX . 'post as p ON postid = targetid AND contenttypeid=1
+                LEFT OUTER JOIN ' . TABLE_PREFIX . 'groupmessage as gm ON gmid = targetid AND contenttypeid=5
+                ';
+        } else {
+            $sql = 'SELECT contenttypeid, targetid, CASE WHEN p.threadid IS NOT NULL THEN p.threadid 
+                    WHEN gm.discussionid IS NOT NULL THEN gm.discussionid END as parentid
+                FROM  (SELECT contenttypeid, targetid
+                       FROM ' . TABLE_PREFIX . 'votes
+                       WHERE
+                           fromuserid = ' . $search_user_id . ' AND vote = "' . $value . '"
+                     ) res
+                LEFT OUTER JOIN ' . TABLE_PREFIX . 'post as p ON postid = targetid AND contenttypeid=1
+                LEFT OUTER JOIN ' . TABLE_PREFIX . 'groupmessage as gm ON gmid = targetid AND contenttypeid=5
+                ';
         }
-        $search_user_id = $equals_filters['userid'];
-        
-        $sql = 'SELECT ' . ($need_distinct ? 'DISTINCT' : '') . ' votes.contenttypeid, votes.targetid,
-                    CASE WHEN p.threadid IS NOT NULL THEN p.threadid 
-                    WHEN gm.discussionid IS NOT NULL THEN gm.discussionid END as parentid,
-                    CASE WHEN p.dateline IS NOT NULL THEN p.dateline
-                    WHEN gm.dateline IS NOT NULL THEN gm.dateline END as orderdate
-                FROM
-                    ' . TABLE_PREFIX . 'votes as votes
-                LEFT OUTER JOIN ' . TABLE_PREFIX . 'post as p ON postid = votes.targetid AND votes.contenttypeid=1
-                LEFT OUTER JOIN ' . TABLE_PREFIX . 'groupmessage as gm ON gmid = votes.targetid AND votes.contenttypeid=5
-                WHERE
-                    ' . $type . ' = ' . $search_user_id . ' AND vote = "' . $value . '"
-                ORDER BY orderdate DESC';
 
-        $unset_id = 3;
         $set = $vbulletin->db->query_read_slave($sql);
         while ($row = $vbulletin->db->fetch_row($set))
         {
             $results[] = $row;
-            unset($results[$row[$unset_id]][$unset_id]);
         }
         $vbulletin->db->free_result($set);
-        return array_values($results);
+
+        $sorted_results = array_values($results);
+        rsort($sorted_results);
+        return $sorted_results;
     }
 
 }

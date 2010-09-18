@@ -4,7 +4,7 @@ require_once(DIR . '/includes/class_bootstrap_framework.php');
 vB_Bootstrap_Framework::init();
 
 // product version
-define('VBVOTES_VERSION', '0.4');
+define('VBVOTES_VERSION', '0.7');
 
 // votes.js version
 $version = (!$vbulletin->debug) ? VBVOTES_VERSION : TIMENOW;
@@ -253,7 +253,7 @@ abstract class vtVotes
                     FROM
                         ' . TABLE_PREFIX . 'votes AS pv
                     LEFT JOIN
-                        `user` AS u ON u.`userid` = pv.`fromuserid`
+                        ' . TABLE_PREFIX . 'user AS u ON u.`userid` = pv.`fromuserid`
                     WHERE
                         pv.`targetid` IN (' . implode($items_id_list, ', ') . ') AND pv.`contenttypeid` = "' . $this->_content_type_id . '" ' . $vote_type_condition;
             $db_resource = $this->registry->db->query_read($sql);
