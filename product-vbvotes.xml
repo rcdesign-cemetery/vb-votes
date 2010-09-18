@@ -30,11 +30,11 @@ CREATE TABLE IF NOT EXISTS " . TABLE_PREFIX . "votes (
   KEY `votes_per_day` (`fromuserid`, `date`),
   KEY `date` (`date`, `vote`, `targettype`, `targetid`)
 )");
-$db->query_write("ALTER TABLE " . TABLE_PREFIX . "user ADD INDEX `user_name` ( `userid` , `username` ) ");
+$db->query_write("ALTER TABLE " . TABLE_PREFIX . "user ADD INDEX `votes_user_name` ( `userid` , `username` ) ");
 $db->show_errors();]]></installcode>
 			<uninstallcode><![CDATA[$db->hide_errors();
 $vbulletin->db->query_write("DROP TABLE IF EXISTS " . TABLE_PREFIX . "post_votes");
-$db->query_write("ALTER TABLE " . TABLE_PREFIX . "user DROP INDEX user_name_id");
+$db->query_write("ALTER TABLE " . TABLE_PREFIX . "user DROP INDEX votes_user_name");
 $db->show_errors();]]></uninstallcode>
 		</code>
 		<code version="0.4">
