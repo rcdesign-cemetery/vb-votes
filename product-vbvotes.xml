@@ -19,14 +19,14 @@
 $vbulletin->db->query_write("
 CREATE TABLE IF NOT EXISTS " . TABLE_PREFIX . "votes (
   `targetid` int(11) NOT NULL,
-  `targettype` enum('forum','sg') NOT NULL,
+   `contenttypeid` INT NOT NULL,
   `vote` enum('1','-1') NOT NULL,
   `fromuserid` int(11) NOT NULL,
   `touserid` int(11) NOT NULL,
   `date` int(11) NOT NULL,
   PRIMARY KEY (`targetid`, `targettype`, `vote`, `fromuserid`),
-  KEY `given_votes` (`fromuserid`, `targettype`, `vote`),
-  KEY `received_votes` (`touserid`, `targettype`, `vote`),
+  KEY `given_votes` (`fromuserid`, `vote`, `contenttypeid`, `targettype`),
+  KEY `received_votes` (`touserid`, `vote`, `contenttypeid`, `targettype`),
   KEY `votes_per_day` (`fromuserid`, `date`),
   KEY `date` (`date`, `vote`, `targettype`, `targetid`)
 )");
@@ -36,12 +36,6 @@ $db->show_errors();]]></installcode>
 $vbulletin->db->query_write("DROP TABLE IF EXISTS " . TABLE_PREFIX . "post_votes");
 $db->query_write("ALTER TABLE " . TABLE_PREFIX . "user DROP INDEX votes_user_name");
 $db->show_errors();]]></uninstallcode>
-		</code>
-		<code version="0.4">
-			<installcode><![CDATA[$db->hide_errors();
-$db->query_write("ALTER TABLE " . TABLE_PREFIX . "votes CHANGE `targettype` `contenttypeid` INT NOT NULL");
-$db->show_errors();]]></installcode>
-			<uninstallcode />
 		</code>
 	</codes>
 	<templates>

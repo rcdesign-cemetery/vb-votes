@@ -53,7 +53,7 @@ class vBForum_Search_SearchController_TopVotes extends vB_Search_SearchControlle
                     GROUP BY
                         targetid,contenttypeid
                     HAVING
-                        datecut > ' . $time_line_top . ' AND cnt > '. $vote_count_limit .'
+                        datecut > ' . $time_line_top . ' AND cnt >= '. $vote_count_limit .'
                     ORDER BY
                         cnt DESC
                     LIMIT ' . $vbulletin->options['maxresults'] .'

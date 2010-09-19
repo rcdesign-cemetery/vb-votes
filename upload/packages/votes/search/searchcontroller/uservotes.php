@@ -37,6 +37,13 @@ class vBForum_Search_SearchController_UserVotes extends vB_Search_SearchControll
         $search_user_id = $equals_filters['userid'];
         $sql = '';
 
+        // Here is small hack in requests - we dont use ORDER BY date. Because results
+        // will be sorted by first message vote date. That's acceptable, and only require
+        // reverse result array.
+        //
+        // Elimitating ORDER BY is not critical right now, but can potentially save some
+        // filesort resoursces, if votes count become very high.
+        
         if ($type == 'touserid')
         {
             $sql = 'SELECT contenttypeid, targetid, CASE WHEN p.threadid IS NOT NULL THEN p.threadid 
@@ -69,9 +76,7 @@ class vBForum_Search_SearchController_UserVotes extends vB_Search_SearchControll
         }
         $vbulletin->db->free_result($set);
 
-        $sorted_results = array_values($results);
-        rsort($sorted_results);
-        return $sorted_results;
+        return array_reverse($results);
     }
 
 }
