@@ -19,14 +19,14 @@
 $vbulletin->db->query_write("
 CREATE TABLE IF NOT EXISTS " . TABLE_PREFIX . "votes (
   `targetid` int(11) NOT NULL,
-   `contenttypeid` INT NOT NULL,
+  `contenttypeid` INT NOT NULL,
   `vote` enum('1','-1') NOT NULL,
   `fromuserid` int(11) NOT NULL,
   `touserid` int(11) NOT NULL,
   `date` int(11) NOT NULL,
-  PRIMARY KEY (`targetid`, `targettype`, `vote`, `fromuserid`),
-  KEY `given_votes` (`fromuserid`, `vote`, `contenttypeid`, `targettype`),
-  KEY `received_votes` (`touserid`, `vote`, `contenttypeid`, `targettype`),
+  PRIMARY KEY (`targetid`, `contenttypeid`, `vote`, `fromuserid`),
+  KEY `given_votes` (`fromuserid`, `vote`, `targetid`, `contenttypeid`),
+  KEY `received_votes` (`touserid`, `vote`, `targetid`, `contenttypeid`),
   KEY `votes_per_day` (`fromuserid`, `date`),
   KEY `date` (`date`, `vote`, `targettype`, `targetid`)
 )");
