@@ -122,7 +122,7 @@ abstract class vtVotes
     protected $registry = NULL;
     private $_content_type_id;
     protected $userVotes_manager = NULL;
-    protected $item_votes = NULL;
+    protected $item_votes = array();
 
     /**
      * Item properties 
@@ -231,12 +231,12 @@ abstract class vtVotes
     {
         if (!empty($this->item_votes) AND is_array($this->item_votes))
         {
-            foreach ($items_id_list as $post_id)
+            foreach ($items_id_list as $key => $post_id)
             {
-                if (isset($items_id_list[$post_id]))
+                if (isset($this->item_votes[$post_id]))
                 {
                     $result[$post_id] = $this->item_votes[$post_id];
-                    unset($items_id_list[$post_id]);
+                    unset($items_id_list[$key]);
                 }
             }
         }
@@ -257,7 +257,12 @@ abstract class vtVotes
                     WHERE
                         pv.`targetid` IN (' . implode($items_id_list, ', ') . ') AND pv.`contenttypeid` = "' . $this->_content_type_id . '" ' . $vote_type_condition;
             $db_resource = $this->registry->db->query_read($sql);
-            $this->item_votes = array();
+            
+            foreach ($items_id_list as $id)
+            {
+                $this->item_votes[$id] = array();
+            }
+
             while ($vote = $this->registry->db->fetch_array($db_resource))
             {
                 $this->item_votes[$vote['targetid']][$vote['vote']][] = array('fromuserid' => $vote['fromuserid'], 'username' => $vote['username']);
@@ -281,10 +286,10 @@ abstract class vtVotes
      * @param string $vote_type
      * @return array
      */
-    public function get_item_votes($vote_type = NULL)
+    public function get_item_votes($vote_type = NULL, $sql_search = true)
     {
         $item_id_list[] = $this->item_id;
-        $result = $this->get_items_list_votes($item_id_list, $vote_type);
+        $result = $this->get_items_list_votes($item_id_list, $vote_type, $sql_search);
         return $result[$this->item_id];
     }
 
@@ -528,6 +533,7 @@ abstract class vtVotes
                     ' . TIMENOW .
             ')';
         $this->registry->db->query_write($sql);
+        $this->item_votes = array();
         return true;
     }    
     
@@ -547,6 +553,7 @@ abstract class vtVotes
                     `vote` = "' . $vote_type . '"';
 
         $this->registry->db->query_write($sql);
+        $this->item_votes = array();
         return true;
     }
 
@@ -566,6 +573,7 @@ abstract class vtVotes
 
 
         $this->registry->db->query_write($sql);
+        $this->item_votes = array();
         return true;
     }
 
