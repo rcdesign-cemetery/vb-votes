@@ -120,7 +120,7 @@ $db->show_errors();]]></uninstallcode>
 }
 </style> ]]></template>
 		<template name="sg_vote_info_wrapper" templatetype="template" date="1290413226" username="jpatuk" version="0.7"><![CDATA[<div class="vote-info-container" id="Vote_message_{vb:raw target_id}" <vb:if condition="!$vote_results OR $show['vote_result_hide']">style="display: none;"</vb:if>>{vb:raw votes}</div>]]></template>
-		<template name="vote_buttons_css" templatetype="template" date="1290407208" username="Jannie" version="0.7"><![CDATA[<style type="text/css">
+		<template name="vote_buttons_css" templatetype="template" date="1290422692" username="Vitaly" version="0.8"><![CDATA[<style type="text/css">
 .postbitlegacy .postfoot .textcontrols a.votepos, .postbit .postfoot .textcontrols a.votepos  {
     background: url({vb:stylevar imgdir_button}/vote_pos.png) no-repeat {vb:stylevar postbit_control_background} {vb:stylevar left};
     padding: {vb:stylevar postbit_control_padding};
@@ -147,11 +147,11 @@ $db->show_errors();]]></uninstallcode>
     border: {vb:stylevar postbit_control_hover_border};
 }
 .votes_container {
-    margin: {vb:math {vb:stylevar padding}/2} {vb:stylevar padding};
+    margin: {vb:stylevar padding} {vb:stylevar padding};
     overflow: hidden;
 }
 .vote-info-container {
-    font-size: {vb:stylevar small_fontSize};
+    font-size: {vb:stylevar mid_fontSize};
     float:none;
     display:block;
     background: {vb:stylevar postbit_background};
@@ -159,6 +159,9 @@ $db->show_errors();]]></uninstallcode>
 .remove-vote-links {
     text-align:right;
     float:right;
+}
+.remove-vote-links a {
+    padding-left: 10px;
 }
 </style>]]></template>
 		<template name="vote_js" templatetype="template" date="1279025348" username="varnak" version="0.4"><![CDATA[<script type="text/javascript" src="clientscript/votes.js?v={vb:raw version}"></script>
@@ -175,17 +178,17 @@ $db->show_errors();]]></uninstallcode>
                 <span class="seperator" id="vote_neg_sep_{vb:raw target_id}" <vb:if condition="$target_buttons_hide">style="display: none;"</vb:if> >&nbsp;</span>
                 <a title="{vb:rawphrase vbv_negative_vote}" class="voteneg" href="{vb:raw vote_link}&amp;value=0" rel="nofollow" name="PostVote::Negative::{vb:raw target_id}" id="PostVote::Negative::{vb:raw target_id}" <vb:if condition="$target_buttons_hide">style="display: none;"</vb:if> ><img src="{vb:raw vboptions.cleargifurl}" id="votenegimg_{vb:raw target_id}" alt="{vb:rawphrase vbv_negative_vote}" />&nbsp;</a>
             </vb:if>]]></template>
-		<template name="vote_postbit_info" templatetype="template" date="1290407584" username="Jannie" version="0.7"><![CDATA[<vb:if condition="$votes['vote_list']">
+		<template name="vote_postbit_info" templatetype="template" date="1290422594" username="Vitaly" version="0.8"><![CDATA[<vb:if condition="$votes['vote_list']">
     <div style="display:block;">
         <div class="votes_container">
-            {vb:raw votes['post_user_votes']}&nbsp;{vb:raw votes['vote_list']}
+            {vb:raw votes['post_user_votes']} {vb:raw votes['vote_list']}
             <vb:if condition="$votes['remove_all_votes_link'] OR $votes['remove_vote_link']">
             <div class="remove-vote-links">
             <vb:if condition="$votes['remove_vote_link']">
                 <a href="{vb:raw votes['remove_vote_link']}&amp;targetid={vb:raw votes['target_id']}" rel="nofollow" name="RemoveVote::{vb:raw votes['vote_type']}::{vb:raw votes['target_id']}" id="RemoveVote::{vb:raw votes['vote_type']}::{vb:raw votes['target_id']}" >{vb:rawphrase vbv_post_vote_remove_user_vote}</a>
             </vb:if>
             <vb:if condition="$votes['remove_all_votes_link']">
-                &nbsp;<a href="{vb:raw votes['remove_all_votes_link']}&amp;targetid={vb:raw votes['target_id']}" rel="nofollow" name="RemoveVote::All::{vb:raw votes['vote_type']}::{vb:raw votes['target_id']}" id="RemoveVote::All::{vb:raw votes['vote_type']}::{vb:raw votes['target_id']}" >{vb:rawphrase vbv_post_vote_remove_all_votes}</a>
+                <a href="{vb:raw votes['remove_all_votes_link']}&amp;targetid={vb:raw votes['target_id']}" rel="nofollow" name="RemoveVote::All::{vb:raw votes['vote_type']}::{vb:raw votes['target_id']}" id="RemoveVote::All::{vb:raw votes['vote_type']}::{vb:raw votes['target_id']}" >{vb:rawphrase vbv_post_vote_remove_all_votes}</a>
             </vb:if>
             </div>
         </vb:if>

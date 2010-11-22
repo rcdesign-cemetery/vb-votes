@@ -328,7 +328,7 @@ abstract class vtVotes
                 $rcd_vbv_templater->register('voted_user', $voted_user);
                 $user_vote_bit = $rcd_vbv_templater->render();
 
-                $bits[] = $user_vote_bit;
+                $bits[] = trim($user_vote_bit);
                 if ($voted_user['fromuserid'] == $this->registry->userinfo['userid'])
                 {
                     $is_own_vote = true;
