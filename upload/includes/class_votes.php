@@ -4,7 +4,7 @@ require_once(DIR . '/includes/class_bootstrap_framework.php');
 vB_Bootstrap_Framework::init();
 
 // product version
-define('VBVOTES_VERSION', '0.7');
+define('VBVOTES_VERSION', '0.8');
 
 // votes.js version
 $version = (!$vbulletin->debug) ? VBVOTES_VERSION : TIMENOW;
@@ -302,7 +302,7 @@ abstract class vtVotes
      * @param array     $list_of_voted_users
      * @return string   HTML
      */
-    public function render_votes_block($vote_type, $list_of_voted_users, $message_id = 0)
+    public function render_votes_by_type($vote_type, $list_of_voted_users, $message_id = 0)
     {
         global $vbphrase, $stylevar;
 
@@ -359,6 +359,24 @@ abstract class vtVotes
         if ($message_id > 0) {
             $rcd_vbv_templater->register('message_id', $message_id);
         }
+        return $rcd_vbv_templater->render();
+    }
+
+    /**
+     *  Render positive and negative votes block
+     *
+     * @param array list of all votes for this item
+     * @return string   HTML
+     */
+    public function render_votes_block($list_of_voted_users, $target_id, $message_id = 0) {
+        $vote_results = $this->render_votes_by_type(vtVotes::POSITIVE, $list_of_voted_users[vtVotes::POSITIVE], $message_id);
+        if ($this->registry->options['vbv_enable_neg_votes'])
+        {
+            $vote_results .= $this->render_votes_by_type(vtVotes::NEGATIVE, $list_of_voted_users[vtVotes::NEGATIVE], $message_id);
+        }
+        $rcd_vbv_templater = vB_Template::create('vote_postbit_info_wrapper');
+        $rcd_vbv_templater->register('votes', trim($vote_results));
+        $rcd_vbv_templater->register('target_id', $target_id);
         return $rcd_vbv_templater->render();
     }
 

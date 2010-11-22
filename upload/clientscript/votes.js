@@ -80,18 +80,10 @@ ItemVoteBit_results_show = function(item_id_name, item_id)
     var item_elem = YAHOO.util.Dom.get(item_id_name + item_id);
     if (item_elem.className.indexOf("ignore") == -1)
     {
-        current_result_block = YAHOO.util.Dom.get('Positive_votes_message_' + item_id);
+        current_result_block = YAHOO.util.Dom.get('Vote_message_' + item_id);
         if (current_result_block)
         {
-            if (current_result_block.childNodes.length > 1)
-            {
-                current_result_block.style.display = '';
-            }
-        }
-        current_result_block = YAHOO.util.Dom.get('Negative_votes_message_' + item_id);
-        if (current_result_block)
-        {
-            if (current_result_block.childNodes.length > 1)
+            if (current_result_block.childNodes.length > 0)
             {
                 current_result_block.style.display = '';
             }
@@ -165,7 +157,7 @@ AJAX_ItemVote.prototype.remove_vote_click = function()
     var item_vote = new AJAX_ItemVote(item_id, 'remove');
 
     if(this.name.indexOf("All::")!=-1){
-        // we need type of voite only for mass remove
+        // we need type of vote only for mass remove
         var vote_value = "-1";
         if(this.name.indexOf("Positive::")!=-1){
             vote_value = "1";
@@ -211,11 +203,8 @@ AJAX_ItemVote.prototype.handle_ajax_response = function(ajax)
         else
         {
 
-            var positive_votes = ajax.responseXML.getElementsByTagName('positive_votes');
-            this.update_votes_result('Positive', positive_votes);
-
-            var negative_votes = ajax.responseXML.getElementsByTagName('negative_votes');
-            this.update_votes_result('Negative', negative_votes);
+            var votes = ajax.responseXML.getElementsByTagName('votes');
+            this.update_votes_result(votes);
 
             // enable/disable vote buttons
             var vote_button_style = '';
@@ -242,11 +231,11 @@ AJAX_ItemVote.prototype.handle_ajax_response = function(ajax)
 }
 
 
-AJAX_ItemVote.prototype.update_votes_result = function(vote_type, vote_result)
+AJAX_ItemVote.prototype.update_votes_result = function(vote_result)
 {
     if (vote_result)
     {
-        var current_result_block = YAHOO.util.Dom.get(vote_type + '_votes_message_' + this.item_id);
+        var current_result_block = YAHOO.util.Dom.get('Vote_message_' + this.item_id);
         var votes_result = string_to_node(vote_result[0].firstChild.nodeValue);
         current_result_block.parentNode.replaceChild(votes_result, current_result_block);
     }

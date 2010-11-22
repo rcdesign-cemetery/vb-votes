@@ -3,7 +3,7 @@
 <product productid="vbvotes" active="1">
 	<title>vB Votes</title>
 	<description>User voting for useful content</description>
-	<version>0.7</version>
+	<version>0.8</version>
 	<url />
 	<versioncheckurl />
 	<apm_releasedate>0</apm_releasedate>
@@ -81,8 +81,7 @@ $db->show_errors();]]></uninstallcode>
     text-decoration: none;
 }
 </style>]]></template>
-		<template name="sg_vote_info" templatetype="template" date="1284632836" username="jpatuk" version="0.5"><![CDATA[<div class="vote-info-container" id="{vb:raw votes['vote_type']}_votes_message_{vb:raw votes['target_id']}" <vb:if condition="!$votes['vote_list'] OR $show['vote_result_hide']">style="display: none;"</vb:if>>
-    <vb:if condition="$votes['vote_list']">
+		<template name="sg_vote_info" templatetype="template" date="1290400785" username="jpatuk" version="0.7"><![CDATA[<vb:if condition="$votes['vote_list']">
     <div id="post_message_{vb:raw message_id}" style="display:block;">
         <div class="avatarlink vote_name_container">
             {vb:raw votes['post_user_votes']}&nbsp;{vb:raw votes['vote_list']}
@@ -100,8 +99,7 @@ $db->show_errors();]]></uninstallcode>
         </div>
         </vb:if>
     </div>
-    </vb:if>
-</div>]]></template>
+</vb:if>]]></template>
 		<template name="sg_vote_info_css" templatetype="template" date="1283387656" username="jpatuk" version="0.5"><![CDATA[<style type="text/css">
 .postbit-lite .vote_name_container {
     width: 100%;
@@ -121,7 +119,8 @@ $db->show_errors();]]></uninstallcode>
     padding-{vb:stylevar right}: {vb:stylevar padding};
 }
 </style> ]]></template>
-		<template name="vote_buttons_css" templatetype="template" date="1282980796" username="jpatuk" version="0.5"><![CDATA[<style type="text/css">
+		<template name="sg_vote_info_wrapper" templatetype="template" date="1290413226" username="jpatuk" version="0.7"><![CDATA[<div class="vote-info-container" id="Vote_message_{vb:raw target_id}" <vb:if condition="!$vote_results OR $show['vote_result_hide']">style="display: none;"</vb:if>>{vb:raw votes}</div>]]></template>
+		<template name="vote_buttons_css" templatetype="template" date="1290407208" username="Jannie" version="0.7"><![CDATA[<style type="text/css">
 .postbitlegacy .postfoot .textcontrols a.votepos, .postbit .postfoot .textcontrols a.votepos  {
     background: url({vb:stylevar imgdir_button}/vote_pos.png) no-repeat {vb:stylevar postbit_control_background} {vb:stylevar left};
     padding: {vb:stylevar postbit_control_padding};
@@ -147,6 +146,20 @@ $db->show_errors();]]></uninstallcode>
     padding-{vb:stylevar left}: {vb:math {vb:stylevar postbit_control_padding}+20};
     border: {vb:stylevar postbit_control_hover_border};
 }
+.votes_container {
+    margin: {vb:math {vb:stylevar padding}/2} {vb:stylevar padding};
+    overflow: hidden;
+}
+.vote-info-container {
+    font-size: {vb:stylevar small_fontSize};
+    float:none;
+    display:block;
+    background: {vb:stylevar postbit_background};
+}
+.remove-vote-links {
+    text-align:right;
+    float:right;
+}
 </style>]]></template>
 		<template name="vote_js" templatetype="template" date="1279025348" username="varnak" version="0.4"><![CDATA[<script type="text/javascript" src="clientscript/votes.js?v={vb:raw version}"></script>
         ]]></template>
@@ -162,44 +175,24 @@ $db->show_errors();]]></uninstallcode>
                 <span class="seperator" id="vote_neg_sep_{vb:raw target_id}" <vb:if condition="$target_buttons_hide">style="display: none;"</vb:if> >&nbsp;</span>
                 <a title="{vb:rawphrase vbv_negative_vote}" class="voteneg" href="{vb:raw vote_link}&amp;value=0" rel="nofollow" name="PostVote::Negative::{vb:raw target_id}" id="PostVote::Negative::{vb:raw target_id}" <vb:if condition="$target_buttons_hide">style="display: none;"</vb:if> ><img src="{vb:raw vboptions.cleargifurl}" id="votenegimg_{vb:raw target_id}" alt="{vb:rawphrase vbv_negative_vote}" />&nbsp;</a>
             </vb:if>]]></template>
-		<template name="vote_postbit_info" templatetype="template" date="1284632588" username="jpatuk" version="0.5"><![CDATA[<li class="postbitlegacy postcontainer" id="{vb:raw votes['vote_type']}_votes_message_{vb:raw votes['target_id']}" <vb:if condition="!$votes['vote_list'] OR $show['vote_result_hide']">style="display: none;"</vb:if>>
-    <vb:if condition="$votes['vote_list']">
-    <div class="postdetails">
-        <div class="userinfo">
-            <div class="username guest">
-                <b>
-                    {vb:raw votes['post_user_votes']}
-                </b>
-            </div>
+		<template name="vote_postbit_info" templatetype="template" date="1290407584" username="Jannie" version="0.7"><![CDATA[<vb:if condition="$votes['vote_list']">
+    <div style="display:block;">
+        <div class="votes_container">
+            {vb:raw votes['post_user_votes']}&nbsp;{vb:raw votes['vote_list']}
             <vb:if condition="$votes['remove_all_votes_link'] OR $votes['remove_vote_link']">
-            <ul>
-                <vb:if condition="$votes['remove_all_votes_link']">
-                <li>
-                    <a href="{vb:raw votes['remove_all_votes_link']}&amp;targetid={vb:raw votes['target_id']}" rel="nofollow" name="RemoveVote::All::{vb:raw votes['vote_type']}::{vb:raw votes['target_id']}" id="RemoveVote::All::{vb:raw votes['vote_type']}::{vb:raw votes['target_id']}" >{vb:rawphrase vbv_post_vote_remove_all_votes}</a>
-                </li>
-                </vb:if>
-                <vb:if condition="$votes['remove_vote_link']">
-                <li>
-                    <a href="{vb:raw votes['remove_vote_link']}&amp;targetid={vb:raw votes['target_id']}" rel="nofollow" name="RemoveVote::{vb:raw votes['vote_type']}::{vb:raw votes['target_id']}" id="RemoveVote::{vb:raw votes['vote_type']}::{vb:raw votes['target_id']}" >{vb:rawphrase vbv_post_vote_remove_user_vote}</a>
-                </li>
-                </vb:if>
-            </ul>
+            <div class="remove-vote-links">
+            <vb:if condition="$votes['remove_vote_link']">
+                <a href="{vb:raw votes['remove_vote_link']}&amp;targetid={vb:raw votes['target_id']}" rel="nofollow" name="RemoveVote::{vb:raw votes['vote_type']}::{vb:raw votes['target_id']}" id="RemoveVote::{vb:raw votes['vote_type']}::{vb:raw votes['target_id']}" >{vb:rawphrase vbv_post_vote_remove_user_vote}</a>
             </vb:if>
-        </div>
-        <div class="postbody" style="padding-bottom:0px;">
-            <div class="postrow">
-                <div class="content">
-                    <div id="post_message_{vb:raw votes['target_id']}">
-                        <blockquote class="postcontent restore">
-                            {vb:raw votes['vote_list']}
-                        </blockquote>
-                    </div>
-                </div>
+            <vb:if condition="$votes['remove_all_votes_link']">
+                &nbsp;<a href="{vb:raw votes['remove_all_votes_link']}&amp;targetid={vb:raw votes['target_id']}" rel="nofollow" name="RemoveVote::All::{vb:raw votes['vote_type']}::{vb:raw votes['target_id']}" id="RemoveVote::All::{vb:raw votes['vote_type']}::{vb:raw votes['target_id']}" >{vb:rawphrase vbv_post_vote_remove_all_votes}</a>
+            </vb:if>
             </div>
+        </vb:if>
         </div>
     </div>
-    </vb:if>
-</li>]]></template>
+</vb:if>]]></template>
+		<template name="vote_postbit_info_wrapper" templatetype="template" date="1290413205" username="jpatuk" version="0.7"><![CDATA[<li class="postbitlegacy vote-info-container" id="Vote_message_{vb:raw target_id}" <vb:if condition="!$vote_results OR $show['vote_result_hide']">style="display: none;"</vb:if>>{vb:raw votes}</li>]]></template>
 		<template name="vote_postbit_user" templatetype="template" date="1279637258" username="varnak" version="0.4"><![CDATA[<a href="member.php?{vb:raw session['sessionurl']}u={vb:raw voted_user['fromuserid']}" rel="nofollow">{vb:raw voted_user['username']}</a>]]></template>
 		<template name="vote_post_init_js" templatetype="template" date="1283412656" username="jpatuk" version="0.5"><![CDATA[<script type="text/javascript">
     <!--
@@ -299,6 +292,7 @@ if (!is_member_of($vbulletin->userinfo, $disabled_group))
     {
         $cache[] = 'vote_postbit_buttons';
         $cache[] = 'vote_postbit_user';
+        $cache[] = 'vote_postbit_info_wrapper';
         $cache[] = 'vote_postbit_info';
         $cache[] = 'vote_buttons_css';
         $cache[] = 'vote_js';
@@ -308,6 +302,7 @@ if (!is_member_of($vbulletin->userinfo, $disabled_group))
     {
         $cache[] = 'sg_vote_buttons';
         $cache[] = 'vote_postbit_user';
+        $cache[] = 'sg_vote_info_wrapper';
         $cache[] = 'sg_vote_info';
         $cache[] = 'sg_vote_buttons_css';
         $cache[] = 'sg_vote_info_css';
@@ -453,14 +448,8 @@ if ($vbulletin->options['vbv_enable_sg_votes'])
         {
             $votes = $vote_manager->get_item_votes();
         }
-        $vote_results = '';
-        $vote_results .= $vote_manager->render_votes_block(vtVotes::POSITIVE, $votes[vtVotes::POSITIVE], $this->item['gmid']);
-        if ($this->registry->options['vbv_enable_neg_votes'])
-        {
-            $vote_results .= $vote_manager->render_votes_block(vtVotes::NEGATIVE, $votes[vtVotes::NEGATIVE],$this->item['gmid']);
-        }
-        $template_hook['postbit_votes_end'] .= $vote_results;
 
+        $template_hook['postbit_votes_end'] .= $vote_manager->render_votes_block($votes, $this->item['gmid']); 
         // add buttons
         $template_hook['postbit_buttons_end'] .= $vote_manager->render_vote_buttons();
 
@@ -723,13 +712,7 @@ if (!is_member_of($vbulletin->userinfo, $disabled_group))
                 $show['vote_result_hide'] = FALSE;
             }
             $votes = $post['votes'];
-            $vote_results = '';
-            $vote_results .= $vote_manager->render_votes_block(vtVotes::POSITIVE, $votes[vtVotes::POSITIVE]);
-            if ($this->registry->options['vbv_enable_neg_votes'])
-            {
-                $vote_results .= $vote_manager->render_votes_block(vtVotes::NEGATIVE, $votes[vtVotes::NEGATIVE]);
-            }
-            $template_hook['postbit_end'] .= $vote_results;
+            $template_hook['postbit_end'] .= $vote_manager->render_votes_block($votes, $post['postid']);
         }
 
         // add buttons
@@ -1192,10 +1175,10 @@ If you see this message, please contact the <a href="{1}">administrator</a>.]]><
 			<phrase name="setting_vbv_neg_votes_expire_days_title" date="1262985223" username="Vitaly" version="0.1"><![CDATA[Negative votes expiration time (days)]]></phrase>
 			<phrase name="setting_vbv_post_days_old_desc" date="1280212785" username="Vitaly" version="0.4"><![CDATA[This option allows to disable voting for posts, which are older XX days. So, only new posts can be voted. Set '0' to disable limits.]]></phrase>
 			<phrase name="setting_vbv_post_days_old_title" date="1280212785" username="Vitaly" version="0.4"><![CDATA[Disable voting if post is X days old]]></phrase>
-			<phrase name="setting_vbv_top_min_negative_count_desc" date="1284781324" username="admin" version="0.5"><![CDATA["Top Voted" minimum negative votes count. Set 0 for unlimited search.]]></phrase>
-			<phrase name="setting_vbv_top_min_negative_count_title" date="1284781324" username="admin" version="0.5"><![CDATA["Top Voted" minimum negativce count]]></phrase>
-			<phrase name="setting_vbv_top_min_positive_count_desc" date="1284781369" username="admin" version="0.5"><![CDATA["Top Voted" minimum positive votes count. Set 0 for unlimited search.]]></phrase>
-			<phrase name="setting_vbv_top_min_positive_count_title" date="1284781369" username="admin" version="0.5"><![CDATA["Top Voted" minimum positive count]]></phrase>
+			<phrase name="setting_vbv_top_min_negative_count_desc" date="1284781324" username="jpatuk" version="0.5"><![CDATA["Top Voted" minimum negative votes count. Set 0 for unlimited search.]]></phrase>
+			<phrase name="setting_vbv_top_min_negative_count_title" date="1284781324" username="jpatuk" version="0.5"><![CDATA["Top Voted" minimum negativce count]]></phrase>
+			<phrase name="setting_vbv_top_min_positive_count_desc" date="1284781369" username="jpatuk" version="0.5"><![CDATA["Top Voted" minimum positive votes count. Set 0 for unlimited search.]]></phrase>
+			<phrase name="setting_vbv_top_min_positive_count_title" date="1284781369" username="jpatuk" version="0.5"><![CDATA["Top Voted" minimum positive count]]></phrase>
 			<phrase name="setting_vbv_top_voted_days_desc" date="1280212702" username="Vitaly" version="0.4"><![CDATA[Limit (in days) for "top voted" search. Set 0 disable top links at all.]]></phrase>
 			<phrase name="setting_vbv_top_voted_days_title" date="1280212702" username="Vitaly" version="0.4"><![CDATA["Top Voted" days limit]]></phrase>
 			<phrase name="settinggroup_vb_votes" date="1262979865" username="Vitaly" version="0.1"><![CDATA[vb Votes]]></phrase>

@@ -198,13 +198,7 @@ if ($need_ajax_response)
         }
         $votes = $vote_manager->get_item_votes($result_vote_type);
 
-        $vote_results = $vote_manager->render_votes_block(vtVotes::POSITIVE, $votes[vtVotes::POSITIVE], $target_id);
-        $xml->add_tag('positive_votes', $vote_results);
-        if ($vbulletin->options['vbv_enable_neg_votes'])
-        {
-            $vote_results = $vote_manager->render_votes_block(vtVotes::NEGATIVE, $votes[vtVotes::NEGATIVE], $target_id);
-            $xml->add_tag('negative_votes', $vote_results);
-        }
+        $xml->add_tag('votes', $vote_manager->render_votes_block($votes, $target_id, $target_id));
     }
 
     // enable/disable vote buttons
