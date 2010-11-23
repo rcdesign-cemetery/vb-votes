@@ -120,7 +120,7 @@ $db->show_errors();]]></uninstallcode>
 }
 </style> ]]></template>
 		<template name="sg_vote_info_wrapper" templatetype="template" date="1290413226" username="jpatuk" version="0.7"><![CDATA[<div class="vote-info-container" id="Vote_message_{vb:raw target_id}" <vb:if condition="!$vote_results OR $show['vote_result_hide']">style="display: none;"</vb:if>>{vb:raw votes}</div>]]></template>
-		<template name="vote_buttons_css" templatetype="template" date="1290422692" username="Vitaly" version="0.8"><![CDATA[<style type="text/css">
+		<template name="vote_buttons_css" templatetype="template" date="1290494331" username="Jannie" version="0.8"><![CDATA[<style type="text/css">
 .postbitlegacy .postfoot .textcontrols a.votepos, .postbit .postfoot .textcontrols a.votepos  {
     background: url({vb:stylevar imgdir_button}/vote_pos.png) no-repeat {vb:stylevar postbit_control_background} {vb:stylevar left};
     padding: {vb:stylevar postbit_control_padding};
@@ -149,6 +149,13 @@ $db->show_errors();]]></uninstallcode>
 .votes_container {
     margin: {vb:stylevar padding} {vb:stylevar padding};
     overflow: hidden;
+    padding-left:30px;
+}
+.votes_container_Negative {
+    background: url({vb:stylevar imgdir_button}/vote_neg.png) no-repeat {vb:stylevar left} -5px;
+}
+.votes_container_Positive {
+    background: url({vb:stylevar imgdir_button}/vote_pos.png) no-repeat {vb:stylevar left} -5px;
 }
 .vote-info-container {
     font-size: {vb:stylevar mid_fontSize};
@@ -178,9 +185,9 @@ $db->show_errors();]]></uninstallcode>
                 <span class="seperator" id="vote_neg_sep_{vb:raw target_id}" <vb:if condition="$target_buttons_hide">style="display: none;"</vb:if> >&nbsp;</span>
                 <a title="{vb:rawphrase vbv_negative_vote}" class="voteneg" href="{vb:raw vote_link}&amp;value=0" rel="nofollow" name="PostVote::Negative::{vb:raw target_id}" id="PostVote::Negative::{vb:raw target_id}" <vb:if condition="$target_buttons_hide">style="display: none;"</vb:if> ><img src="{vb:raw vboptions.cleargifurl}" id="votenegimg_{vb:raw target_id}" alt="{vb:rawphrase vbv_negative_vote}" />&nbsp;</a>
             </vb:if>]]></template>
-		<template name="vote_postbit_info" templatetype="template" date="1290422594" username="Vitaly" version="0.8"><![CDATA[<vb:if condition="$votes['vote_list']">
+		<template name="vote_postbit_info" templatetype="template" date="1290494347" username="Jannie" version="0.8"><![CDATA[<vb:if condition="$votes['vote_list']">
     <div style="display:block;">
-        <div class="votes_container">
+        <div class="votes_container votes_container_{vb:raw votes['vote_type']}">
             {vb:raw votes['post_user_votes']} {vb:raw votes['vote_list']}
             <vb:if condition="$votes['remove_all_votes_link'] OR $votes['remove_vote_link']">
             <div class="remove-vote-links">
