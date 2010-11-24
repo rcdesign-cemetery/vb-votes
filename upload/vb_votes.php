@@ -198,7 +198,7 @@ if ($need_ajax_response)
         }
         $votes = $vote_manager->get_item_votes($result_vote_type);
 
-        $xml->add_tag('votes', $vote_manager->render_votes_block($votes, $target_id, $target_id));
+        $xml->add_tag('votes', $vote_manager->render_votes_block($votes, $target_id));
     }
 
     // enable/disable vote buttons

@@ -138,6 +138,7 @@ abstract class vtVotes
     protected $voted_user_link_template = '';
     protected $votes_block_template = '';
     protected $vote_buttons_template = '';
+    protected $votes_block_wrapper_template = '';
 
     /**
      * Return vote instance or Null object
@@ -302,7 +303,7 @@ abstract class vtVotes
      * @param array     $list_of_voted_users
      * @return string   HTML
      */
-    public function render_votes_by_type($vote_type, $list_of_voted_users, $message_id = 0)
+    public function render_votes_by_type($vote_type, $list_of_voted_users)
     {
         global $vbphrase, $stylevar;
 
@@ -356,9 +357,6 @@ abstract class vtVotes
         }
         $rcd_vbv_templater = vB_Template::create($this->votes_block_template);
         $rcd_vbv_templater->register('votes', $votes);
-        if ($message_id > 0) {
-            $rcd_vbv_templater->register('message_id', $message_id);
-        }
         return $rcd_vbv_templater->render();
     }
 
@@ -368,13 +366,13 @@ abstract class vtVotes
      * @param array list of all votes for this item
      * @return string   HTML
      */
-    public function render_votes_block($list_of_voted_users, $target_id, $message_id = 0) {
-        $vote_results = $this->render_votes_by_type(vtVotes::POSITIVE, $list_of_voted_users[vtVotes::POSITIVE], $message_id);
+    public function render_votes_block($list_of_voted_users, $target_id) {
+        $vote_results = $this->render_votes_by_type(vtVotes::POSITIVE, $list_of_voted_users[vtVotes::POSITIVE]);
         if ($this->registry->options['vbv_enable_neg_votes'])
         {
-            $vote_results .= $this->render_votes_by_type(vtVotes::NEGATIVE, $list_of_voted_users[vtVotes::NEGATIVE], $message_id);
+            $vote_results .= $this->render_votes_by_type(vtVotes::NEGATIVE, $list_of_voted_users[vtVotes::NEGATIVE]);
         }
-        $rcd_vbv_templater = vB_Template::create('vote_postbit_info_wrapper');
+        $rcd_vbv_templater = vB_Template::create($this->votes_block_wrapper_template);
         $rcd_vbv_templater->register('votes', trim($vote_results));
         $rcd_vbv_templater->register('target_id', $target_id);
         return $rcd_vbv_templater->render();
@@ -652,6 +650,7 @@ class vtVotes_vBForum_Post extends vtVotes
         
         $this->voted_user_link_template = 'vote_postbit_user';
         $this->votes_block_template = 'vote_postbit_info';
+        $this->votes_block_wrapper_template = 'vote_postbit_info_wrapper';
         $this->vote_buttons_template = 'vote_postbit_buttons';
     }
     
@@ -734,6 +733,7 @@ class vtVotes_vBForum_SocialGroupMessage extends vtVotes
 
         $this->voted_user_link_template = 'vote_postbit_user';
         $this->votes_block_template = 'sg_vote_info';
+        $this->votes_block_wrapper_template = 'sg_vote_info_wrapper';
         $this->vote_buttons_template = 'sg_vote_buttons';
     }
 
