@@ -5,7 +5,9 @@ error_reporting(E_ALL & ~E_NOTICE & ~8192);
 
 // #################### DEFINE IMPORTANT CONSTANTS #######################
 define('THIS_SCRIPT', 'vb_votes');
-
+define('CSRF_PROTECTION', true);
+define('NOPMPOPUP', 1);
+define('LOCATION_BYPASS', 1);
 
 // ################### PRE-CACHE TEMPLATES AND DATA ######################
 // get special phrase groups

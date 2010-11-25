@@ -455,9 +455,9 @@ if ($vbulletin->options['vbv_enable_sg_votes'])
             $rcd_vbv_templater = vB_Template::create('vote_sg_init_js');
             $rcd_vbv_templater->register('content_type', VOTE_CONTENT_TYPE);
             $rcd_vbv_templater->register('message_container', 'message_list');
-            $rcd_vbv_templater->register('post_id_name', 'gmessage_');
-            $rcd_vbv_templater->register('post_id', $this->item['gmid']);
-            $template_hook['postbit_buttons_end'] .= $rcd_vbv_templater->render();
+            $rcd_vbv_templater->register('item_id_name', 'gmessage_');
+            $rcd_vbv_templater->register('item_id', $this->item['gmid']);
+            $template_hook['postbit_votes_end'] .= $rcd_vbv_templater->render();
         }
     }
     if ('search_results_socialgroup_message' == $this->template)
@@ -631,12 +631,14 @@ if (!is_member_of($vbulletin->userinfo, $disabled_group))
 
     if (array_key_exists('socialgroups_message', $vbulletin->templatecache) && $vbulletin->options['vbv_enable_sg_votes']) 
     {
-        $search = '$final_rendered .= \'\' . \'
-		</span>
-	</div>
-	
-	<script type="text/javascript">';
-        $replace = '$final_rendered .= $template_hook[\'postbit_buttons_end\'];' . $search . '\'; $final_rendered .= \'';
+        $search = 'if ($message[\'itemipaddress\']) {
+					$final_rendered .= \'
+				<a href="group.php?\' . $session[\'sessionurl\'] . \'do=viewip&amp;gmid=\' . $message[\'gmid\'] . \'">\' . vB_Template_Runtime::parsePhrase("ip") . \'</a>
+			\';
+				} else {
+			$final_rendered .= \'\';
+		}';
+        $replace = $search .'$final_rendered .= $template_hook[\'postbit_buttons_end\'];';
         $vbulletin->templatecache['socialgroups_message'] = str_replace($search, $replace, $vbulletin->templatecache['socialgroups_message']);
 
         $search = '<script type="text/javascript">';
