@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS " . TABLE_PREFIX . "votes (
   KEY `given_votes` (`fromuserid`, `vote`, `targetid`, `contenttypeid`),
   KEY `received_votes` (`touserid`, `vote`, `targetid`, `contenttypeid`),
   KEY `votes_per_day` (`fromuserid`, `date`),
-  KEY `date` (`date`, `vote`, `targettype`, `targetid`)
+  KEY `date` (`date`, `vote`, `contenttypeid`, `targetid`)
 )");
 $db->query_write("ALTER TABLE " . TABLE_PREFIX . "user ADD INDEX `votes_user_name` ( `userid` , `username` ) ");
 $db->show_errors();]]></installcode>
