@@ -10,6 +10,11 @@ function AJAX_ItemVote_Init(items_container, item_id_name, item_id){
         if(typeof items_container=="string"){
             items_container = fetch_object(items_container)
         }
+        // safety check. Make sure object is in DOM (could be false for social groups)
+        if (!items_container)
+        {
+            return false;
+        }
         if (typeof item_id != "undefined")
         {
             ItemVoteBit_Init(item_id_name, item_id);
