@@ -660,7 +660,7 @@ if (!is_member_of($vbulletin->userinfo, $disabled_group))
         $vbulletin->templatecache['search_results_socialgroup_message'] = str_replace($search, $replace, $vbulletin->templatecache['search_results_socialgroup_message']);
     }
 
-    if ('showthread' == THIS_SCRIPT || 'group' == THIS_SCRIPT)
+    if ('showthread' == THIS_SCRIPT OR ('group' == THIS_SCRIPT AND ($_REQUEST['do'] == 'discuss' OR $_REQUEST['do'] == 'message')) )
     {
         // add vote.js file
         $rcd_vbv_templater = vB_Template::create('vote_js');
