@@ -3,7 +3,7 @@
 <product productid="vbvotes" active="1">
 	<title>vB Votes</title>
 	<description>User voting for useful content</description>
-	<version>0.8</version>
+	<version>0.9</version>
 	<url />
 	<versioncheckurl />
 	<apm_releasedate>0</apm_releasedate>
@@ -597,7 +597,23 @@ if (!is_member_of($vbulletin->userinfo, $disabled_group))
 		}';
 
         $replace = $search . '$final_rendered .= $template_hook[\'postbit_buttons_end\'];';
+        $before_patch = $vbulletin->templatecache['postbit']; 
         $vbulletin->templatecache['postbit'] = str_replace($search, $replace, $vbulletin->templatecache['postbit']);
+        if ($before_patch == $vbulletin->templatecache['postbit'])
+        {
+            $err_message = sprintf("Product '%s', error in hook %s : can't modify template '%s'",
+                                'vB Votes',
+                                'parse_templates',
+                                'postbit');
+            error_log($err_message); // Send to PHP error log
+            if ($vbulletin->debug)
+            {
+                trigger_error($err_message, E_USER_WARNING); // Display on page
+                require_once(DIR . '/includes/functions_log_error.php');
+                log_vbulletin_error($err_message, 'php'); // Send to vB error log
+            }
+            unset($err_message, $before_patch);
+        }
     }
 
     // Add vote buttons to postbit legacy
@@ -613,7 +629,23 @@ if (!is_member_of($vbulletin->userinfo, $disabled_group))
 		}';
 
         $replace = $search . '$final_rendered .= $template_hook[\'postbit_buttons_end\'];';
+        $before_patch = $vbulletin->templatecache['postbit_legacy']; 
         $vbulletin->templatecache['postbit_legacy'] = str_replace($search, $replace, $vbulletin->templatecache['postbit_legacy']);
+        if ($before_patch == $vbulletin->templatecache['postbit_legacy'])
+        {
+            $err_message = sprintf("Product '%s', error in hook %s : can't modify template '%s'",
+                                'vB Votes',
+                                'parse_templates',
+                                'postbit_legacy');
+            error_log($err_message); // Send to PHP error log
+            if ($vbulletin->debug)
+            {
+                trigger_error($err_message, E_USER_WARNING); // Display on page
+                require_once(DIR . '/includes/functions_log_error.php');
+                log_vbulletin_error($err_message, 'php'); // Send to vB error log
+            }
+            unset($err_message, $before_patch);
+        }
     }
 
     // Add votes result to posts from ignored users
@@ -633,31 +665,95 @@ if (!is_member_of($vbulletin->userinfo, $disabled_group))
     {
         $search = 'if ($message[\'itemipaddress\']) {
 					$final_rendered .= \'
-				<a href="group.php?\' . $session[\'sessionurl\'] . \'do=viewip&amp;gmid=\' . $message[\'gmid\'] . \'">\' . vB_Template_Runtime::parsePhrase("ip") . \'</a>
+				<a href="\' . vB_Template_Runtime::linkBuild("groupmessage", $message, \'do=viewip\') . \'">\' . vB_Template_Runtime::parsePhrase("ip") . \'</a>
 			\';
 				} else {
 			$final_rendered .= \'\';
 		}';
         $replace = $search .'$final_rendered .= $template_hook[\'postbit_buttons_end\'];';
+        $before_patch = $vbulletin->templatecache['socialgroups_message'];
         $vbulletin->templatecache['socialgroups_message'] = str_replace($search, $replace, $vbulletin->templatecache['socialgroups_message']);
+        if ($before_patch == $vbulletin->templatecache['socialgroups_message'])
+        {
+            $err_message = sprintf("Product '%s', error in hook %s : can't modify template '%s' first modification",
+                                'vB Votes',
+                                'parse_templates',
+                                'socialgroups_message');
+            error_log($err_message); // Send to PHP error log
+            if ($vbulletin->debug)
+            {
+                trigger_error($err_message, E_USER_WARNING); // Display on page
+                require_once(DIR . '/includes/functions_log_error.php');
+                log_vbulletin_error($err_message, 'php'); // Send to vB error log
+            }
+            unset($err_message, $before_patch);
+        }
 
         $search = '<script type="text/javascript">';
         $replace = '\';$final_rendered .= $template_hook[\'postbit_votes_end\'];$final_rendered .= \'' . $search;
+        $before_patch = $vbulletin->templatecache['socialgroups_message'];
         $vbulletin->templatecache['socialgroups_message'] = str_replace($search, $replace, $vbulletin->templatecache['socialgroups_message']);
+        if ($before_patch == $vbulletin->templatecache['socialgroups_message'])
+        {
+            $err_message = sprintf("Product '%s', error in hook %s : can't modify template '%s' second modification",
+                                'vB Votes',
+                                'parse_templates',
+                                'socialgroups_message');
+            error_log($err_message); // Send to PHP error log
+            if ($vbulletin->debug)
+            {
+                trigger_error($err_message, E_USER_WARNING); // Display on page
+                require_once(DIR . '/includes/functions_log_error.php');
+                log_vbulletin_error($err_message, 'php'); // Send to vB error log
+            }
+            unset($err_message, $before_patch);
+        }
     }
 
     if (array_key_exists('search_results_postbit', $vbulletin->templatecache))
     {
         $search = '\'">\' . $post[\'threadtitle\'] . \'</a>';
         $replace = $search . '\' . $post[\'votes\'] . \'';
+        $before_patch = $vbulletin->templatecache['search_results_postbit'];
         $vbulletin->templatecache['search_results_postbit'] = str_replace($search, $replace, $vbulletin->templatecache['search_results_postbit']);
+        if ($before_patch == $vbulletin->templatecache['search_results_postbit'])
+        {
+            $err_message = sprintf("Product '%s', error in hook %s : can't modify template '%s'",
+                                'vB Votes',
+                                'parse_templates',
+                                'search_results_postbit');
+            error_log($err_message); // Send to PHP error log
+            if ($vbulletin->debug)
+            {
+                trigger_error($err_message, E_USER_WARNING); // Display on page
+                require_once(DIR . '/includes/functions_log_error.php');
+                log_vbulletin_error($err_message, 'php'); // Send to vB error log
+            }
+            unset($err_message, $before_patch);
+        }
     }
 
     if (array_key_exists('search_results_socialgroup_message', $vbulletin->templatecache))
     {
         $search = '>\' . $message[\'discussiontitle\'] . \'</a>';
         $replace = $search . '\' . $message[\'votes\'] . \'';
+        $before_patch = $vbulletin->templatecache['search_results_socialgroup_message'];
         $vbulletin->templatecache['search_results_socialgroup_message'] = str_replace($search, $replace, $vbulletin->templatecache['search_results_socialgroup_message']);
+        if ($before_patch == $vbulletin->templatecache['search_results_socialgroup_message'])
+        {
+            $err_message = sprintf("Product '%s', error in hook %s : can't modify template '%s'",
+                                'vB Votes',
+                                'parse_templates',
+                                'search_results_socialgroup_message');
+            error_log($err_message); // Send to PHP error log
+            if ($vbulletin->debug)
+            {
+                trigger_error($err_message, E_USER_WARNING); // Display on page
+                require_once(DIR . '/includes/functions_log_error.php');
+                log_vbulletin_error($err_message, 'php'); // Send to vB error log
+            }
+            unset($err_message, $before_patch);
+        }
     }
 
     if ('showthread' == THIS_SCRIPT OR ('group' == THIS_SCRIPT AND ($_REQUEST['do'] == 'discuss' OR $_REQUEST['do'] == 'message')) )
